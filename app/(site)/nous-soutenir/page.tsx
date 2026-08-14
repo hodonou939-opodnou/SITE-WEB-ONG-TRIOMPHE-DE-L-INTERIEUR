@@ -1,0 +1,74 @@
+import type { Metadata } from "next";
+import Hero from "@/components/Hero";
+import Container from "@/components/Container";
+import SectionHeading from "@/components/SectionHeading";
+import Button from "@/components/Button";
+import Reveal from "@/components/Reveal";
+import { siteConfig, supportWays } from "@/lib/content";
+
+export const metadata: Metadata = {
+  title: "Nous soutenir",
+  description:
+    "Soutenez l'ONG Triomphe de l'Intérieur par un don, du bénévolat ou un partenariat.",
+};
+
+export default function NousSoutenirPage() {
+  return (
+    <>
+      <Hero
+        compact
+        eyebrow="Nous soutenir"
+        title="Votre soutien fait vivre la guérison intérieure, partout au Bénin"
+        description="Chaque don finance un atelier. Chaque heure de bénévolat change une trajectoire. Chaque partenariat porte notre mission plus loin, plus fort."
+      />
+
+      <Container className="py-24 sm:py-28">
+        <SectionHeading
+          eyebrow="Comment agir"
+          title="Trois façons de nous accompagner"
+        />
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {supportWays.map((way, i) => (
+            <Reveal key={way.title} delay={i * 0.1}>
+              <div className="flex h-full flex-col rounded-2xl border border-ink/8 bg-mist-50 p-7">
+                <h3 className="font-display text-xl text-azure-900">
+                  {way.title}
+                </h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
+                  {way.description}
+                </p>
+                <ul className="mt-5 space-y-1.5 border-t border-ink/8 pt-4">
+                  {way.details.map((d) => (
+                    <li key={d} className="text-xs text-ink/60">
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={0.2} className="mt-14 rounded-2xl bg-azure-900 p-8 text-center sm:p-12">
+          <h2 className="font-display text-2xl text-mist-50 sm:text-3xl">
+            Une question avant de vous engager ?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-mist-100/75 sm:text-base">
+            Écrivez-nous à{" "}
+            <a href={`mailto:${siteConfig.email}`} className="text-leaf-300 underline underline-offset-4">
+              {siteConfig.email}
+            </a>{" "}
+            ou via notre formulaire de contact — nous revenons vers vous
+            rapidement pour organiser votre don, votre mission bénévole ou
+            votre partenariat.
+          </p>
+          <div className="mt-7">
+            <Button href="/contact" variant="primary">
+              Nous contacter
+            </Button>
+          </div>
+        </Reveal>
+      </Container>
+    </>
+  );
+}

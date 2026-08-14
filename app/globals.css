@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f9f7;
+  --foreground: #16211d;
+
+  /* Leaf — vert extrait du logo (#49af50), croissance, transformation, espoir */
+  --color-leaf-50: #f2f7f3;
+  --color-leaf-100: #e2eee3;
+  --color-leaf-200: #c5ddc7;
+  --color-leaf-300: #93d297;
+  --color-leaf-400: #68c06e;
+  --color-leaf-500: #4ab051;
+  --color-leaf-600: #3c9042;
+  --color-leaf-700: #307335;
+  --color-leaf-800: #245627;
+  --color-leaf-900: #183a1a;
+
+  /* Azure — bleu extrait du logo (#418dcb), confiance, calme, profondeur */
+  --color-azure-50: #f1f5f9;
+  --color-azure-100: #dee9f2;
+  --color-azure-200: #bed3e4;
+  --color-azure-300: #87b7de;
+  --color-azure-400: #579ad1;
+  --color-azure-500: #3684c4;
+  --color-azure-600: #2c6ca0;
+  --color-azure-700: #235680;
+  --color-azure-800: #1a4160;
+  --color-azure-900: #122b40;
+
+  /* Mist — neutre froid discret, écho du fond blanc du logo */
+  --color-mist-50: #fcfdfd;
+  --color-mist-100: #f5f9f7;
+  --color-mist-200: #e9f1ec;
+  --color-mist-300: #d8e6de;
+
+  --color-ink: #16211d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-leaf-50: var(--color-leaf-50);
+  --color-leaf-100: var(--color-leaf-100);
+  --color-leaf-200: var(--color-leaf-200);
+  --color-leaf-300: var(--color-leaf-300);
+  --color-leaf-400: var(--color-leaf-400);
+  --color-leaf-500: var(--color-leaf-500);
+  --color-leaf-600: var(--color-leaf-600);
+  --color-leaf-700: var(--color-leaf-700);
+  --color-leaf-800: var(--color-leaf-800);
+  --color-leaf-900: var(--color-leaf-900);
+
+  --color-azure-50: var(--color-azure-50);
+  --color-azure-100: var(--color-azure-100);
+  --color-azure-200: var(--color-azure-200);
+  --color-azure-300: var(--color-azure-300);
+  --color-azure-400: var(--color-azure-400);
+  --color-azure-500: var(--color-azure-500);
+  --color-azure-600: var(--color-azure-600);
+  --color-azure-700: var(--color-azure-700);
+  --color-azure-800: var(--color-azure-800);
+  --color-azure-900: var(--color-azure-900);
+
+  --color-mist-50: var(--color-mist-50);
+  --color-mist-100: var(--color-mist-100);
+  --color-mist-200: var(--color-mist-200);
+  --color-mist-300: var(--color-mist-300);
+
+  --color-ink: var(--color-ink);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-manrope);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-mist-100);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-leaf-200);
+  color: var(--color-leaf-900);
+}
