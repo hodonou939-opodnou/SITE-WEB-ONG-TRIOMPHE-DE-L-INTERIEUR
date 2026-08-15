@@ -44,7 +44,7 @@ export default function MethodeRacinesPage() {
       </Container>
 
       {/* The 7 steps */}
-      <div className="bg-azure-50">
+      <div className="bg-mist-warm">
         <Container className="py-24 sm:py-28">
           <SectionHeading
             eyebrow={methodeRacines.acronym}
@@ -58,7 +58,7 @@ export default function MethodeRacinesPage() {
                   <span className="font-display text-3xl text-leaf-500">
                     {step.letter}
                   </span>
-                  <h3 className="mt-3 font-display text-lg text-azure-900">
+                  <h3 className="mt-3 font-display text-lg text-leaf-900">
                     {step.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-ink/70">
@@ -84,7 +84,7 @@ export default function MethodeRacinesPage() {
                 {p}
               </p>
             ))}
-            <p className="font-display text-xl leading-snug text-azure-900">
+            <p className="font-display text-xl leading-snug text-leaf-900">
               {methodeRacines.vision.closing}
             </p>
           </Reveal>
@@ -132,7 +132,7 @@ export default function MethodeRacinesPage() {
       </Container>
 
       {/* Evolution + CTA */}
-      <div className="bg-azure-900">
+      <div className="bg-leaf-950">
         <Container className="py-24 sm:py-28">
           <Reveal className="mx-auto max-w-2xl text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">

@@ -29,8 +29,8 @@ export default function Home() {
         description={siteConfig.homeHeroLede}
         actions={
           <>
-            <Button href="/cigibm" variant="primary">
-              Découvrir le CIGIBM
+            <Button href="/cigibm-2026" variant="primary">
+              Réserver ma place au CIGIBM 2026
             </Button>
             <Button href="/nous-soutenir" variant="ghost" className="!border-mist-50/30 !text-mist-50 hover:!bg-mist-50/10">
               Nous soutenir
@@ -39,12 +39,28 @@ export default function Home() {
         }
       />
 
+      {/* Bandeau CIGIBM 2026 — chemin de conversion prioritaire */}
+      <div className="border-b border-ink/8 bg-mist-warm">
+        <Container className="flex flex-col items-center justify-between gap-4 py-5 sm:flex-row">
+          <p className="text-center text-sm leading-relaxed text-ink/75 sm:text-left">
+            <span className="font-semibold text-leaf-900">
+              {cigibm.nextEdition.edition} du CIGIBM
+            </span>{" "}
+            — « {cigibm.nextEdition.theme} », {cigibm.nextEdition.dates} à
+            Cotonou. Participation gratuite.
+          </p>
+          <Button href="/cigibm-2026" variant="primary" className="shrink-0 !px-6 !py-3">
+            Réserver ma place →
+          </Button>
+        </Container>
+      </div>
+
       {/* Mission */}
       <Container className="py-24 sm:py-28">
         <SectionHeading
           eyebrow="Notre mission"
           title="Parce que personne ne devrait souffrir seul·e"
-          description="La guérison intérieure n'est pas un luxe réservé à quelques-uns. C'est un droit, une nécessité, un chemin que nous voulons rendre accessible à chaque femme, chaque jeune, chaque famille béninoise."
+          description="Au Bénin, on apprend très tôt à serrer les dents. À tenir. À ne pas déranger avec ses états d'âme. Nous existons pour dire l'inverse : votre santé mentale n'est pas un caprice, et demander de l'aide n'a jamais été une faiblesse."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {missionPillars.map((pillar, i) => (
@@ -76,19 +92,22 @@ export default function Home() {
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
               Événement phare
             </p>
-            <h2 className="font-display text-3xl leading-tight text-azure-900 sm:text-4xl">
+            <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
               {cigibm.acronym} — {cigibm.edition}
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ink/70 sm:text-lg">
-              Le {cigibm.fullName} a réuni 1 100 participants en présentiel
-              et 34 200 personnes en ligne les {cigibm.dates}, autour du
-              thème « {cigibm.theme} ». Deux jours d&apos;ateliers, de
-              conférences et de témoignages pour sortir de la prison
-              émotionnelle et sentimentale.
+              Une fois par an, le {cigibm.fullName} réunit celles et ceux qui
+              ont décidé de ne plus faire semblant. La dernière édition a
+              rassemblé 1 100 personnes sur place et 34 200 en ligne autour du
+              thème « {cigibm.theme} » — deux jours d&apos;ateliers, de
+              conférences et de témoignages, entièrement gratuits.
             </p>
-            <div className="mt-8">
-              <Button href="/cigibm" variant="primary">
-                En savoir plus sur le CIGIBM
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Button href="/cigibm-2026" variant="primary">
+                Réserver ma place 2026
+              </Button>
+              <Button href="/cigibm" variant="ghost">
+                Découvrir le congrès
               </Button>
             </div>
           </Reveal>
@@ -96,7 +115,7 @@ export default function Home() {
       </Container>
 
       {/* Méthode R.A.C.I.N.E.S. preview */}
-      <div className="bg-azure-50">
+      <div className="bg-mist-warm">
         <Container className="py-24 sm:py-28">
           <SectionHeading
             eyebrow="Notre approche"
@@ -110,7 +129,7 @@ export default function Home() {
                   <span className="font-display text-2xl text-leaf-500">
                     {step.letter}
                   </span>
-                  <p className="mt-1 text-xs font-medium text-azure-900">
+                  <p className="mt-1 text-xs font-medium text-leaf-900">
                     {step.title}
                   </p>
                 </div>
@@ -131,15 +150,15 @@ export default function Home() {
       </Container>
 
       {/* Final CTA */}
-      <div className="bg-leaf-600">
+      <div className="bg-leaf-950">
         <Container className="flex flex-col items-center gap-6 py-20 text-center">
           <h2 className="font-display text-3xl text-mist-50 sm:text-4xl">
             Ensemble, triomphons de l&apos;intérieur
           </h2>
-          <p className="max-w-xl text-mist-50/85">
-            Un don, une heure de votre temps, un simple message : chaque geste
-            compte et nous rapproche d&apos;un Bénin où la santé mentale n&apos;est
-            plus taboue.
+          <p className="max-w-xl leading-relaxed text-mist-100/80">
+            Un don, un week-end de votre temps, un partage à quelqu&apos;un qui
+            en a besoin : c&apos;est ce qui nous permet de continuer à offrir
+            cet accompagnement gratuitement.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button href="/nous-soutenir" variant="secondary">

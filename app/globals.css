@@ -15,6 +15,7 @@
   --color-leaf-700: #307335;
   --color-leaf-800: #245627;
   --color-leaf-900: #183a1a;
+  --color-leaf-950: #0e2118;
 
   /* Azure — bleu extrait du logo (#418dcb), confiance, calme, profondeur */
   --color-azure-50: #f1f5f9;
@@ -34,6 +35,9 @@
   --color-mist-200: #e9f1ec;
   --color-mist-300: #d8e6de;
 
+  /* Mist warm — variante ivoire chaude, pour les sections éditoriales */
+  --color-mist-warm: #fbf8f1;
+
   --color-ink: #16211d;
 }
 
@@ -51,6 +55,7 @@
   --color-leaf-700: var(--color-leaf-700);
   --color-leaf-800: var(--color-leaf-800);
   --color-leaf-900: var(--color-leaf-900);
+  --color-leaf-950: var(--color-leaf-950);
 
   --color-azure-50: var(--color-azure-50);
   --color-azure-100: var(--color-azure-100);
@@ -67,10 +72,11 @@
   --color-mist-100: var(--color-mist-100);
   --color-mist-200: var(--color-mist-200);
   --color-mist-300: var(--color-mist-300);
+  --color-mist-warm: var(--color-mist-warm);
 
   --color-ink: var(--color-ink);
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-lora);
   --font-sans: var(--font-manrope);
 }
 

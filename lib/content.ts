@@ -12,7 +12,7 @@ export const siteConfig = {
   // Accroche émotionnelle du hero d'accueil — distincte de la description
   // factuelle ci-dessus, utilisée pour les meta-tags.
   homeHeroLede:
-    "Vous n'êtes pas seul·e face à vos blessures invisibles. Sous la présidence de Christelle Eugénie Gnimassou, nous ouvrons des espaces où la parole libère, où l'épreuve trouve du sens, et où l'équilibre redevient possible.",
+    "Certaines blessures ne se voient pas. On les porte en silence, on fait bonne figure, et on finit par croire que c'est normal. Depuis six ans, nous ouvrons des espaces où la parole se libère enfin — et où l'équilibre redevient possible.",
   founder: "Christelle Eugénie Gnimassou",
   founderTitle: "Présidente-fondatrice & coach",
   location: "Godomey, Abomey-Calavi, Bénin", // [PLACEHOLDER] adresse précise à confirmer
@@ -24,6 +24,19 @@ export const siteConfig = {
     instagram: "#", // [PLACEHOLDER]
     tiktok: "#", // [PLACEHOLDER]
     linkedin: "#", // [PLACEHOLDER]
+  },
+};
+
+// Brevo — le site étant en export statique (aucun backend), le formulaire
+// d'inscription poste directement vers l'endpoint du formulaire Brevo, qui
+// redirige ensuite le navigateur vers /cigibm-2026/merci.
+// [PLACEHOLDER] à remplacer par les valeurs réelles du formulaire Brevo.
+export const brevo = {
+  formAction: "https://sibforms.com/serve/PLACEHOLDER",
+  fields: {
+    firstName: "PRENOM",
+    email: "EMAIL",
+    phone: "SMS",
   },
 };
 
@@ -47,17 +60,17 @@ export const missionPillars = [
   {
     title: "Actions humanitaires",
     description:
-      "Derrière chaque geste, un visage : celui d'un orphelin, d'une veuve, d'un enfant en difficulté. Nous agissons là où l'urgence est la plus vive.",
+      "Derrière chaque geste, un visage : celui d'un orphelin, d'une veuve, d'un enfant en difficulté. Nous agissons là où l'urgence ne peut pas attendre.",
   },
   {
     title: "Guérison intérieure & bien-être mental",
     description:
-      "Personne ne devrait porter seul·e le poids d'une blessure émotionnelle. Nous accompagnons les femmes et les jeunes vers un équilibre retrouvé.",
+      "Une blessure qu'on ne nomme pas ne guérit pas. Nous créons les espaces — écoute, ateliers, accompagnement — où elle peut enfin se dire, puis se traverser.",
   },
   {
     title: "Autonomisation",
     description:
-      "Nous ne donnons pas de solutions toutes faites : nous donnons les moyens de devenir l'actrice, l'acteur de sa propre transformation.",
+      "Nous ne distribuons pas de solutions toutes faites. Nous transmettons des outils, pour que chacun·e reparte capable de tenir debout sans nous.",
   },
 ];
 
@@ -274,7 +287,7 @@ export const supportWays = [
   {
     title: "Faire un don",
     description:
-      "Chaque don devient un atelier animé, une écoute offerte, un congrès organisé. Votre générosité finance directement notre mission de terrain.",
+      "Un don ne disparaît pas dans une structure : il devient un atelier animé, une écoute offerte, une place gratuite au congrès pour quelqu'un qui n'aurait pas pu venir.",
     details: [
       "Virement bancaire — RIB communiqué sur demande", // [PLACEHOLDER]
       "Mobile Money — MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
@@ -283,13 +296,13 @@ export const supportWays = [
   {
     title: "Devenir bénévole",
     description:
-      "Votre temps a plus de valeur que vous ne l'imaginez. Rejoignez une équipe engagée, sur le terrain, à chaque édition du CIGIBM.",
+      "Accueillir, orienter, écouter, porter des chaises : le congrès tient debout grâce à des gens ordinaires qui donnent un week-end. Vous n'avez besoin d'aucune qualification particulière.",
     details: ["Écrivez-nous via le formulaire de contact"],
   },
   {
     title: "Devenir partenaire",
     description:
-      "Associez votre marque à une cause qui change des vies, et donnez à la santé mentale la visibilité qu'elle mérite.",
+      "La santé mentale reste un angle mort du débat public béninois. Y associer votre organisation, c'est aider à le combler — et rendre visible un engagement qui compte réellement.",
     details: ["Contactez-nous pour discuter d'un partenariat sur mesure"],
   },
 ];

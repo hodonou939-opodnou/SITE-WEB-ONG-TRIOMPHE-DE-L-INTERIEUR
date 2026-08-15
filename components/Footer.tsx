@@ -16,7 +16,7 @@ const creditLinkedIn =
 
 export default function Footer({ logoSrc }: { logoSrc: string | null }) {
   return (
-    <footer className="border-t border-mist-50/10 bg-azure-900 text-mist-100">
+    <footer className="border-t border-mist-50/10 bg-leaf-950 text-mist-100">
       <Container className="grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export default function Footer({ logoSrc }: { logoSrc: string | null }) {
                 />
               </span>
             ) : (
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-mist-50 font-display text-lg text-azure-900">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-mist-50 font-display text-lg text-leaf-900">
                 TI
               </span>
             )}

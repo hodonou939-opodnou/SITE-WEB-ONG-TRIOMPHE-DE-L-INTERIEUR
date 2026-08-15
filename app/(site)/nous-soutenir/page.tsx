@@ -19,19 +19,20 @@ export default function NousSoutenirPage() {
         compact
         eyebrow="Nous soutenir"
         title="Votre soutien fait vivre la guérison intérieure, partout au Bénin"
-        description="Chaque don finance un atelier. Chaque heure de bénévolat change une trajectoire. Chaque partenariat porte notre mission plus loin, plus fort."
+        description="Si le CIGIBM est gratuit pour tous ceux qui en ont besoin, c'est parce que d'autres l'ont financé avant eux. C'est aussi simple que ça."
       />
 
       <Container className="py-24 sm:py-28">
         <SectionHeading
           eyebrow="Comment agir"
           title="Trois façons de nous accompagner"
+          description="Il n'y a pas de contribution trop petite. Un don ponctuel, un week-end de bénévolat ou un partenariat durable : chacune de ces portes mène au même endroit."
         />
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {supportWays.map((way, i) => (
             <Reveal key={way.title} delay={i * 0.1}>
               <div className="flex h-full flex-col rounded-2xl border border-ink/8 bg-mist-50 p-7">
-                <h3 className="font-display text-xl text-azure-900">
+                <h3 className="font-display text-xl text-leaf-900">
                   {way.title}
                 </h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
@@ -49,7 +50,7 @@ export default function NousSoutenirPage() {
           ))}
         </div>
 
-        <Reveal delay={0.2} className="mt-14 rounded-2xl bg-azure-900 p-8 text-center sm:p-12">
+        <Reveal delay={0.2} className="mt-14 rounded-2xl bg-leaf-950 p-8 text-center sm:p-12">
           <h2 className="font-display text-2xl text-mist-50 sm:text-3xl">
             Une question avant de vous engager ?
           </h2>

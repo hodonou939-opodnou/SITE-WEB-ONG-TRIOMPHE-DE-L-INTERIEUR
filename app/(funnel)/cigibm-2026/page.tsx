@@ -4,7 +4,8 @@ import Photo from "@/components/Photo";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
 import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
-import { cigibm, impactStats, presidentQuote, siteConfig } from "@/lib/content";
+import RegistrationForm from "@/components/RegistrationForm";
+import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -13,96 +14,124 @@ export const metadata: Metadata = {
 };
 
 const painPoints = [
-  "Vous souriez à l'extérieur, mais à l'intérieur, vous vous sentez vide.",
-  "Vous portez seul·e le poids d'une blessure que personne ne voit.",
-  "Vous avez l'impression d'avoir tout essayé, sans jamais vraiment aller mieux.",
-  "Vous voulez avancer, mais vous ne savez plus par où commencer.",
+  "Vous tenez debout pour tout le monde. Personne ne demande qui vous tient, vous.",
+  "Vous répondez « ça va » depuis si longtemps que vous ne savez plus ce que ça voulait dire.",
+  "Vous avez lu, prié, encaissé, recommencé — et la même douleur revient toujours au même endroit.",
+  "Vous voudriez en parler. Mais à qui, sans craindre le regard, le jugement, ou la pitié ?",
 ];
 
-const experience = [
+const approach = [
   {
-    title: "Vous êtes écouté·e, sans jugement",
-    description: "Un espace sûr où déposer ce que vous portez depuis trop longtemps.",
+    title: "On nomme ce qui fait mal",
+    description:
+      "Pas de discours abstrait sur le bonheur. On met des mots précis sur des blessures précises — parce qu'on ne guérit pas ce qu'on n'arrive pas à nommer.",
   },
   {
-    title: "Vous repartez avec des outils concrets",
-    description: "Des clés issues d'ateliers pratiques, applicables dès le lendemain.",
+    title: "On comprend d'où ça vient",
+    description:
+      "La Méthode R.A.C.I.N.E.S., construite sur plus de six ans de terrain, remonte au mécanisme plutôt qu'au symptôme. Vous repartez en comprenant votre propre fonctionnement.",
   },
   {
-    title: "Vous rencontrez des intervenants d'exception",
-    description: "Des experts et des figures inspirantes qui ont fait de leur épreuve une force.",
+    title: "On repart avec des outils, pas des intentions",
+    description:
+      "Des pratiques concrètes de régulation émotionnelle, applicables dès le lundi matin — chez vous, au travail, dans vos relations.",
   },
   {
-    title: "Vous n'êtes plus seul·e",
-    description: "Une communauté de plusieurs milliers de personnes qui avancent avec vous.",
+    title: "On ne vous laisse pas repartir seul·e",
+    description:
+      "Vous rejoignez plusieurs milliers de personnes qui avancent dans la même direction. C'est ce lien, plus que le week-end lui-même, qui tient dans la durée.",
   },
+];
+
+const valueStack = [
+  "Deux jours complets de conférences et d'ateliers au Palais des Congrès de Cotonou",
+  "Des ateliers pratiques en petit format, pour travailler sur votre situation réelle",
+  "L'accès direct à des professionnels de la santé mentale et de l'accompagnement",
+  "Des témoignages de personnes qui ont traversé ce que vous traversez",
+  "Des temps de méditation et de recueillement, respectueux de vos convictions",
+  "Une communauté qui continue après le congrès",
 ];
 
 const faqs = [
   {
     q: "La participation est-elle vraiment gratuite ?",
-    a: "Oui. La participation au CIGIBM 2026 est entièrement gratuite, sur inscription préalable au téléphone.",
+    a: "Oui, entièrement. Aucun frais d'inscription, aucun paiement sur place. L'ONG prend en charge l'organisation pour que le coût ne soit jamais la raison qui vous empêche de venir. L'inscription sert uniquement à réserver votre place et préparer l'accueil.",
   },
   {
-    q: "Dois-je avoir un diagnostic ou une raison particulière pour venir ?",
-    a: "Non. Le CIGIBM s'adresse à toute personne qui souhaite mieux comprendre son équilibre émotionnel — que vous traversiez une épreuve, accompagniez un proche, ou soyez simplement curieux·se.",
+    q: "Dois-je avoir un diagnostic, ou une raison « assez grave » pour venir ?",
+    a: "Non. Le CIGIBM s'adresse à toute personne qui veut mieux comprendre son équilibre émotionnel : que vous traversiez une épreuve, que vous accompagniez un proche, ou que vous vouliez simplement prendre soin de votre santé mentale avant que ça n'aille mal.",
+  },
+  {
+    q: "Est-ce que je vais devoir parler devant tout le monde ?",
+    a: "Jamais sans le vouloir. Vous pouvez traverser les deux jours en observateur·rice silencieux·se. Les temps de partage sont proposés, jamais imposés — l'écoute sans jugement vaut aussi pour votre droit au silence.",
+  },
+  {
+    q: "Et si je ne peux venir qu'une seule journée ?",
+    a: "Venez quand même. Chaque journée a sa cohérence propre. Précisez-le simplement lors de votre inscription pour que nous puissions vous orienter vers le programme le plus utile.",
+  },
+  {
+    q: "Est-ce un événement religieux ?",
+    a: "Non. Des temps de méditation et de prière sont proposés dans le respect des sensibilités de chacun, et restent facultatifs. Le congrès accueille toutes les convictions.",
   },
   {
     q: "Comment je m'inscris concrètement ?",
-    a: "Appelez l'un des deux numéros d'inscription affichés sur cette page. Une inscription par téléphone suffit à réserver votre place.",
-  },
-  {
-    q: "J'ai une autre question, qui puis-je contacter ?",
-    a: "Écrivez-nous à tout moment via notre page de contact — nous vous répondons rapidement.",
+    a: "Remplissez le formulaire sur cette page — il prend moins d'une minute. Si vous préférez parler à quelqu'un, appelez l'un des deux numéros indiqués : une inscription par téléphone suffit à réserver votre place.",
   },
 ];
 
 export default function Cigibm2026Page() {
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
+  const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
   const phones = cigibm.nextEdition.registrationPhones;
   const primaryPhoneHref = `tel:${phones[0].replace(/\s+/g, "")}`;
 
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-azure-900">
-        <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/30 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/25 blur-3xl" />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <Reveal>
+      <section className="relative overflow-hidden bg-leaf-950">
+        <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/20 blur-3xl" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <Reveal scale>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-leaf-300">
-              {cigibm.nextEdition.dates} · {cigibm.nextEdition.venue}
+              {cigibm.nextEdition.edition} · {cigibm.nextEdition.dates}
             </p>
-            <h1 className="font-display text-4xl leading-tight text-mist-50 sm:text-5xl md:text-6xl">
+            <h1 className="font-display text-4xl leading-[1.1] text-mist-50 sm:text-5xl md:text-6xl">
               {cigibm.nextEdition.theme}
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-mist-100/80 sm:text-lg">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-mist-100/85">
               Deux jours pour déposer ce que vous portez seul·e depuis trop
-              longtemps, et repartir avec les outils pour avancer. Réservez
-              dès maintenant votre place — {cigibm.nextEdition.note.toLowerCase()}
+              longtemps — et repartir avec de quoi tenir debout autrement.
             </p>
-            <div className="mt-10 flex flex-wrap gap-4">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-mist-100/60">
+              {cigibm.nextEdition.venue} · Participation gratuite, sur
+              inscription.
+            </p>
+
+            <div className="mt-9 max-w-md rounded-2xl border-l-2 border-leaf-400 bg-mist-50/5 py-4 pl-5 pr-4">
+              <p className="font-display text-lg leading-snug text-mist-50">
+                Vous méritez ces deux jours. Ne les laissez pas filer.
+              </p>
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center gap-4">
+              <a
+                href="#inscription"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
+              >
+                Je réserve ma place gratuite →
+              </a>
               <a
                 href={primaryPhoneHref}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-leaf-600 px-7 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-sm shadow-leaf-900/20 transition-colors hover:bg-leaf-700"
+                className="text-sm font-semibold text-leaf-300 underline underline-offset-4 transition-colors hover:text-leaf-200"
               >
-                Réserver ma place gratuite
-              </a>
-              <a
-                href={siteConfig.social.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-mist-50/30 px-7 py-4 text-base font-medium tracking-wide text-mist-50 transition-colors hover:bg-mist-50/10"
-              >
-                Suivre l&apos;actualité
+                Ou appelez le {phones[0]}
               </a>
             </div>
-            <p className="mt-4 text-xs text-mist-100/50">
-              Inscription au {phones.join(" · ")}
-            </p>
           </Reveal>
-          <Reveal delay={0.1}>
+
+          <Reveal delay={0.1} scale>
             {poster ? (
               <Photo src={poster} alt="Affiche — CIGIBM 2026" ratio="aspect-[4/5]" />
             ) : (
@@ -113,55 +142,60 @@ export default function Cigibm2026Page() {
       </section>
 
       {/* Pain points */}
-      <section className="bg-mist-100 py-20 sm:py-24">
+      <section className="bg-mist-warm py-20 sm:py-24">
         <div className="mx-auto max-w-3xl px-6 sm:px-8">
           <Reveal>
-            <h2 className="text-center font-display text-2xl leading-snug text-azure-900 sm:text-3xl">
-              Vous reconnaissez-vous ?
+            <h2 className="text-center font-display text-3xl leading-snug text-leaf-900 sm:text-4xl">
+              Est-ce que ça vous parle ?
             </h2>
           </Reveal>
-          <div className="mt-10 space-y-4">
+          <div className="mt-10 space-y-3">
             {painPoints.map((point, i) => (
-              <Reveal key={point} delay={i * 0.08}>
-                <div className="flex items-start gap-3 rounded-xl bg-mist-50 p-4 shadow-sm shadow-ink/5">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-azure-100 text-xs font-semibold text-azure-700">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm leading-relaxed text-ink/80 sm:text-base">{point}</p>
+              <Reveal key={point} delay={i * 0.06}>
+                <div className="rounded-2xl border border-ink/8 bg-mist-50 px-6 py-5">
+                  <p className="text-base leading-relaxed text-ink/80">{point}</p>
                 </div>
               </Reveal>
             ))}
           </div>
-          <Reveal delay={0.3} className="mt-8 text-center">
-            <p className="text-base font-medium text-azure-900">
-              Le CIGIBM 2026 a été pensé pour vous.
+          <Reveal delay={0.25} className="mt-10 text-center">
+            <p className="mx-auto max-w-xl font-display text-xl leading-snug text-leaf-900">
+              Si vous avez reconnu ne serait-ce qu&apos;une seule de ces
+              phrases, le CIGIBM 2026 a été construit pour vous.
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* Experience / promise */}
-      <section className="bg-azure-50 py-20 sm:py-24">
+      {/* Approach */}
+      <section className="bg-mist-100 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl px-6 sm:px-8">
           <Reveal className="mx-auto max-w-2xl text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
-              Ce qui vous attend
+              Notre approche
             </p>
-            <h2 className="font-display text-3xl leading-tight text-azure-900 sm:text-4xl">
-              Ce que vous vivrez au CIGIBM 2026
+            <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+              Pourquoi ces deux jours changent quelque chose
             </h2>
+            <p className="mt-4 text-base leading-relaxed text-ink/70">
+              Trois éditions, des milliers de participants, et une conviction
+              qui n&apos;a pas bougé : on ne guérit pas en écoutant de belles
+              phrases, mais en comprenant ce qui se joue en soi.
+            </p>
           </Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
-            {experience.map((item, i) => (
-              <Reveal key={item.title} delay={i * 0.08}>
-                <div className="flex items-start gap-4 rounded-2xl bg-mist-50 p-6">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-leaf-500 font-display text-lg text-mist-50">
-                    {i + 1}
+            {approach.map((item, i) => (
+              <Reveal key={item.title} delay={i * 0.06}>
+                <div className="h-full rounded-2xl border border-ink/8 bg-mist-50 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-leaf-200 hover:shadow-lg hover:shadow-ink/8">
+                  <span className="font-display text-2xl text-leaf-600">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div>
-                    <h3 className="font-display text-lg text-azure-900">{item.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink/70">{item.description}</p>
-                  </div>
+                  <h3 className="mt-3 font-display text-xl leading-snug text-leaf-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-ink/70">
+                    {item.description}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -178,75 +212,119 @@ export default function Cigibm2026Page() {
         </div>
       </div>
 
-      {/* Featured speaker */}
-      {featuredSpeaker && (
-        <section className="bg-mist-100 py-20 sm:py-24">
-          <div className="mx-auto max-w-3xl px-6 sm:px-8">
-            <Reveal>
-              <p className="mb-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
-                Intervenante à l&apos;honneur
+      {/* Value stack + registration */}
+      <section id="inscription" className="scroll-mt-4 bg-leaf-950 py-20 sm:py-24">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+          <Reveal>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
+              Ce que comprend votre place
+            </p>
+            <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
+              Tout cela, sans avoir à payer quoi que ce soit
+            </h2>
+            <ul className="mt-8 space-y-4">
+              {valueStack.map((item, i) => (
+                <Reveal key={item} delay={i * 0.05}>
+                  <li className="flex items-start gap-3.5">
+                    <span
+                      aria-hidden
+                      className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-500/20 text-xs font-bold text-leaf-300"
+                    >
+                      ✓
+                    </span>
+                    <span className="text-base leading-relaxed text-mist-100/85">
+                      {item}
+                    </span>
+                  </li>
+                </Reveal>
+              ))}
+            </ul>
+            <Reveal delay={0.3}>
+              <p className="mt-8 border-l-2 border-leaf-400 py-2 pl-5 text-base leading-relaxed text-mist-100/70">
+                La seule chose que nous vous demandons, c&apos;est de réserver
+                votre place — pour que nous sachions vous accueillir
+                correctement.
               </p>
-              <div className="rounded-2xl border border-ink/8 bg-mist-50 p-6 text-center sm:p-10">
-                <h3 className="font-display text-2xl text-azure-900">{featuredSpeaker.name}</h3>
-                <p className="mt-1 text-sm font-medium text-leaf-600">{featuredSpeaker.role}</p>
+            </Reveal>
+          </Reveal>
+
+          <Reveal delay={0.12} scale>
+            <RegistrationForm />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Speakers */}
+      <section className="bg-mist-100 py-20 sm:py-24">
+        <div className="mx-auto max-w-4xl px-6 sm:px-8">
+          <Reveal className="text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
+              Qui vous accueille
+            </p>
+            <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+              Celles et ceux qui prendront la parole
+            </h2>
+          </Reveal>
+
+          {featuredSpeaker && (
+            <Reveal delay={0.1} className="mt-10">
+              <div className="rounded-3xl border border-ink/8 bg-mist-50 p-7 sm:p-9">
+                <h3 className="font-display text-2xl text-leaf-900">
+                  {featuredSpeaker.name}
+                </h3>
+                <p className="mt-1 text-sm font-semibold text-leaf-600">
+                  {featuredSpeaker.role}
+                </p>
                 {featuredSpeaker.bio && (
-                  <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-ink/70">
+                  <p className="mt-4 text-sm leading-relaxed text-ink/70">
                     {featuredSpeaker.bio}
                   </p>
                 )}
               </div>
             </Reveal>
-          </div>
-        </section>
-      )}
+          )}
 
-      {/* President quote */}
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
-        <QuoteBlock {...presidentQuote} />
-      </div>
-
-      {/* Practical info */}
-      <section className="bg-azure-900 py-20 sm:py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center sm:px-8">
-          <Reveal>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
-              Informations pratiques
-            </p>
-            <h2 className="font-display text-3xl text-mist-50 sm:text-4xl">
-              {cigibm.nextEdition.dates}
-            </h2>
-            <p className="mt-3 text-base text-mist-100/80">{cigibm.nextEdition.venue}</p>
-            <p className="mt-2 text-sm text-mist-100/60">{cigibm.nextEdition.note}</p>
-            <div className="mt-8 flex flex-col items-center gap-3">
-              {phones.map((phone) => (
-                <a
-                  key={phone}
-                  href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="text-lg font-semibold text-mist-50 underline underline-offset-4"
+          {otherSpeakers.length > 0 && (
+            <Reveal delay={0.18} className="mt-6 flex flex-wrap justify-center gap-2.5">
+              {otherSpeakers.map((speaker) => (
+                <span
+                  key={speaker.name}
+                  className="rounded-full border border-ink/12 bg-mist-50 px-4 py-2 text-sm text-ink/75"
                 >
-                  {phone}
-                </a>
+                  <span className="font-medium text-leaf-900">{speaker.name}</span>
+                  {" — "}
+                  {speaker.role}
+                </span>
               ))}
-            </div>
-          </Reveal>
+            </Reveal>
+          )}
         </div>
       </section>
+
+      {/* President quote */}
+      <div className="bg-mist-warm">
+        <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
+          <QuoteBlock {...presidentQuote} />
+        </div>
+      </div>
 
       {/* FAQ */}
       <section className="bg-mist-100 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl px-6 sm:px-8">
           <Reveal>
-            <h2 className="text-center font-display text-2xl text-azure-900 sm:text-3xl">
-              Questions fréquentes
+            <h2 className="text-center font-display text-3xl text-leaf-900 sm:text-4xl">
+              Ce que vous vous demandez peut-être
             </h2>
           </Reveal>
           <div className="mt-10 space-y-3">
             {faqs.map((item, i) => (
-              <Reveal key={item.q} delay={i * 0.06}>
-                <details className="group rounded-xl border border-ink/8 bg-mist-50 p-5 open:shadow-sm">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-azure-900 sm:text-base">
+              <Reveal key={item.q} delay={i * 0.05}>
+                <details className="group rounded-2xl border border-ink/8 bg-mist-50 p-5 open:shadow-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-leaf-900">
                     {item.q}
-                    <span className="shrink-0 text-leaf-600 transition-transform group-open:rotate-45">+</span>
+                    <span className="shrink-0 text-xl leading-none text-leaf-600 transition-transform duration-200 group-open:rotate-45">
+                      +
+                    </span>
                   </summary>
                   <p className="mt-3 text-sm leading-relaxed text-ink/70">{item.a}</p>
                 </details>
@@ -257,31 +335,41 @@ export default function Cigibm2026Page() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-leaf-600 py-20 text-center sm:py-24">
-        <div className="mx-auto max-w-xl px-6 sm:px-8">
-          <h2 className="font-display text-3xl text-mist-50 sm:text-4xl">
-            Votre place vous attend
-          </h2>
-          <p className="mt-4 text-mist-50/85">
-            {cigibm.nextEdition.dates} · {cigibm.nextEdition.venue} ·{" "}
-            {cigibm.nextEdition.note}
-          </p>
-          <a
-            href={primaryPhoneHref}
-            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-mist-50 px-8 py-4 text-base font-semibold tracking-wide text-leaf-700 shadow-sm transition-colors hover:bg-mist-100"
-          >
-            Réserver ma place gratuite
-          </a>
+      <section className="bg-leaf-950 py-20 text-center sm:py-24">
+        <div className="mx-auto max-w-2xl px-6 sm:px-8">
+          <Reveal>
+            <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
+              Vous avez déjà attendu assez longtemps
+            </h2>
+            <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-mist-100/75">
+              {cigibm.nextEdition.dates} · {cigibm.nextEdition.venue}. Deux
+              jours, gratuits, pour ne plus porter ça tout seul·e.
+            </p>
+            <div className="mt-9 flex flex-col items-center gap-4">
+              <a
+                href="#inscription"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
+              >
+                Je réserve ma place gratuite →
+              </a>
+              <a
+                href={primaryPhoneHref}
+                className="text-sm font-semibold text-leaf-300 underline underline-offset-4 transition-colors hover:text-leaf-200"
+              >
+                Ou appelez le {phones[0]}
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Sticky mobile CTA */}
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-ink/10 bg-mist-50/95 p-3 backdrop-blur lg:hidden">
         <a
-          href={primaryPhoneHref}
-          className="flex items-center justify-center gap-2 rounded-full bg-leaf-600 px-6 py-3.5 text-sm font-semibold tracking-wide text-mist-50 shadow-sm"
+          href="#inscription"
+          className="flex items-center justify-center gap-2 rounded-full bg-azure-500 px-6 py-3.5 text-sm font-semibold tracking-wide text-mist-50 shadow-sm"
         >
-          Réserver ma place gratuite — Appeler
+          Je réserve ma place gratuite →
         </a>
       </div>
       <div aria-hidden className="h-20 lg:hidden" />

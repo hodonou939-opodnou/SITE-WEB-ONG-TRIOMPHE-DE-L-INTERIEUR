@@ -31,7 +31,7 @@ export default function CigibmPage() {
         compact
         eyebrow={cigibm.edition}
         title={`${cigibm.acronym} — Thème « ${cigibm.theme} »`}
-        description={`Deux jours pour déposer ce que vous portez seul·e depuis trop longtemps. Le ${cigibm.fullName} rassemble celles et ceux qui ont décidé de ne plus subir leurs blessures — mais de les traverser.`}
+        description={`Une fois par an, le ${cigibm.fullName} rassemble celles et ceux qui ont décidé de ne plus subir leurs blessures, mais de les traverser. Trois éditions, plus de 58 000 personnes touchées, et toujours la même règle : c'est gratuit.`}
         actions={
           <Button href="/cigibm-2026" variant="primary">
             Réserver ma place — édition 2026
@@ -44,13 +44,13 @@ export default function CigibmPage() {
         <div className="grid gap-6 sm:grid-cols-3">
           <Reveal className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Dates</p>
-            <p className="mt-2 font-display text-xl text-azure-900">{cigibm.dates}</p>
+            <p className="mt-2 font-display text-xl text-leaf-900">{cigibm.dates}</p>
           </Reveal>
           <Reveal delay={0.08} className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Lieux</p>
             <ul className="mt-2 space-y-1">
               {cigibm.venues.map((v) => (
-                <li key={v} className="font-display text-base text-azure-900">
+                <li key={v} className="font-display text-base text-leaf-900">
                   {v}
                 </li>
               ))}
@@ -58,13 +58,13 @@ export default function CigibmPage() {
           </Reveal>
           <Reveal delay={0.16} className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Parrain</p>
-            <p className="mt-2 font-display text-xl text-azure-900">{cigibm.sponsor}</p>
+            <p className="mt-2 font-display text-xl text-leaf-900">{cigibm.sponsor}</p>
           </Reveal>
         </div>
       </Container>
 
       {/* Objective */}
-      <div className="bg-azure-50">
+      <div className="bg-mist-warm">
         <Container className="py-24 sm:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <Reveal>
@@ -78,7 +78,7 @@ export default function CigibmPage() {
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
                 Notre objectif
               </p>
-              <h2 className="font-display text-3xl leading-tight text-azure-900 sm:text-4xl">
+              <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
                 Sortir de la prison émotionnelle et sentimentale
               </h2>
               <p className="mt-4 text-base leading-relaxed text-ink/70 sm:text-lg">
@@ -94,7 +94,7 @@ export default function CigibmPage() {
         <SectionHeading
           eyebrow="Programme"
           title="Deux jours pour se reconnecter à soi"
-          description="Le CIGIBM alterne temps collectifs et espaces plus intimistes, pour que chacun trouve la forme d'accompagnement qui lui correspond."
+          description="Le congrès alterne grands temps collectifs et formats plus intimes — pour que chacun trouve la porte d'entrée qui lui convient, qu'on ait envie de parler ou seulement d'écouter."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {cigibm.programme.map((item, i) => (
@@ -139,14 +139,14 @@ export default function CigibmPage() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">
                     {edition.year}
                   </p>
-                  <h3 className="mt-2 font-display text-lg text-azure-900">
+                  <h3 className="mt-2 font-display text-lg text-leaf-900">
                     {edition.edition}
                   </h3>
                   <p className="mt-2 text-sm font-medium text-ink/80">
                     Thème : « {edition.theme} »
                   </p>
                   <p className="mt-1 text-xs text-ink/50">{edition.location}</p>
-                  <p className="mt-3 text-sm font-medium text-azure-700">
+                  <p className="mt-3 text-sm font-medium text-leaf-700">
                     {edition.attendance}
                   </p>
                   <p className="mt-3 flex-1 text-xs leading-relaxed text-ink/60">
@@ -160,7 +160,7 @@ export default function CigibmPage() {
       </div>
 
       {/* Next edition */}
-      <div className="bg-azure-900">
+      <div className="bg-leaf-950">
         <Container className="py-24 sm:py-28">
           <div className={`grid items-center gap-12 ${poster ? "lg:grid-cols-2" : ""}`}>
             {poster && (
@@ -205,7 +205,7 @@ export default function CigibmPage() {
               {featuredSpeakers.map((speaker, i) => (
                 <Reveal key={speaker.name} delay={i * 0.1}>
                   <div className="flex h-full flex-col rounded-2xl border border-ink/8 bg-mist-100 p-6 sm:p-8">
-                    <h3 className="font-display text-xl text-azure-900">{speaker.name}</h3>
+                    <h3 className="font-display text-xl text-leaf-900">{speaker.name}</h3>
                     <p className="mt-1 text-sm font-medium text-leaf-600">{speaker.role}</p>
                     {speaker.bio && (
                       <p className="mt-4 text-sm leading-relaxed text-ink/70">{speaker.bio}</p>
@@ -223,7 +223,7 @@ export default function CigibmPage() {
                   key={speaker.name}
                   className="rounded-full border border-ink/12 bg-mist-100 px-4 py-2 text-sm text-ink/75"
                 >
-                  <span className="font-medium text-azure-900">{speaker.name}</span>
+                  <span className="font-medium text-leaf-900">{speaker.name}</span>
                   {" — "}
                   {speaker.role}
                 </span>

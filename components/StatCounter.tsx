@@ -36,7 +36,7 @@ export default function StatCounter({
     >
       <span
         ref={ref}
-        className="font-display text-4xl text-azure-900 sm:text-5xl"
+        className="font-display text-4xl text-leaf-900 sm:text-5xl"
       >
         {display}
         {suffix}
