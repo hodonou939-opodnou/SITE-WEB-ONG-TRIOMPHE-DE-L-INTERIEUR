@@ -8,12 +8,14 @@ import Photo from "@/components/Photo";
 import Reveal from "@/components/Reveal";
 import { missionPillars, siteConfig, values } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "À propos",
   description:
     "Découvrez l'ONG Triomphe de l'Intérieur, sa mission et sa présidente-fondatrice Christelle Eugénie Gnimassou.",
-};
+  path: "/a-propos",
+});
 
 export default function AProposPage() {
   const founderPhoto = getNamedImage("presidente");

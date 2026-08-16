@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Reveal from "@/components/Reveal";
 import { cigibm, siteConfig } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Votre place est réservée — CIGIBM 2026",
-  description: "Confirmation de votre inscription au CIGIBM 2026.",
+  ...pageMetadata({
+    title: "Votre place est réservée — CIGIBM 2026",
+    description: "Confirmation de votre inscription au CIGIBM 2026.",
+    path: "/cigibm-2026/merci",
+    image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026 — ${cigibm.nextEdition.theme}` },
+  }),
   robots: { index: false },
 };
 

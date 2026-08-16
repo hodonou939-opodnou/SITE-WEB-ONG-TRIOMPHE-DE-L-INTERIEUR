@@ -5,12 +5,14 @@ import SectionHeading from "@/components/SectionHeading";
 import Button from "@/components/Button";
 import Reveal from "@/components/Reveal";
 import { siteConfig, supportWays } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Nous soutenir",
   description:
-    "Soutenez l'ONG Triomphe de l'Intérieur par un don, du bénévolat ou un partenariat.",
-};
+    "Un don, un week-end de bénévolat, un partenariat : soutenez l'ONG Triomphe de l'Intérieur et la santé mentale au Bénin.",
+  path: "/nous-soutenir",
+});
 
 export default function NousSoutenirPage() {
   return (

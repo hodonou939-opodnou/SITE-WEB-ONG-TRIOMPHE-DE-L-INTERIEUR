@@ -5,12 +5,14 @@ import SectionHeading from "@/components/SectionHeading";
 import Button from "@/components/Button";
 import Reveal from "@/components/Reveal";
 import { methodeRacines, siteConfig } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Méthode R.A.C.I.N.E.S.",
   description:
     "Découvrez la Méthode R.A.C.I.N.E.S., le cadre méthodologique de l'ONG Triomphe de l'Intérieur pour la guérison intérieure et le renforcement de la résilience.",
-};
+  path: "/methode-racines",
+});
 
 export default function MethodeRacinesPage() {
   return (

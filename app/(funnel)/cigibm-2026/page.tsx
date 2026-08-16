@@ -5,13 +5,17 @@ import ImagePlaceholder from "@/components/ImagePlaceholder";
 import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
+import RegistrationPopup from "@/components/RegistrationPopup";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `CIGIBM 2026 — ${cigibm.nextEdition.theme}`,
-  description: `Réservez votre place gratuite au CIGIBM 2026, les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}.`,
-};
+  description: `Réservez votre place gratuite au CIGIBM 2026, les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Participation gratuite, sur inscription.`,
+  path: "/cigibm-2026",
+  image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026 — ${cigibm.nextEdition.theme}` },
+});
 
 const painPoints = [
   "Vous tenez debout pour tout le monde. Personne ne demande qui vous tient, vous.",
@@ -88,6 +92,8 @@ export default function Cigibm2026Page() {
 
   return (
     <>
+      <RegistrationPopup />
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-leaf-950">
         <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />

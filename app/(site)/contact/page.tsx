@@ -4,11 +4,14 @@ import Container from "@/components/Container";
 import ContactForm from "@/components/ContactForm";
 import Reveal from "@/components/Reveal";
 import { siteConfig } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact",
-  description: "Contactez l'ONG Triomphe de l'Intérieur.",
-};
+  description:
+    "Une question, une envie de vous impliquer, une demande de partenariat ou de presse ? Contactez l'ONG Triomphe de l'Intérieur.",
+  path: "/contact",
+});
 
 const infoItems = [
   { label: "Email", value: siteConfig.email, href: `mailto:${siteConfig.email}` },

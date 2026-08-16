@@ -10,12 +10,15 @@ import Photo from "@/components/Photo";
 import Reveal from "@/components/Reveal";
 import { cigibm } from "@/lib/content";
 import { getGalleryImages, getNamedImage } from "@/lib/media";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "CIGIBM",
   description:
-    "Le Congrès International de Guérison Intérieure et de Bien-être Mental (CIGIBM), organisé par l'ONG Triomphe de l'Intérieur.",
-};
+    "Le Congrès International de Guérison Intérieure et de Bien-être Mental (CIGIBM), organisé par l'ONG Triomphe de l'Intérieur. Trois éditions, plus de 58 000 personnes touchées.",
+  path: "/cigibm",
+  image: { url: "/images/cigibm-featured.jpg", alt: "Congrès CIGIBM" },
+});
 
 export default function CigibmPage() {
   const photos = getGalleryImages("cigibm");
@@ -133,28 +136,38 @@ export default function CigibmPage() {
         <Container className="py-24 sm:py-28">
           <SectionHeading eyebrow="Historique" title="Les éditions précédentes" />
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {cigibm.pastEditions.map((edition, i) => (
-              <Reveal key={edition.edition} delay={i * 0.08}>
-                <div className="flex h-full flex-col rounded-2xl border border-ink/8 bg-mist-50 p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">
-                    {edition.year}
-                  </p>
-                  <h3 className="mt-2 font-display text-lg text-leaf-900">
-                    {edition.edition}
-                  </h3>
-                  <p className="mt-2 text-sm font-medium text-ink/80">
-                    Thème : « {edition.theme} »
-                  </p>
-                  <p className="mt-1 text-xs text-ink/50">{edition.location}</p>
-                  <p className="mt-3 text-sm font-medium text-leaf-700">
-                    {edition.attendance}
-                  </p>
-                  <p className="mt-3 flex-1 text-xs leading-relaxed text-ink/60">
-                    {edition.description}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
+            {cigibm.pastEditions.map((edition, i) => {
+              const editionPhoto = getNamedImage(`cigibm-${edition.id}`);
+              return (
+                <Reveal key={edition.edition} delay={i * 0.08}>
+                  <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-ink/8 bg-mist-50">
+                    {editionPhoto ? (
+                      <Photo src={editionPhoto} alt={`Photo — ${edition.edition} du CIGIBM`} ratio="aspect-[4/3]" />
+                    ) : (
+                      <ImagePlaceholder label={`Photo — ${edition.edition}`} ratio="aspect-[4/3]" />
+                    )}
+                    <div className="flex flex-1 flex-col p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">
+                        {edition.year}
+                      </p>
+                      <h3 className="mt-2 font-display text-lg text-leaf-900">
+                        {edition.edition}
+                      </h3>
+                      <p className="mt-2 text-sm font-medium text-ink/80">
+                        Thème : « {edition.theme} »
+                      </p>
+                      <p className="mt-1 text-xs text-ink/50">{edition.location}</p>
+                      <p className="mt-3 text-sm font-medium text-leaf-700">
+                        {edition.attendance}
+                      </p>
+                      <p className="mt-3 flex-1 text-xs leading-relaxed text-ink/60">
+                        {edition.description}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </Container>
       </div>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Hero from "@/components/Hero";
 import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
@@ -17,6 +18,13 @@ import {
   siteConfig,
 } from "@/lib/content";
 import { getGalleryImages } from "@/lib/media";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: siteConfig.tagline,
+  description: siteConfig.description,
+  path: "/",
+});
 
 export default function Home() {
   const cigibmPhotos = getGalleryImages("cigibm");

@@ -127,6 +127,8 @@ export const cigibm = {
   ],
   pastEditions: [
     {
+      // Image dédiée : public/images/cigibm-edition-1.jpg (ou .png/.webp)
+      id: "edition-1",
       edition: "1ère édition",
       year: "29 mars 2023",
       theme: "La dépression, parlons-en",
@@ -136,6 +138,8 @@ export const cigibm = {
         "Première édition du congrès, consacrée à libérer la parole autour de la dépression.",
     },
     {
+      // Image dédiée : public/images/cigibm-edition-2.jpg (ou .png/.webp)
+      id: "edition-2",
       edition: "2ème édition",
       year: "27 avril 2024",
       theme: "Réinvente-toi",
@@ -145,6 +149,8 @@ export const cigibm = {
         "Participants venus du Bénin et de la sous-région (entrepreneurs, femmes, enfants). Approches proposées sur la spiritualité, le bien-être mental des entrepreneurs, et la guérison des blessures intérieures et de la dépression.",
     },
     {
+      // Image dédiée : public/images/cigibm-edition-3.jpg (ou .png/.webp)
+      id: "edition-3",
       edition: "3ème édition",
       year: "29-30 novembre 2025",
       theme: "Équilibre",
