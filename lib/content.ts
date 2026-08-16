@@ -63,6 +63,7 @@ export const pressMentions = [
     excerpt:
       "Annonce de la 3ème édition du CIGIBM au Palais des Congrès de Cotonou, réunissant experts internationaux, professionnels de la santé mentale et chercheurs autour de la guérison et du bien-être mental.",
     url: "https://matinlibre.com/2025/11/13/congres-international-de-guerison-interieure-et-du-bien-etre-mental-la-3eme-edition-sannonce-sous-le-sceau-de-lequilibre/",
+    image: "/images/cigibm-edition-3/02.jpg",
   },
   {
     outlet: "L'Économiste du Bénin",
@@ -71,6 +72,7 @@ export const pressMentions = [
     excerpt:
       "Retour sur la 3ème édition du CIGIBM, les 29 et 30 novembre 2025, consacrée à aider les participants à retrouver leur équilibre émotionnel.",
     url: "https://leconomistebenin.bj/long-triomphe-de-linterieur-sensibilise-sur-lequilibre/",
+    image: "/images/cigibm-edition-3/04.jpg",
   },
   {
     outlet: "Economia24",
@@ -79,6 +81,7 @@ export const pressMentions = [
     excerpt:
       "Compte-rendu de l'édition 2025, qui a réuni des centaines de participants autour d'outils concrets pour sortir de la « prison émotionnelle et sentimentale ».",
     url: "https://economia24.bj/2025/11/30/cigibm-2025-christelle-gnimassou-pour-le-bien-etre-mental-de-tous/",
+    image: "/images/cigibm-edition-3/06.jpg",
   },
   {
     outlet: "Chaire UNESCO Éducation & Santé",
@@ -87,6 +90,7 @@ export const pressMentions = [
     date: "juin 2026",
     excerpt:
       "La présidente-fondatrice de Triomphe de l'Intérieur intervient aux côtés d'experts internationaux lors de ce workshop consacré à la santé communautaire mondiale.",
+    image: "/images/presidente.jpg",
     url: "https://didier-jourdan.com/fr/2026/06/",
   },
 ];

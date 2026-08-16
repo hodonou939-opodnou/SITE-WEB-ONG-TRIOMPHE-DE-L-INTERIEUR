@@ -3,11 +3,45 @@ import Link from "next/link";
 import Container from "./Container";
 import { navigation, siteConfig } from "@/lib/content";
 
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5Z" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function TikTokIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M16.5 2c.3 2.1 1.6 3.6 3.7 3.9v3.1c-1.3 0-2.5-.4-3.6-1.1v6.4c0 3.2-2.6 5.7-5.7 5.7A5.7 5.7 0 0 1 5.2 14.3c0-3.1 2.5-5.6 5.6-5.7v3.2a2.6 2.6 0 1 0 2.6 2.6V2h3.1Z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3a1.96 1.96 0 1 0 0 3.92A1.96 1.96 0 0 0 5.25 3ZM20.44 20h-3.38v-6.06c0-1.44-.03-3.3-2.02-3.3-2.02 0-2.33 1.58-2.33 3.2V20H9.34V8.5h3.24v1.57h.05c.45-.85 1.56-1.75 3.2-1.75 3.42 0 4.06 2.25 4.06 5.18V20Z" />
+    </svg>
+  );
+}
+
 const socialLinks = [
-  { label: "Facebook", href: siteConfig.social.facebook },
-  { label: "Instagram", href: siteConfig.social.instagram },
-  { label: "TikTok", href: siteConfig.social.tiktok },
-  { label: "LinkedIn", href: siteConfig.social.linkedin },
+  { label: "Facebook", href: siteConfig.social.facebook, Icon: FacebookIcon },
+  { label: "Instagram", href: siteConfig.social.instagram, Icon: InstagramIcon },
+  { label: "TikTok", href: siteConfig.social.tiktok, Icon: TikTokIcon },
+  { label: "LinkedIn", href: siteConfig.social.linkedin, Icon: LinkedInIcon },
 ];
 
 // [PLACEHOLDER] Lien LinkedIn à confirmer.
@@ -79,16 +113,16 @@ export default function Footer({ logoSrc }: { logoSrc: string | null }) {
             </li>
           </ul>
           <div className="mt-5 flex gap-3">
-            {socialLinks.map((s) => (
+            {socialLinks.map(({ label, href, Icon }) => (
               <a
-                key={s.label}
-                href={s.href}
+                key={label}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={s.label}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-mist-50/20 text-xs text-mist-100/80 transition-colors hover:border-mist-50/50 hover:text-mist-50"
+                aria-label={label}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-mist-50/20 text-mist-100/80 transition-colors hover:border-leaf-300/60 hover:bg-mist-50/5 hover:text-leaf-300"
               >
-                {s.label.slice(0, 2)}
+                <Icon />
               </a>
             ))}
           </div>

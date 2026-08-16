@@ -6,6 +6,7 @@ import Card from "@/components/Card";
 import Button from "@/components/Button";
 import StatCounter from "@/components/StatCounter";
 import QuoteBlock from "@/components/QuoteBlock";
+import MediaCoverageSlider from "@/components/MediaCoverageSlider";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
 import Photo from "@/components/Photo";
 import Reveal from "@/components/Reveal";
@@ -17,7 +18,7 @@ import {
   presidentQuote,
   siteConfig,
 } from "@/lib/content";
-import { getGalleryImages } from "@/lib/media";
+import { getGalleryImages, getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -27,7 +28,8 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function Home() {
-  const cigibmPhotos = getGalleryImages("cigibm");
+  const cigibmPhoto =
+    getNamedImage("cigibm-featured") ?? getGalleryImages("cigibm-edition-3")[0];
 
   return (
     <>
@@ -107,8 +109,8 @@ export default function Home() {
       <Container className="py-24 sm:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <Reveal>
-            {cigibmPhotos[0] ? (
-              <Photo src={cigibmPhotos[0]} alt="Congrès CIGIBM" />
+            {cigibmPhoto ? (
+              <Photo src={cigibmPhoto} alt="Congrès CIGIBM" />
             ) : (
               <ImagePlaceholder label="Photo, Congrès CIGIBM" />
             )}
@@ -138,6 +140,20 @@ export default function Home() {
           </Reveal>
         </div>
       </Container>
+
+      {/* Couverture médiatique */}
+      <div className="bg-mist-200">
+        <Container className="py-24 sm:py-28">
+          <SectionHeading
+            eyebrow="Couverture médiatique"
+            title="Ils en parlent"
+            description="La presse béninoise et des voix internationales relaient le travail de l'ONG et du CIGIBM."
+          />
+          <div className="mt-12">
+            <MediaCoverageSlider />
+          </div>
+        </Container>
+      </div>
 
       {/* Méthode R.A.C.I.N.E.S. preview */}
       <div className="bg-mist-warm">
