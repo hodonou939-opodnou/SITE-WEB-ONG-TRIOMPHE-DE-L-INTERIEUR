@@ -65,6 +65,45 @@ export const presidentQuote = {
   role: "Présidente-fondatrice, Triomphe de l'Intérieur",
 };
 
+// Mentions presse — chaque lien a été vérifié individuellement (contenu +
+// URL) avant d'être ajouté ici. Ne pas ajouter d'URL non vérifiée.
+export const pressMentions = [
+  {
+    outlet: "Matin Libre",
+    title:
+      "Congrès international de guérison intérieure et du bien-être mental : la 3ème édition s'annonce sous le sceau de l'équilibre",
+    date: "13 novembre 2025",
+    excerpt:
+      "Annonce de la 3ème édition du CIGIBM au Palais des Congrès de Cotonou, réunissant experts internationaux, professionnels de la santé mentale et chercheurs autour de la guérison et du bien-être mental.",
+    url: "https://matinlibre.com/2025/11/13/congres-international-de-guerison-interieure-et-du-bien-etre-mental-la-3eme-edition-sannonce-sous-le-sceau-de-lequilibre/",
+  },
+  {
+    outlet: "L'Économiste du Bénin",
+    title: "L'ONG Triomphe de l'Intérieur sensibilise sur l'équilibre",
+    date: "2 décembre 2025",
+    excerpt:
+      "Retour sur la 3ème édition du CIGIBM, les 29 et 30 novembre 2025, consacrée à aider les participants à retrouver leur équilibre émotionnel.",
+    url: "https://leconomistebenin.bj/long-triomphe-de-linterieur-sensibilise-sur-lequilibre/",
+  },
+  {
+    outlet: "Economia24",
+    title: "CIGIBM 2025 : Christelle Gnimassou pour le bien-être mental de tous",
+    date: "30 novembre 2025",
+    excerpt:
+      "Compte-rendu de l'édition 2025, qui a réuni des centaines de participants autour d'outils concrets pour sortir de la « prison émotionnelle et sentimentale ».",
+    url: "https://economia24.bj/2025/11/30/cigibm-2025-christelle-gnimassou-pour-le-bien-etre-mental-de-tous/",
+  },
+  {
+    outlet: "Chaire UNESCO Éducation & Santé",
+    title:
+      "Christelle Eugénie Gnimassou, intervenante au 6ème Global Community Health Workshop",
+    date: "juin 2026",
+    excerpt:
+      "La présidente-fondatrice de Triomphe de l'Intérieur intervient aux côtés d'experts internationaux lors de ce workshop consacré à la santé communautaire mondiale.",
+    url: "https://didier-jourdan.com/fr/2026/06/",
+  },
+];
+
 export const missionPillars = [
   {
     title: "Actions humanitaires",
@@ -127,7 +166,7 @@ export const cigibm = {
   ],
   pastEditions: [
     {
-      // Image dédiée : public/images/cigibm-edition-1.jpg (ou .png/.webp)
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-1/
       id: "edition-1",
       edition: "1ère édition",
       year: "29 mars 2023",
@@ -138,7 +177,7 @@ export const cigibm = {
         "Première édition du congrès, consacrée à libérer la parole autour de la dépression.",
     },
     {
-      // Image dédiée : public/images/cigibm-edition-2.jpg (ou .png/.webp)
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-2/
       id: "edition-2",
       edition: "2ème édition",
       year: "27 avril 2024",
@@ -149,7 +188,7 @@ export const cigibm = {
         "Participants venus du Bénin et de la sous-région (entrepreneurs, femmes, enfants). Approches proposées sur la spiritualité, le bien-être mental des entrepreneurs, et la guérison des blessures intérieures et de la dépression.",
     },
     {
-      // Image dédiée : public/images/cigibm-edition-3.jpg (ou .png/.webp)
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-3/
       id: "edition-3",
       edition: "3ème édition",
       year: "29-30 novembre 2025",
@@ -163,6 +202,8 @@ export const cigibm = {
   // Prochaine édition annoncée — dates à confirmer avec l'ONG (affiche reçue
   // avec une plage de dates incohérente : "17 au 13 octobre 2026").
   nextEdition: {
+    // Photos de préparation / à venir : public/images/cigibm-edition-4/
+    id: "edition-4",
     edition: "4ème édition",
     theme: "Le vaccin de la dépression",
     dates: "17 et 18 octobre 2026",
