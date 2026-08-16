@@ -83,7 +83,12 @@ const faqs = [
   },
 ];
 
-export default function Cigibm2026Page() {
+export default async function Cigibm2026Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ erreur?: string }>;
+}) {
+  const { erreur } = await searchParams;
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
@@ -255,6 +260,13 @@ export default function Cigibm2026Page() {
           </Reveal>
 
           <Reveal delay={0.12} scale>
+            {erreur && (
+              <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                Une erreur est survenue, votre inscription n&apos;a pas pu être
+                enregistrée. Réessayez, ou appelez directement le{" "}
+                {cigibm.nextEdition.registrationPhones[0]}.
+              </p>
+            )}
             <RegistrationForm />
           </Reveal>
         </div>

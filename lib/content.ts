@@ -27,26 +27,13 @@ export const siteConfig = {
   },
 };
 
-// Brevo, le site étant en export statique (aucun backend), le formulaire
-// d'inscription poste directement vers l'endpoint du formulaire Brevo, qui
-// redirige ensuite le navigateur vers /cigibm-2026/merci.
-//
-// [PLACEHOLDER] Pour obtenir formAction :
-//   1. Brevo > Contacts > Formulaires > Créer un formulaire d'inscription
-//   2. Ajouter les champs PRENOM, SMS (téléphone) et EMAIL à la liste voulue
-//   3. Onglet « Après la validation » > activer la redirection vers
-//      https://<domaine>/cigibm-2026/merci
-//   4. Partager > Copier le code HTML : l'URL du <form action="..."> est de la
-//      forme https://<id-compte>.sibforms.com/serve/<id-formulaire>
-//   5. Vérifier que les noms d'attributs ci-dessous correspondent à ceux du
-//      code copié (ils dépendent des attributs de contact de votre compte).
+// Brevo : le formulaire d'inscription poste vers /api/cigibm-register (route
+// serveur Next.js), qui crée le contact via l'API Brevo avec une clé stockée
+// côté serveur (variable d'environnement BREVO_API_KEY sur Vercel, jamais
+// exposée au navigateur), puis redirige vers /cigibm-2026/merci.
+// Dossier Brevo « Triomphe de l'Intérieur » (id 6) > liste « CIGIBM 2026 ».
 export const brevo = {
-  formAction: "https://PLACEHOLDER.sibforms.com/serve/PLACEHOLDER",
-  fields: {
-    firstName: "PRENOM",
-    email: "EMAIL",
-    phone: "SMS",
-  },
+  cigibm2026ListId: 7,
 };
 
 export const navigation = [

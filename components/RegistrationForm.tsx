@@ -1,4 +1,4 @@
-import { brevo, cigibm } from "@/lib/content";
+import { cigibm } from "@/lib/content";
 
 export default function RegistrationForm({ id }: { id?: string }) {
   const phones = cigibm.nextEdition.registrationPhones;
@@ -16,22 +16,10 @@ export default function RegistrationForm({ id }: { id?: string }) {
       </p>
 
       <form
-        action={brevo.formAction}
+        action="/api/cigibm-register"
         method="POST"
         className="mt-6 space-y-4"
       >
-        {/* Champs requis par Brevo : anti-spam (honeypot) + langue du formulaire. */}
-        <input
-          type="text"
-          name="email_address_check"
-          defaultValue=""
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          className="absolute left-[-9999px] h-0 w-0 opacity-0"
-        />
-        <input type="hidden" name="locale" value="fr" />
-
         <div>
           <label
             htmlFor="reg-firstname"
@@ -41,7 +29,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
           </label>
           <input
             id="reg-firstname"
-            name={brevo.fields.firstName}
+            name="name"
             type="text"
             required
             autoComplete="name"
@@ -59,7 +47,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
           </label>
           <input
             id="reg-phone"
-            name={brevo.fields.phone}
+            name="phone"
             type="tel"
             required
             autoComplete="tel"
@@ -77,7 +65,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
           </label>
           <input
             id="reg-email"
-            name={brevo.fields.email}
+            name="email"
             type="email"
             required
             autoComplete="email"
@@ -89,7 +77,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
         <label className="flex cursor-pointer items-start gap-3 pt-1">
           <input
             type="checkbox"
-            name="OPT_IN"
+            name="consent"
             value="1"
             required
             className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-azure-500"

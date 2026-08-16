@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { brevo, cigibm } from "@/lib/content";
+import { cigibm } from "@/lib/content";
 
 const SHOWN_KEY = "cigibm2026-popup-shown";
 const TRIGGER_SCROLL_RATIO = 0.35;
@@ -87,20 +87,9 @@ export default function RegistrationPopup() {
           sur inscription, ça prend moins d&apos;une minute.
         </p>
 
-        <form action={brevo.formAction} method="POST" className="mt-5 space-y-3">
+        <form action="/api/cigibm-register" method="POST" className="mt-5 space-y-3">
           <input
-            type="text"
-            name="email_address_check"
-            defaultValue=""
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            className="absolute left-[-9999px] h-0 w-0 opacity-0"
-          />
-          <input type="hidden" name="locale" value="fr" />
-
-          <input
-            name={brevo.fields.firstName}
+            name="name"
             type="text"
             required
             autoComplete="name"
@@ -109,7 +98,7 @@ export default function RegistrationPopup() {
             className={inputClass}
           />
           <input
-            name={brevo.fields.phone}
+            name="phone"
             type="tel"
             required
             autoComplete="tel"
@@ -118,7 +107,7 @@ export default function RegistrationPopup() {
             className={inputClass}
           />
           <input
-            name={brevo.fields.email}
+            name="email"
             type="email"
             required
             autoComplete="email"
@@ -130,7 +119,7 @@ export default function RegistrationPopup() {
           <label className="flex cursor-pointer items-start gap-2.5 pt-0.5">
             <input
               type="checkbox"
-              name="OPT_IN"
+              name="consent"
               value="1"
               required
               className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-azure-500"
