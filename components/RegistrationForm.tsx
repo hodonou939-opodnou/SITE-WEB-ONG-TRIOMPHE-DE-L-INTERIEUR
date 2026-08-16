@@ -20,6 +20,18 @@ export default function RegistrationForm({ id }: { id?: string }) {
         method="POST"
         className="mt-6 space-y-4"
       >
+        {/* Champs requis par Brevo : anti-spam (honeypot) + langue du formulaire. */}
+        <input
+          type="text"
+          name="email_address_check"
+          defaultValue=""
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+        />
+        <input type="hidden" name="locale" value="fr" />
+
         <div>
           <label
             htmlFor="reg-firstname"
@@ -74,6 +86,21 @@ export default function RegistrationForm({ id }: { id?: string }) {
           />
         </div>
 
+        <label className="flex cursor-pointer items-start gap-3 pt-1">
+          <input
+            type="checkbox"
+            name="OPT_IN"
+            value="1"
+            required
+            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-azure-500"
+          />
+          <span className="text-xs leading-relaxed text-mist-100/70">
+            J&apos;accepte de recevoir par email et par téléphone les
+            informations liées à mon inscription au CIGIBM 2026 et aux
+            activités de l&apos;ONG. Je peux me désinscrire à tout moment.
+          </span>
+        </label>
+
         <button
           type="submit"
           className="w-full rounded-full bg-azure-500 px-6 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
@@ -83,7 +110,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
 
         <p className="text-center text-xs leading-relaxed text-mist-100/50">
           Vos coordonnées servent uniquement à votre inscription au congrès.
-          Aucune donnée n&apos;est partagée.
+          Elles ne sont ni vendues, ni partagées avec des tiers.
         </p>
       </form>
 

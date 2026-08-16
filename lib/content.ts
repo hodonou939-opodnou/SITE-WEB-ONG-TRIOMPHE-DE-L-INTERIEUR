@@ -30,9 +30,18 @@ export const siteConfig = {
 // Brevo — le site étant en export statique (aucun backend), le formulaire
 // d'inscription poste directement vers l'endpoint du formulaire Brevo, qui
 // redirige ensuite le navigateur vers /cigibm-2026/merci.
-// [PLACEHOLDER] à remplacer par les valeurs réelles du formulaire Brevo.
+//
+// [PLACEHOLDER] Pour obtenir formAction :
+//   1. Brevo > Contacts > Formulaires > Créer un formulaire d'inscription
+//   2. Ajouter les champs PRENOM, SMS (téléphone) et EMAIL à la liste voulue
+//   3. Onglet « Après la validation » > activer la redirection vers
+//      https://<domaine>/cigibm-2026/merci
+//   4. Partager > Copier le code HTML : l'URL du <form action="..."> est de la
+//      forme https://<id-compte>.sibforms.com/serve/<id-formulaire>
+//   5. Vérifier que les noms d'attributs ci-dessous correspondent à ceux du
+//      code copié (ils dépendent des attributs de contact de votre compte).
 export const brevo = {
-  formAction: "https://sibforms.com/serve/PLACEHOLDER",
+  formAction: "https://PLACEHOLDER.sibforms.com/serve/PLACEHOLDER",
   fields: {
     firstName: "PRENOM",
     email: "EMAIL",
