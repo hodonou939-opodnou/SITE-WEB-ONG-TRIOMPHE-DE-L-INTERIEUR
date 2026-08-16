@@ -41,6 +41,7 @@ export const navigation = [
   { label: "Notre histoire", href: "/a-propos" },
   { label: "Méthode R.A.C.I.N.E.S.", href: "/methode-racines" },
   { label: "CIGIBM", href: "/cigibm" },
+  { label: "Blog & Activités", href: "/blog" },
   { label: "Nous soutenir", href: "/nous-soutenir" },
   { label: "Contact", href: "/contact" },
 ];
