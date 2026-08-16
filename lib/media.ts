@@ -14,7 +14,7 @@ function imagesDir(...segments: string[]) {
 export function getNamedImage(name: string): string | null {
   // Scope volontairement restreint à public/images : accès bon marché, sans
   // risque, mais l'analyse statique de Turbopack ne peut pas le déduire d'un
-  // chemin dynamique — on l'exempte donc explicitement du tracing du build.
+  // chemin dynamique, on l'exempte donc explicitement du tracing du build.
   const dir = imagesDir();
   if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) return null;
   for (const ext of IMAGE_EXTENSIONS) {

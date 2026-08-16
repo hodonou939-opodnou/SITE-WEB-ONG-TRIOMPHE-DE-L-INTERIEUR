@@ -26,7 +26,7 @@ export default function AProposPage() {
         compact
         eyebrow="À propos"
         title="Une ONG née d'une conviction : la guérison intérieure change tout"
-        description="Nous agissons au Bénin pour que la santé mentale cesse d'être un sujet qu'on murmure — et devienne un sujet qu'on traite."
+        description="Nous agissons au Bénin pour que la santé mentale cesse d'être un sujet qu'on murmure, et devienne un sujet qu'on traite."
       />
 
       <Container className="py-24 sm:py-28">
@@ -50,7 +50,7 @@ export default function AProposPage() {
               {founderPhoto ? (
                 <Photo src={founderPhoto} alt={siteConfig.founder} ratio="aspect-[3/4]" />
               ) : (
-                <ImagePlaceholder label="Photo — Christelle Eugénie Gnimassou" ratio="aspect-[3/4]" />
+                <ImagePlaceholder label="Photo, Christelle Eugénie Gnimassou" ratio="aspect-[3/4]" />
               )}
             </Reveal>
             <Reveal delay={0.1}>
@@ -74,7 +74,7 @@ export default function AProposPage() {
               <p className="mt-4 text-base leading-relaxed text-ink/70 sm:text-lg">
                 De cette conviction sont nés un espace d&apos;écoute sans
                 jugement, la Méthode R.A.C.I.N.E.S. issue de plus de six ans
-                de terrain, et le CIGIBM — un congrès qui réunit chaque année
+                de terrain, et le CIGIBM, un congrès qui réunit chaque année
                 des milliers de personnes autour du même objectif : sortir de
                 sa prison émotionnelle et respirer à nouveau.
               </p>

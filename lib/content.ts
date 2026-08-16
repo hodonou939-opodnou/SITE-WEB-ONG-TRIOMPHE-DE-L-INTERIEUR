@@ -9,10 +9,10 @@ export const siteConfig = {
   tagline: "Guérir de l'intérieur pour triompher à l'extérieur",
   description:
     "ONG béninoise dédiée au bien-être mental, à la guérison intérieure et au développement personnel.",
-  // Accroche émotionnelle du hero d'accueil — distincte de la description
+  // Accroche émotionnelle du hero d'accueil, distincte de la description
   // factuelle ci-dessus, utilisée pour les meta-tags.
   homeHeroLede:
-    "Certaines blessures ne se voient pas. On les porte en silence, on fait bonne figure, et on finit par croire que c'est normal. Depuis six ans, nous ouvrons des espaces où la parole se libère enfin — et où l'équilibre redevient possible.",
+    "Certaines blessures ne se voient pas. On les porte en silence, on fait bonne figure, et on finit par croire que c'est normal. Depuis six ans, nous ouvrons des espaces où la parole se libère enfin, et où l'équilibre redevient possible.",
   founder: "Christelle Eugénie Gnimassou",
   founderTitle: "Présidente-fondatrice & coach",
   location: "Godomey, Abomey-Calavi, Bénin", // [PLACEHOLDER] adresse précise à confirmer
@@ -27,7 +27,7 @@ export const siteConfig = {
   },
 };
 
-// Brevo — le site étant en export statique (aucun backend), le formulaire
+// Brevo, le site étant en export statique (aucun backend), le formulaire
 // d'inscription poste directement vers l'endpoint du formulaire Brevo, qui
 // redirige ensuite le navigateur vers /cigibm-2026/merci.
 //
@@ -65,7 +65,7 @@ export const presidentQuote = {
   role: "Présidente-fondatrice, Triomphe de l'Intérieur",
 };
 
-// Mentions presse — chaque lien a été vérifié individuellement (contenu +
+// Mentions presse, chaque lien a été vérifié individuellement (contenu +
 // URL) avant d'être ajouté ici. Ne pas ajouter d'URL non vérifiée.
 export const pressMentions = [
   {
@@ -113,7 +113,7 @@ export const missionPillars = [
   {
     title: "Guérison intérieure & bien-être mental",
     description:
-      "Une blessure qu'on ne nomme pas ne guérit pas. Nous créons les espaces — écoute, ateliers, accompagnement — où elle peut enfin se dire, puis se traverser.",
+      "Une blessure qu'on ne nomme pas ne guérit pas. Nous créons les espaces, écoute, ateliers, accompagnement, où elle peut enfin se dire, puis se traverser.",
   },
   {
     title: "Autonomisation",
@@ -128,6 +128,43 @@ export const impactStats = [
   { value: 6, suffix: "+", label: "années d'accompagnement de terrain" },
 ];
 
+// Histoire fondatrice du CIGIBM, telle que fournie par l'ONG. Sujet sensible
+// (tentatives de suicide de la fondatrice) : formulé avec dignité, sans
+// détails cliniques, centré sur la décision et la transformation qui a suivi.
+export const foundingStory = {
+  eyebrow: "Notre histoire",
+  title: "Pourquoi le CIGIBM existe",
+  paragraphs: [
+    "En 2023, cette conviction n'était pas une théorie pour Christelle Eugénie Gnimassou, c'était un vécu. Après avoir survécu à deux tentatives de suicide, elle a fait un choix : plus jamais quelqu'un d'autre ne devrait porter seul·e le silence qui avait failli la lui coûter la vie.",
+    "Elle a commencé petit : une conférence, un thème dit sans détour, « La dépression, parlons-en ». 203 personnes sont venues, le 29 mars 2023. Ce qui devait être un événement ponctuel est devenu un rendez-vous annuel, puis un congrès national, puis international, réunissant aujourd'hui des dizaines de milliers de personnes, en présentiel et en ligne, autour de la même urgence : que plus personne n'ait à traverser ça seul·e.",
+  ],
+};
+
+// Statistiques vérifiées individuellement avant ajout (études citées,
+// rapports OMS). Ne pas ajouter de chiffre sans source.
+export const mentalHealthStats = [
+  {
+    value: "30 %",
+    label: "de prévalence de la dépression estimée à Cotonou",
+    source: "Étude menée à Cotonou, 2009",
+  },
+  {
+    value: "1 psychiatre",
+    label: "pour 1 million d'habitants en Afrique subsaharienne",
+    source: "OMS / UNICEF",
+  },
+  {
+    value: "75 %+",
+    label: "des personnes souffrant de troubles mentaux ne reçoivent aucun traitement en Afrique",
+    source: "OMS",
+  },
+  {
+    value: "1 000 Mds $",
+    label: "perdus chaque année par l'économie mondiale à cause de la dépression et de l'anxiété non traitées",
+    source: "OMS, estimation mondiale",
+  },
+];
+
 export const cigibm = {
   fullName:
     "Congrès International de Guérison Intérieure et de Bien-être Mental",
@@ -137,8 +174,8 @@ export const cigibm = {
   dates: "29 et 30 novembre 2025",
   sponsor: "Steeve Facia",
   venues: [
-    "Centre Culturel Le Centre — Godomey, Abomey-Calavi (29 nov., visite guidée)",
-    "Palais des Congrès — Cotonou (30 nov.)",
+    "Centre Culturel Le Centre, Godomey, Abomey-Calavi (29 nov., visite guidée)",
+    "Palais des Congrès, Cotonou (30 nov.)",
   ],
   objective:
     "Aider les participants à se sentir compris et soutenus, en leur donnant les outils nécessaires pour sortir de leur prison émotionnelle et sentimentale.",
@@ -199,7 +236,7 @@ export const cigibm = {
         "Parrainage de Steeve Facia. Ateliers, conférences, témoignages, moments de prière et de méditation sensibilisant sur le bien-être mental, la gestion du stress et le développement personnel.",
     },
   ],
-  // Prochaine édition annoncée — dates à confirmer avec l'ONG (affiche reçue
+  // Prochaine édition annoncée, dates à confirmer avec l'ONG (affiche reçue
   // avec une plage de dates incohérente : "17 au 13 octobre 2026").
   nextEdition: {
     // Photos de préparation / à venir : public/images/cigibm-edition-4/
@@ -210,22 +247,27 @@ export const cigibm = {
     venue: "Palais des Congrès de Cotonou",
     note: "Participation gratuite sur inscription.",
     registrationPhones: ["+229 01 68 28 06 75", "+229 01 57 30 43 29"],
+    // Chaque intervenant a un slug d'image (public/images/speaker-{slug}.jpg)
+    // affiché en avatar ; si le fichier n'existe pas encore, un avatar avec
+    // les initiales s'affiche à la place.
     speakers: [
       {
+        slug: "christelle-gnimassou",
         name: "Christelle Eugénie Gnimassou",
         role: "Promotrice",
       },
       {
+        slug: "rudy-chapsal-aboua",
         name: "Rudy Chapsal Aboua",
-        role: "Intervenante — Entrepreneure & stratège de marque",
-        bio: "Entrepreneure, stratège de marque et figure du leadership féminin en Afrique, Rudy Chapsal construit depuis plus de treize ans un écosystème d'entreprises entre le Bénin et le continent. Elle dirige L'Épicurienne et Bloom, et a fondé SOUV'REINES, une organisation dédiée à l'autonomisation et au leadership des femmes africaines. Elle est l'auteure de « SE TENIR — Lettres à la femme africaine qui n'abandonnera pas ».",
+        role: "Intervenante, Entrepreneure & stratège de marque",
+        bio: "Entrepreneure, stratège de marque et figure du leadership féminin en Afrique, Rudy Chapsal construit depuis plus de treize ans un écosystème d'entreprises entre le Bénin et le continent. Elle dirige L'Épicurienne et Bloom, et a fondé SOUV'REINES, une organisation dédiée à l'autonomisation et au leadership des femmes africaines. Elle est l'auteure de « SE TENIR, Lettres à la femme africaine qui n'abandonnera pas ».",
         featured: true,
       },
-      { name: "Ahouignan Astéris A.", role: "Intervenant" },
-      { name: "Narcisse Avocé", role: "Intervenant" },
-      { name: "Espoir Tchehoun", role: "Intervenant" },
-      { name: "Annick Mireille Azandjeme", role: "Intervenante" },
-      { name: "Valdye Gbaguidi", role: "Intervenante" },
+      { slug: "ahouignan-asteris", name: "Ahouignan Astéris A.", role: "Intervenant" },
+      { slug: "narcisse-avoce", name: "Narcisse Avocé", role: "Intervenant" },
+      { slug: "espoir-tchehoun", name: "Espoir Tchehoun", role: "Intervenant" },
+      { slug: "annick-mireille-azandjeme", name: "Annick Mireille Azandjeme", role: "Intervenante" },
+      { slug: "valdye-gbaguidi", name: "Valdye Gbaguidi", role: "Intervenante" },
     ],
   },
 };
@@ -330,7 +372,7 @@ export const values = [
   {
     title: "Transformation",
     description:
-      "Nous croyons, sans réserve, que la guérison intérieure est possible — à tout âge, après toute épreuve.",
+      "Nous croyons, sans réserve, que la guérison intérieure est possible, à tout âge, après toute épreuve.",
   },
   {
     title: "Communauté",
@@ -345,8 +387,8 @@ export const supportWays = [
     description:
       "Un don ne disparaît pas dans une structure : il devient un atelier animé, une écoute offerte, une place gratuite au congrès pour quelqu'un qui n'aurait pas pu venir.",
     details: [
-      "Virement bancaire — RIB communiqué sur demande", // [PLACEHOLDER]
-      "Mobile Money — MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
+      "Virement bancaire, RIB communiqué sur demande", // [PLACEHOLDER]
+      "Mobile Money, MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
     ],
   },
   {
@@ -358,7 +400,7 @@ export const supportWays = [
   {
     title: "Devenir partenaire",
     description:
-      "La santé mentale reste un angle mort du débat public béninois. Y associer votre organisation, c'est aider à le combler — et rendre visible un engagement qui compte réellement.",
+      "La santé mentale reste un angle mort du débat public béninois. Y associer votre organisation, c'est aider à le combler, et rendre visible un engagement qui compte réellement.",
     details: ["Contactez-nous pour discuter d'un partenariat sur mesure"],
   },
 ];

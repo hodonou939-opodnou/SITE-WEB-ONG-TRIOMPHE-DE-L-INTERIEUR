@@ -61,7 +61,7 @@ export default function NousSoutenirPage() {
             <a href={`mailto:${siteConfig.email}`} className="text-leaf-300 underline underline-offset-4">
               {siteConfig.email}
             </a>{" "}
-            ou via notre formulaire de contact — nous revenons vers vous
+            ou via notre formulaire de contact, nous revenons vers vous
             rapidement pour organiser votre don, votre mission bénévole ou
             votre partenariat.
           </p>

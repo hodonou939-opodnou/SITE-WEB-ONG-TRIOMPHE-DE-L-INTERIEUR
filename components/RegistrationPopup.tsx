@@ -3,22 +3,24 @@
 import { useEffect, useState } from "react";
 import { brevo, cigibm } from "@/lib/content";
 
-const DISMISS_KEY = "cigibm2026-popup-dismissed";
+const SHOWN_KEY = "cigibm2026-popup-shown";
 const TRIGGER_SCROLL_RATIO = 0.35;
-const TRIGGER_DELAY_MS = 18000;
+const TRIGGER_DELAY_MS = 8000;
 
 export default function RegistrationPopup() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(DISMISS_KEY)) return;
+    if (sessionStorage.getItem(SHOWN_KEY)) return;
 
     let shown = false;
     const show = () => {
       if (shown) return;
       shown = true;
       setOpen(true);
+      sessionStorage.setItem(SHOWN_KEY, "1");
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseleave", onMouseLeave);
       clearTimeout(timer);
     };
 
@@ -28,18 +30,25 @@ export default function RegistrationPopup() {
       if (ratio >= TRIGGER_SCROLL_RATIO) show();
     };
 
+    // Exit-intent : la souris quitte la fenêtre par le haut (barre d'adresse,
+    // onglets), signe classique qu'on s'apprête à partir.
+    const onMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0) show();
+    };
+
     const timer = setTimeout(show, TRIGGER_DELAY_MS);
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseleave", onMouseLeave);
       clearTimeout(timer);
     };
   }, []);
 
   function dismiss() {
     setOpen(false);
-    sessionStorage.setItem(DISMISS_KEY, "1");
   }
 
   if (!open) return null;
@@ -75,7 +84,7 @@ export default function RegistrationPopup() {
         </h3>
         <p className="mt-2 text-sm leading-relaxed text-mist-100/70">
           {cigibm.nextEdition.dates} · {cigibm.nextEdition.venue}. Gratuit,
-          sur inscription — ça prend moins d&apos;une minute.
+          sur inscription, ça prend moins d&apos;une minute.
         </p>
 
         <form action={brevo.formAction} method="POST" className="mt-5 space-y-3">

@@ -26,7 +26,7 @@ export default function ContactPage() {
         compact
         eyebrow="Contact"
         title="Parlons-en"
-        description="Une question, une envie de vous impliquer, une demande de partenariat ou de presse ? Écrivez-nous — on lit tout, et on répond."
+        description="Une question, une envie de vous impliquer, une demande de partenariat ou de presse ? Écrivez-nous, on lit tout, et on répond."
       />
 
       <Container className="py-24 sm:py-28">
@@ -54,7 +54,7 @@ export default function ContactPage() {
 
             <div className="mt-10 rounded-2xl border border-ink/8 bg-mist-200 p-6">
               <p className="text-sm text-ink/60">
-                Adresse précise à confirmer — en attendant, écrivez-nous par
+                Adresse précise à confirmer, en attendant, écrivez-nous par
                 email ou téléphone, nous vous répondrons rapidement.
               </p>
             </div>
@@ -76,7 +76,7 @@ export default function ContactPage() {
                 </a>
                 , contactez les services d&apos;urgence, ou parlez-en dès
                 maintenant à une personne de confiance autour de vous. Vous
-                méritez de l&apos;aide tout de suite — pas dans quelques jours.
+                méritez de l&apos;aide tout de suite, pas dans quelques jours.
               </p>
             </div>
           </Reveal>

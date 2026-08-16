@@ -11,16 +11,16 @@ import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: `CIGIBM 2026 — ${cigibm.nextEdition.theme}`,
+  title: `CIGIBM 2026, ${cigibm.nextEdition.theme}`,
   description: `Réservez votre place gratuite au CIGIBM 2026, les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Participation gratuite, sur inscription.`,
   path: "/cigibm-2026",
-  image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026 — ${cigibm.nextEdition.theme}` },
+  image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026, ${cigibm.nextEdition.theme}` },
 });
 
 const painPoints = [
   "Vous tenez debout pour tout le monde. Personne ne demande qui vous tient, vous.",
   "Vous répondez « ça va » depuis si longtemps que vous ne savez plus ce que ça voulait dire.",
-  "Vous avez lu, prié, encaissé, recommencé — et la même douleur revient toujours au même endroit.",
+  "Vous avez lu, prié, encaissé, recommencé, et la même douleur revient toujours au même endroit.",
   "Vous voudriez en parler. Mais à qui, sans craindre le regard, le jugement, ou la pitié ?",
 ];
 
@@ -28,7 +28,7 @@ const approach = [
   {
     title: "On nomme ce qui fait mal",
     description:
-      "Pas de discours abstrait sur le bonheur. On met des mots précis sur des blessures précises — parce qu'on ne guérit pas ce qu'on n'arrive pas à nommer.",
+      "Pas de discours abstrait sur le bonheur. On met des mots précis sur des blessures précises, parce qu'on ne guérit pas ce qu'on n'arrive pas à nommer.",
   },
   {
     title: "On comprend d'où ça vient",
@@ -38,7 +38,7 @@ const approach = [
   {
     title: "On repart avec des outils, pas des intentions",
     description:
-      "Des pratiques concrètes de régulation émotionnelle, applicables dès le lundi matin — chez vous, au travail, dans vos relations.",
+      "Des pratiques concrètes de régulation émotionnelle, applicables dès le lundi matin, chez vous, au travail, dans vos relations.",
   },
   {
     title: "On ne vous laisse pas repartir seul·e",
@@ -67,7 +67,7 @@ const faqs = [
   },
   {
     q: "Est-ce que je vais devoir parler devant tout le monde ?",
-    a: "Jamais sans le vouloir. Vous pouvez traverser les deux jours en observateur·rice silencieux·se. Les temps de partage sont proposés, jamais imposés — l'écoute sans jugement vaut aussi pour votre droit au silence.",
+    a: "Jamais sans le vouloir. Vous pouvez traverser les deux jours en observateur·rice silencieux·se. Les temps de partage sont proposés, jamais imposés, l'écoute sans jugement vaut aussi pour votre droit au silence.",
   },
   {
     q: "Et si je ne peux venir qu'une seule journée ?",
@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     q: "Comment je m'inscris concrètement ?",
-    a: "Remplissez le formulaire sur cette page — il prend moins d'une minute. Si vous préférez parler à quelqu'un, appelez l'un des deux numéros indiqués : une inscription par téléphone suffit à réserver votre place.",
+    a: "Remplissez le formulaire sur cette page, il prend moins d'une minute. Si vous préférez parler à quelqu'un, appelez l'un des deux numéros indiqués : une inscription par téléphone suffit à réserver votre place.",
   },
 ];
 
@@ -108,7 +108,7 @@ export default function Cigibm2026Page() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-mist-100/85">
               Deux jours pour déposer ce que vous portez seul·e depuis trop
-              longtemps — et repartir avec de quoi tenir debout autrement.
+              longtemps, et repartir avec de quoi tenir debout autrement.
             </p>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-mist-100/60">
               {cigibm.nextEdition.venue} · Participation gratuite, sur
@@ -139,9 +139,9 @@ export default function Cigibm2026Page() {
 
           <Reveal delay={0.1} scale>
             {poster ? (
-              <Photo src={poster} alt="Affiche — CIGIBM 2026" ratio="aspect-[4/5]" />
+              <Photo src={poster} alt="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
             ) : (
-              <ImagePlaceholder label="Affiche — CIGIBM 2026" ratio="aspect-[4/5]" />
+              <ImagePlaceholder label="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
             )}
           </Reveal>
         </div>
@@ -248,7 +248,7 @@ export default function Cigibm2026Page() {
             <Reveal delay={0.3}>
               <p className="mt-8 border-l-2 border-leaf-400 py-2 pl-5 text-base leading-relaxed text-mist-100/70">
                 La seule chose que nous vous demandons, c&apos;est de réserver
-                votre place — pour que nous sachions vous accueillir
+                votre place, pour que nous sachions vous accueillir
                 correctement.
               </p>
             </Reveal>
@@ -298,7 +298,7 @@ export default function Cigibm2026Page() {
                   className="rounded-full border border-ink/12 bg-mist-50 px-4 py-2 text-sm text-ink/75"
                 >
                   <span className="font-medium text-leaf-900">{speaker.name}</span>
-                  {" — "}
+                  {", "}
                   {speaker.role}
                 </span>
               ))}

@@ -47,17 +47,34 @@ export default function Home() {
         }
       />
 
-      {/* Bandeau CIGIBM 2026 — chemin de conversion prioritaire */}
-      <div className="border-b border-ink/8 bg-mist-warm">
-        <Container className="flex flex-col items-center justify-between gap-4 py-5 sm:flex-row">
-          <p className="text-center text-sm leading-relaxed text-ink/75 sm:text-left">
-            <span className="font-semibold text-leaf-900">
-              {cigibm.nextEdition.edition} du CIGIBM
-            </span>{" "}
-            — « {cigibm.nextEdition.theme} », {cigibm.nextEdition.dates} à
-            Cotonou. Participation gratuite.
-          </p>
-          <Button href="/cigibm-2026" variant="primary" className="shrink-0 !px-6 !py-3">
+      {/* Bandeau CIGIBM 2026, chemin de conversion prioritaire */}
+      <div className="relative overflow-hidden border-b border-mist-50/10 bg-gradient-to-r from-leaf-950 via-leaf-900 to-azure-900">
+        <div aria-hidden className="pointer-events-none absolute -top-20 left-[15%] h-56 w-56 rounded-full bg-leaf-500/25 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 right-[10%] h-56 w-56 rounded-full bg-azure-400/25 blur-3xl" />
+        <div
+          aria-hidden
+          className="animate-shine pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-transparent via-mist-50/15 to-transparent"
+        />
+
+        <Container className="relative flex flex-col items-center justify-between gap-5 py-6 sm:flex-row">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <span className="relative hidden h-2.5 w-2.5 shrink-0 sm:flex">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-leaf-400" />
+            </span>
+            <p className="text-sm leading-relaxed text-mist-100/90 sm:text-base">
+              <span className="font-display font-semibold text-mist-50">
+                {cigibm.nextEdition.edition} du CIGIBM
+              </span>
+              , « {cigibm.nextEdition.theme} », {cigibm.nextEdition.dates} à
+              Cotonou. Participation gratuite.
+            </p>
+          </div>
+          <Button
+            href="/cigibm-2026"
+            variant="primary"
+            className="!shrink-0 !px-7 !py-3.5 !shadow-xl !shadow-azure-950/40 ring-1 ring-mist-50/15"
+          >
             Réserver ma place →
           </Button>
         </Container>
@@ -93,7 +110,7 @@ export default function Home() {
             {cigibmPhotos[0] ? (
               <Photo src={cigibmPhotos[0]} alt="Congrès CIGIBM" />
             ) : (
-              <ImagePlaceholder label="Photo — Congrès CIGIBM" />
+              <ImagePlaceholder label="Photo, Congrès CIGIBM" />
             )}
           </Reveal>
           <Reveal delay={0.1}>
@@ -101,13 +118,13 @@ export default function Home() {
               Événement phare
             </p>
             <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
-              {cigibm.acronym} — {cigibm.edition}
+              {cigibm.acronym}, {cigibm.edition}
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ink/70 sm:text-lg">
               Une fois par an, le {cigibm.fullName} réunit celles et ceux qui
               ont décidé de ne plus faire semblant. La dernière édition a
               rassemblé 1 100 personnes sur place et 34 200 en ligne autour du
-              thème « {cigibm.theme} » — deux jours d&apos;ateliers, de
+              thème « {cigibm.theme} », deux jours d&apos;ateliers, de
               conférences et de témoignages, entièrement gratuits.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">

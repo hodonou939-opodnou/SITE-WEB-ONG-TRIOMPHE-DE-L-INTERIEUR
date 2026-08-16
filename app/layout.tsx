@@ -4,12 +4,12 @@ import "./globals.css";
 import { siteConfig } from "@/lib/content";
 
 // Polices auto-hébergées (variable fonts) plutôt que next/font/google : évite
-// toute dépendance au CDN Google Fonts au moment du build — Next.js a déjà
+// toute dépendance au CDN Google Fonts au moment du build, Next.js a déjà
 // renvoyé des URLs de fichiers obsolètes (404) pour Lora à un moment donné.
-const lora = localFont({
-  src: "./fonts/lora-variable.woff2",
-  variable: "--font-lora",
-  weight: "500 700",
+const displayFont = localFont({
+  src: "./fonts/playfair-variable.woff2",
+  variable: "--font-display-serif",
+  weight: "500 800",
   display: "swap",
 });
 
@@ -25,8 +25,8 @@ const siteUrl = "https://ongtriomphedelinterieur.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
-    template: `%s — ${siteConfig.name}`,
+    default: `${siteConfig.name}, ${siteConfig.tagline}`,
+    template: `%s, ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: [
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     siteName: siteConfig.name,
     url: siteUrl,
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}, ${siteConfig.tagline}`,
     description: siteConfig.description,
     images: [
       {
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}, ${siteConfig.tagline}`,
     description: siteConfig.description,
     images: ["/images/og-default.jpg"],
   },
@@ -80,7 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${lora.variable} ${manrope.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-mist-100 text-ink">
         {children}

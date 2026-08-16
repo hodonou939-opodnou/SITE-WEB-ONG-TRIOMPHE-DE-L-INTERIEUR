@@ -5,10 +5,10 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
   ...pageMetadata({
-    title: "Votre place est réservée — CIGIBM 2026",
+    title: "Votre place est réservée, CIGIBM 2026",
     description: "Confirmation de votre inscription au CIGIBM 2026.",
     path: "/cigibm-2026/merci",
-    image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026 — ${cigibm.nextEdition.theme}` },
+    image: { url: "/images/cigibm-poster.jpg", alt: `Affiche CIGIBM 2026, ${cigibm.nextEdition.theme}` },
   }),
   robots: { index: false },
 };
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const nextSteps = [
   {
     title: "Notez les dates maintenant",
-    description: `${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Mettez-les dans votre téléphone tout de suite — c'est le meilleur moyen de ne pas laisser la vie quotidienne reprendre le dessus.`,
+    description: `${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Mettez-les dans votre téléphone tout de suite, c'est le meilleur moyen de ne pas laisser la vie quotidienne reprendre le dessus.`,
   },
   {
     title: "Vous recevrez le programme détaillé",
@@ -49,7 +49,7 @@ export default function MerciPage() {
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-mist-100/85">
             Merci de nous faire confiance. C&apos;est souvent le pas le plus
-            difficile — et vous venez de le franchir.
+            difficile, et vous venez de le franchir.
           </p>
         </Reveal>
 

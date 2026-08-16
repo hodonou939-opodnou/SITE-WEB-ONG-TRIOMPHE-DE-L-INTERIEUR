@@ -5,7 +5,7 @@ const siteUrl = "https://ongtriomphedelinterieur.com";
 
 /**
  * Construit les métadonnées Open Graph / Twitter d'une page à partir de son
- * titre et sa description déjà définis — évite de dupliquer le boilerplate
+ * titre et sa description déjà définis, évite de dupliquer le boilerplate
  * social sur chaque page tout en gardant un partage correct par URL.
  */
 export function pageMetadata({
@@ -19,7 +19,7 @@ export function pageMetadata({
   path: string;
   image?: { url: string; alt: string };
 }): Metadata {
-  const fullTitle = `${title} — ${siteConfig.name}`;
+  const fullTitle = `${title}, ${siteConfig.name}`;
   const ogImage = image ?? { url: "/images/og-default.jpg", alt: siteConfig.name };
 
   return {

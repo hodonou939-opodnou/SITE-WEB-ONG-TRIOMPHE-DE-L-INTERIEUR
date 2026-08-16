@@ -31,7 +31,7 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-mist-50/10 bg-leaf-950 py-6 text-center text-xs text-mist-100/40">
-        © {new Date().getFullYear()} {siteConfig.name} — {siteConfig.location}
+        © {new Date().getFullYear()} {siteConfig.name}, {siteConfig.location}
       </footer>
     </>
   );

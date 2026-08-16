@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Avatar from "@/components/Avatar";
 import Hero from "@/components/Hero";
 import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
@@ -8,7 +9,7 @@ import ImagePlaceholder from "@/components/ImagePlaceholder";
 import Photo from "@/components/Photo";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import Reveal from "@/components/Reveal";
-import { cigibm, pressMentions } from "@/lib/content";
+import { cigibm, foundingStory, mentalHealthStats, pressMentions } from "@/lib/content";
 import { getGalleryImages, getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
 
@@ -31,12 +32,12 @@ export default function CigibmPage() {
     <>
       <Hero
         compact
-        eyebrow={cigibm.edition}
-        title={`${cigibm.acronym} — Thème « ${cigibm.theme} »`}
-        description={`Une fois par an, le ${cigibm.fullName} rassemble celles et ceux qui ont décidé de ne plus subir leurs blessures, mais de les traverser. Trois éditions, plus de 58 000 personnes touchées, et toujours la même règle : c'est gratuit.`}
+        eyebrow={`${cigibm.nextEdition.edition} · ${cigibm.nextEdition.dates}`}
+        title={`${cigibm.acronym}, Thème « ${cigibm.nextEdition.theme} »`}
+        description={`Une fois par an, le ${cigibm.fullName} rassemble celles et ceux qui ont décidé de ne plus subir leurs blessures, mais de les traverser. Trois éditions déjà tenues, plus de 58 000 personnes touchées, et toujours la même règle : c'est gratuit.`}
         actions={
           <Button href="/cigibm-2026" variant="primary">
-            Réserver ma place — édition 2026
+            Réserver ma place, édition 2026
           </Button>
         }
       />
@@ -46,24 +47,68 @@ export default function CigibmPage() {
         <div className="grid gap-6 sm:grid-cols-3">
           <Reveal className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Dates</p>
-            <p className="mt-2 font-display text-xl text-leaf-900">{cigibm.dates}</p>
+            <p className="mt-2 font-display text-xl text-leaf-900">{cigibm.nextEdition.dates}</p>
           </Reveal>
           <Reveal delay={0.08} className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Lieux</p>
-            <ul className="mt-2 space-y-1">
-              {cigibm.venues.map((v) => (
-                <li key={v} className="font-display text-base text-leaf-900">
-                  {v}
-                </li>
-              ))}
-            </ul>
+            <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Lieu</p>
+            <p className="mt-2 font-display text-base text-leaf-900">{cigibm.nextEdition.venue}</p>
           </Reveal>
           <Reveal delay={0.16} className="rounded-2xl border border-ink/8 bg-mist-50 p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Parrain</p>
-            <p className="mt-2 font-display text-xl text-leaf-900">{cigibm.sponsor}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">Participation</p>
+            <p className="mt-2 font-display text-xl text-leaf-900">Gratuite, sur inscription</p>
           </Reveal>
         </div>
       </Container>
+
+      {/* Founding story */}
+      <div className="bg-mist-warm">
+        <Container className="py-24 sm:py-28">
+          <div className="mx-auto max-w-3xl">
+            <Reveal>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
+                {foundingStory.eyebrow}
+              </p>
+              <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+                {foundingStory.title}
+              </h2>
+            </Reveal>
+            <div className="mt-8 space-y-5">
+              {foundingStory.paragraphs.map((p, i) => (
+                <Reveal key={i} delay={0.06 + i * 0.08}>
+                  <p className="text-base leading-relaxed text-ink/75 sm:text-lg">{p}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      {/* Why it matters, mental health data */}
+      <div className="bg-leaf-950">
+        <Container className="py-20 sm:py-24">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
+              Pourquoi c'est urgent
+            </p>
+            <h2 className="font-display text-2xl leading-snug text-mist-50 sm:text-3xl">
+              Le silence a un coût, humain et économique
+            </h2>
+          </Reveal>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {mentalHealthStats.map((stat, i) => (
+              <Reveal key={stat.label} delay={i * 0.08}>
+                <div className="flex h-full flex-col rounded-2xl border border-mist-50/10 bg-mist-50/5 p-6 text-center">
+                  <span className="font-display text-3xl text-leaf-300">{stat.value}</span>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-mist-100/80">
+                    {stat.label}
+                  </p>
+                  <p className="mt-3 text-xs text-mist-100/45">{stat.source}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </div>
 
       {/* Objective */}
       <div className="bg-mist-warm">
@@ -73,7 +118,7 @@ export default function CigibmPage() {
               {featured ? (
                 <Photo src={featured} alt="Congrès CIGIBM" ratio="aspect-[4/3]" />
               ) : (
-                <ImagePlaceholder label="Photo — Édition 2025" />
+                <ImagePlaceholder label="Photo, Édition 2025" />
               )}
             </Reveal>
             <Reveal delay={0.1}>
@@ -96,7 +141,7 @@ export default function CigibmPage() {
         <SectionHeading
           eyebrow="Programme"
           title="Deux jours pour se reconnecter à soi"
-          description="Le congrès alterne grands temps collectifs et formats plus intimes — pour que chacun trouve la porte d'entrée qui lui convient, qu'on ait envie de parler ou seulement d'écouter."
+          description="Le congrès alterne grands temps collectifs et formats plus intimes, pour que chacun trouve la porte d'entrée qui lui convient, qu'on ait envie de parler ou seulement d'écouter."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {cigibm.programme.map((item, i) => (
@@ -112,7 +157,7 @@ export default function CigibmPage() {
             {poster && (
               <div className="space-y-6">
                 <Reveal>
-                  <Photo src={poster} alt="Affiche — 4ème édition du CIGIBM" ratio="aspect-[4/5]" />
+                  <Photo src={poster} alt="Affiche, 4ème édition du CIGIBM" ratio="aspect-[4/5]" />
                 </Reveal>
                 {nextEditionPhotos.length > 0 && (
                   <Reveal delay={0.06}>
@@ -121,8 +166,8 @@ export default function CigibmPage() {
                     </p>
                     <PhotoCarousel
                       images={nextEditionPhotos}
-                      alt="Photo — préparatifs de la 4ème édition du CIGIBM"
-                      ratio="aspect-[16/10]"
+                      alt="Photo, préparatifs de la 4ème édition du CIGIBM"
+                      ratio="aspect-[4/5]"
                       className="rounded-2xl"
                     />
                   </Reveal>
@@ -134,7 +179,7 @@ export default function CigibmPage() {
                 À venir
               </p>
               <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
-                {cigibm.nextEdition.edition} — « {cigibm.nextEdition.theme} »
+                {cigibm.nextEdition.edition}, « {cigibm.nextEdition.theme} »
               </h2>
               <p className="mt-5 text-base text-mist-100/80">
                 {cigibm.nextEdition.dates} · {cigibm.nextEdition.venue}
@@ -166,8 +211,13 @@ export default function CigibmPage() {
               {featuredSpeakers.map((speaker, i) => (
                 <Reveal key={speaker.name} delay={i * 0.1}>
                   <div className="flex h-full flex-col rounded-2xl border border-ink/8 bg-mist-100 p-6 sm:p-8">
-                    <h3 className="font-display text-xl text-leaf-900">{speaker.name}</h3>
-                    <p className="mt-1 text-sm font-semibold text-leaf-600">{speaker.role}</p>
+                    <div className="flex items-center gap-4">
+                      <Avatar slug={speaker.slug} name={speaker.name} size={64} />
+                      <div>
+                        <h3 className="font-display text-xl text-leaf-900">{speaker.name}</h3>
+                        <p className="mt-1 text-sm font-semibold text-leaf-600">{speaker.role}</p>
+                      </div>
+                    </div>
                     {speaker.bio && (
                       <p className="mt-4 text-sm leading-relaxed text-ink/70">{speaker.bio}</p>
                     )}
@@ -178,65 +228,82 @@ export default function CigibmPage() {
           )}
 
           {otherSpeakers.length > 0 && (
-            <Reveal delay={0.15} className="mt-8 flex flex-wrap justify-center gap-2.5">
-              {otherSpeakers.map((speaker) => (
-                <span
-                  key={speaker.name}
-                  className="rounded-full border border-ink/12 bg-mist-100 px-4 py-2 text-sm text-ink/75"
-                >
-                  <span className="font-medium text-leaf-900">{speaker.name}</span>
-                  {" — "}
-                  {speaker.role}
-                </span>
-              ))}
-            </Reveal>
-          )}
-        </Container>
-      </div>
-
-      {/* Past editions — ordre antéchronologique : la plus récente d'abord */}
-      <div className="bg-mist-200">
-        <Container className="py-24 sm:py-28">
-          <SectionHeading eyebrow="Historique" title="Les éditions précédentes" />
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {[...cigibm.pastEditions].reverse().map((edition, i) => {
-              const editionPhotos = getGalleryImages(`cigibm-${edition.id}`);
-              return (
-                <Reveal key={edition.edition} delay={i * 0.08}>
-                  <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-ink/8 bg-mist-50">
-                    {editionPhotos.length > 0 ? (
-                      <PhotoCarousel
-                        images={editionPhotos}
-                        alt={`Photo — ${edition.edition} du CIGIBM`}
-                        ratio="aspect-[4/3]"
-                      />
-                    ) : (
-                      <ImagePlaceholder label={`Photos — ${edition.edition}`} ratio="aspect-[4/3]" />
-                    )}
-                    <div className="flex flex-1 flex-col p-6">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">
-                        {edition.year}
-                      </p>
-                      <h3 className="mt-2 font-display text-lg text-leaf-900">
-                        {edition.edition}
-                      </h3>
-                      <p className="mt-2 text-sm font-medium text-ink/80">
-                        Thème : « {edition.theme} »
-                      </p>
-                      <p className="mt-1 text-xs text-ink/50">{edition.location}</p>
-                      <p className="mt-3 text-sm font-medium text-leaf-700">
-                        {edition.attendance}
-                      </p>
-                      <p className="mt-3 flex-1 text-xs leading-relaxed text-ink/60">
-                        {edition.description}
-                      </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {otherSpeakers.map((speaker, i) => (
+                <Reveal key={speaker.name} delay={0.1 + i * 0.05}>
+                  <div className="flex items-center gap-3 rounded-2xl border border-ink/8 bg-mist-100 p-4">
+                    <Avatar slug={speaker.slug} name={speaker.name} size={48} />
+                    <div>
+                      <p className="font-medium text-leaf-900">{speaker.name}</p>
+                      <p className="text-xs text-ink/60">{speaker.role}</p>
                     </div>
                   </div>
                 </Reveal>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
+
+          <Reveal delay={0.2} className="mt-14 flex flex-col items-center gap-3 text-center">
+            <Button href="/cigibm-2026" variant="primary" className="!px-8 !py-4 !text-base">
+              Inscris-toi maintenant →
+            </Button>
+            <p className="text-sm font-medium text-leaf-700">
+              Seulement quelques places restantes
+            </p>
+          </Reveal>
         </Container>
+      </div>
+
+      {/* Past editions, ordre antéchronologique : la plus récente d'abord,
+          une section complète par édition plutôt que des cartes serrées */}
+      <div>
+        <Container className="pt-24 sm:pt-28">
+          <SectionHeading eyebrow="Historique" title="Les éditions précédentes" />
+        </Container>
+
+        {[...cigibm.pastEditions].reverse().map((edition, i) => {
+          const editionPhotos = getGalleryImages(`cigibm-${edition.id}`);
+          const editionBg = i % 2 === 0 ? "bg-mist-200" : "bg-mist-warm";
+          const imageFirst = i % 2 === 0;
+
+          return (
+            <div key={edition.edition} className={editionBg}>
+              <Container className="py-16 sm:py-20">
+                <div className="grid items-center gap-12 lg:grid-cols-2">
+                  <Reveal className={imageFirst ? "lg:order-1" : "lg:order-2"}>
+                    {editionPhotos.length > 0 ? (
+                      <PhotoCarousel
+                        images={editionPhotos}
+                        alt={`Photo, ${edition.edition} du CIGIBM`}
+                        ratio="aspect-[4/3]"
+                        className="rounded-[2rem]"
+                      />
+                    ) : (
+                      <ImagePlaceholder label={`Photos, ${edition.edition}`} ratio="aspect-[4/3]" />
+                    )}
+                  </Reveal>
+                  <Reveal delay={0.08} className={imageFirst ? "lg:order-2" : "lg:order-1"}>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">
+                      {edition.year} · {edition.location}
+                    </p>
+                    <h3 className="mt-2 font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+                      {edition.edition}
+                    </h3>
+                    <p className="mt-3 text-lg font-medium text-ink/80">
+                      Thème : « {edition.theme} »
+                    </p>
+                    <p className="mt-4 text-base font-semibold text-leaf-700">
+                      {edition.attendance}
+                    </p>
+                    <p className="mt-4 max-w-xl text-base leading-relaxed text-ink/70">
+                      {edition.description}
+                    </p>
+                  </Reveal>
+                </div>
+              </Container>
+            </div>
+          );
+        })}
       </div>
 
       {/* Press */}
