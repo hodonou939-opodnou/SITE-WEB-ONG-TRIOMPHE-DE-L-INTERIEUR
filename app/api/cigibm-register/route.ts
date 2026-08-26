@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { brevo } from "@/lib/content";
 import { buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
-
-// Numéros locaux béninois saisis sans indicatif (ex. "0196966501") : on
-// préfixe +229 par défaut, seul public visé par ce formulaire. Les numéros
-// déjà internationaux (+ ou 00) sont laissés tels quels.
-function normalizePhone(raw: string): string {
-  const cleaned = raw.replace(/[\s.\-()]/g, "");
-  if (cleaned.startsWith("+")) return cleaned;
-  if (cleaned.startsWith("00")) return `+${cleaned.slice(2)}`;
-  return `+229${cleaned}`;
-}
+import { normalizePhone } from "@/lib/phone";
 
 async function createBrevoContact(
   apiKey: string,
