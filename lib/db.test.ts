@@ -48,4 +48,31 @@ describe("AdminProfile auto-provisioning trigger", () => {
     expect(profile?.fullName).toBe("Trigger Test");
     expect(profile?.role).toBe("scanner");
   });
+
+  describe("when the new user has no full_name metadata and no email", () => {
+    const phoneOnlyUserId = "00000000-0000-0000-0000-000000000002";
+    const phone = "+10000000002";
+
+    afterAll(async () => {
+      await db.adminProfile.deleteMany({ where: { id: phoneOnlyUserId } });
+      await db.$executeRawUnsafe(`delete from auth.users where id = '${phoneOnlyUserId}'`);
+    });
+
+    it("still creates an AdminProfile row, falling back to the phone number", async () => {
+      // No raw_user_meta_data, no email — a phone-only signup. The original
+      // coalesce(full_name, email) had no final fallback, so this insert used
+      // to raise a NOT NULL violation on "AdminProfile"."fullName" and abort
+      // the whole transaction, silently preventing the auth user from being
+      // created at all.
+      await db.$executeRawUnsafe(`
+        insert into auth.users (id, phone)
+        values ('${phoneOnlyUserId}', '${phone}')
+      `);
+
+      const profile = await db.adminProfile.findUnique({ where: { id: phoneOnlyUserId } });
+      expect(profile).not.toBeNull();
+      expect(profile?.fullName).toBe(phone);
+      expect(profile?.role).toBe("scanner");
+    });
+  });
 });
