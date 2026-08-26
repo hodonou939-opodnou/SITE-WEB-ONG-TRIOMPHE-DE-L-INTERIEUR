@@ -156,12 +156,29 @@ export default async function BlogPostPage({
         </div>
         <Container className="relative -mt-24 pb-12 sm:-mt-28">
           <Reveal>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
-              {post.type === "article" ? "Article" : "Activité"} · {post.date} · {post.readTime} de lecture
-            </p>
             <h1 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl md:text-5xl">
               {post.title}
             </h1>
+            <div className="mt-6 flex items-center gap-3">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+                <Image
+                  src={post.authorAvatar}
+                  alt={post.author}
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              </div>
+              <div>
+                <p className="text-sm text-mist-50">
+                  <span className="font-semibold">{post.author}</span>{" "}
+                  <span className="text-mist-100/60">{post.authorRole}</span>
+                </p>
+                <p className="text-xs text-mist-100/50">
+                  {post.date} · {post.readTime} de lecture
+                </p>
+              </div>
+            </div>
           </Reveal>
         </Container>
       </section>

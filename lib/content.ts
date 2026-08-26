@@ -82,7 +82,7 @@ export const pressMentions = [
     excerpt:
       "Compte-rendu de l'édition 2025, qui a réuni des centaines de participants autour d'outils concrets pour sortir de la « prison émotionnelle et sentimentale ».",
     url: "https://economia24.bj/2025/11/30/cigibm-2025-christelle-gnimassou-pour-le-bien-etre-mental-de-tous/",
-    image: "/images/cigibm-edition-3/06.jpg",
+    image: "/images/author-christelle-gnimassou.jpg",
   },
   {
     outlet: "Chaire UNESCO Éducation & Santé",

@@ -5,7 +5,6 @@ import ImagePlaceholder from "@/components/ImagePlaceholder";
 import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
-import RegistrationPopup from "@/components/RegistrationPopup";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
@@ -97,8 +96,6 @@ export default async function Cigibm2026Page({
 
   return (
     <>
-      <RegistrationPopup />
-
       {/* Hero */}
       <section className="relative overflow-hidden bg-leaf-950">
         <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />

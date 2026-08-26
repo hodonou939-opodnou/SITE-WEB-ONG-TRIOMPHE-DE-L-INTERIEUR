@@ -26,6 +26,8 @@ export type BlogPost = {
   isoDate: string; // format ISO pour les métadonnées / JSON-LD
   readTime: string;
   author: string;
+  authorRole: string;
+  authorAvatar: string;
   featuredImage: { src: string; alt: string; credit?: string };
   body: BlogBlock[];
 };
@@ -40,7 +42,9 @@ export const blogPosts: BlogPost[] = [
     date: "16 août 2026",
     isoDate: "2026-08-16",
     readTime: "6 min",
-    author: "ONG Triomphe de l'Intérieur",
+    author: "Coach Christelle Gnimassou",
+    authorRole: "Présidente-fondatrice, Triomphe de l'Intérieur",
+    authorAvatar: "/images/author-christelle-gnimassou.jpg",
     featuredImage: {
       src: "/images/blog-mental-femme-celibataire.jpg",
       alt: "Portrait d'une femme pensive, le visage posé sur ses mains",
