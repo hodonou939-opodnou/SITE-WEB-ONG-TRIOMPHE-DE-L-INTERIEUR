@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { brevo } from "@/lib/content";
+import { db } from "@/lib/db";
 import { buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/phone";
 
@@ -73,6 +74,29 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Brevo request failed", err);
     return NextResponse.redirect(`${origin}/cigibm-2026?erreur=1#inscription`, 303);
+  }
+
+  // Deuxième écriture, additive : la CRM a besoin d'un Participant en base,
+  // mais un échec ici ne doit jamais faire échouer l'inscription elle-même
+  // (Brevo reste la preuve d'inscription tant que ce n'est pas le cas).
+  try {
+    const edition4 = await db.edition.findUnique({ where: { number: 4 } });
+    if (edition4) {
+      await db.participant.create({
+        data: {
+          editionId: edition4.id,
+          fullName: name,
+          phone,
+          email,
+          consent: true,
+          registrationSource: "form",
+        },
+      });
+    } else {
+      console.error("Edition 4 not found, skipping Participant creation");
+    }
+  } catch (err) {
+    console.error("Participant creation failed", err);
   }
 
   // L'envoi de l'email de confirmation ne doit jamais faire échouer
