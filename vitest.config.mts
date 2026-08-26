@@ -14,6 +14,13 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
+    // Vitest gives each test file its own module registry, so lib/db.ts's
+    // globalForPrisma memoization doesn't dedupe across files: every
+    // DB-touching test file opens its own PrismaPg pool against Supabase's
+    // remote pgbouncer endpoint, concurrently. Cold-start warm-up across
+    // several such files can exceed the 5s default. Do not lower this back
+    // down without addressing that root cause first.
+    testTimeout: 20000,
   },
   resolve: {
     alias: {
