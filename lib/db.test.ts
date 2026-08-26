@@ -28,3 +28,24 @@ describe("database connection and Edition seed", () => {
     expect(edition4.dates).toBe("17 et 18 octobre 2026");
   });
 });
+
+describe("AdminProfile auto-provisioning trigger", () => {
+  const testUserId = "00000000-0000-0000-0000-000000000001";
+
+  afterAll(async () => {
+    await db.adminProfile.deleteMany({ where: { id: testUserId } });
+    await db.$executeRawUnsafe(`delete from auth.users where id = '${testUserId}'`);
+  });
+
+  it("creates an AdminProfile row when a new auth.users row is inserted", async () => {
+    await db.$executeRawUnsafe(`
+      insert into auth.users (id, email, raw_user_meta_data)
+      values ('${testUserId}', 'trigger-test@test.plan.example', '{"full_name": "Trigger Test"}'::jsonb)
+    `);
+
+    const profile = await db.adminProfile.findUnique({ where: { id: testUserId } });
+    expect(profile).not.toBeNull();
+    expect(profile?.fullName).toBe("Trigger Test");
+    expect(profile?.role).toBe("scanner");
+  });
+});
