@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { siteConfig } from "@/lib/content";
-import RegistrationPopup from "@/components/RegistrationPopup";
 
 // Polices auto-hébergées (variable fonts) plutôt que next/font/google : évite
 // toute dépendance au CDN Google Fonts au moment du build, Next.js a déjà
@@ -84,7 +83,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${displayFont.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-mist-100 text-ink">
-        <RegistrationPopup />
         {children}
       </body>
     </html>

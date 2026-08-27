@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/content";
 import { getLogoSrc } from "@/lib/media";
+import RegistrationPopup from "@/components/RegistrationPopup";
 
 // Layout "tunnel" : volontairement dépouillé de la navigation complète du
 // site. Une seule sortie discrète vers l'accueil, aucun menu qui détourne
@@ -33,6 +34,8 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
       <footer className="border-t border-mist-50/10 bg-leaf-950 py-6 text-center text-xs text-mist-100/40">
         © {new Date().getFullYear()} {siteConfig.name}, {siteConfig.location}
       </footer>
+
+      <RegistrationPopup />
     </>
   );
 }
