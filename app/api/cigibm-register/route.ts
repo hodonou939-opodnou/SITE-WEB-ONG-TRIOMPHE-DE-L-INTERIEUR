@@ -4,6 +4,17 @@ import { db } from "@/lib/db";
 import { buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/phone";
 
+// Cette route enchaîne jusqu'à trois attentes bornées côté DB (Task 8) : la
+// résolution de l'édition, l'upsert Participant, puis — depuis Task 9 —
+// l'écriture logMessage() à l'intérieur de sendTransactionalEmail(). Chacune
+// porte son propre plafond d'environ 8-10s ; dans le pire des cas, la chaîne
+// dépasse le timeout par défaut de la plateforme avant même que le repli
+// applicatif borné n'ait pu s'exécuter. maxDuration donne à ce repli la
+// marge nécessaire pour réellement s'exécuter avant que la plateforme ne
+// tue la fonction (cf. Finding 4 de la revue finale — ne pas réintroduire
+// after(), déjà écarté au Task 8 pour des raisons de testabilité).
+export const maxDuration = 60;
+
 async function createBrevoContact(
   apiKey: string,
   payload: { email: string; attributes: Record<string, unknown>; listIds: number[] }
