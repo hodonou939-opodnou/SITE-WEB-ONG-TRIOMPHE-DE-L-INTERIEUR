@@ -14,22 +14,34 @@ export default function ComposeForm() {
     setResult(null);
 
     const form = new FormData(e.currentTarget);
-    const res = await fetch("/api/admin/messages/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        channel: form.get("channel"),
-        editionNumber: Number(form.get("editionNumber")),
-        onlyNonAttendees: form.get("onlyNonAttendees") === "on",
-        message: form.get("message"),
-        batchLabel: form.get("batchLabel"),
-      }),
-    });
 
-    const json = await res.json();
-    setSending(false);
-    setResult(`Envoyé à ${json.sentCount} / ${json.totalRecipients} destinataires.`);
-    router.refresh();
+    try {
+      const res = await fetch("/api/admin/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: form.get("channel"),
+          editionNumber: Number(form.get("editionNumber")),
+          onlyNonAttendees: form.get("onlyNonAttendees") === "on",
+          message: form.get("message"),
+          batchLabel: form.get("batchLabel"),
+        }),
+      });
+
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => null);
+        setResult(errorJson?.error ?? "L'envoi a échoué. Merci de réessayer.");
+        return;
+      }
+
+      const json = await res.json();
+      setResult(`Envoyé à ${json.sentCount} / ${json.totalRecipients} destinataires.`);
+      router.refresh();
+    } catch {
+      setResult("L'envoi a échoué : connexion interrompue ou session expirée. Merci de réessayer.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
