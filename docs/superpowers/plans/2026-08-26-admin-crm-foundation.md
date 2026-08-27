@@ -2297,10 +2297,11 @@ git commit -m "feat: add messages dashboard grouped by batch"
 
 ## After this plan ships (manual, one-time, not a task)
 
-1. In Supabase Dashboard → Authentication → Users → **Invite user**, create the first real admin account (Christelle, or whoever runs the team).
-2. Open Prisma Studio (`npm run db:studio`), find that user's `AdminProfile` row, set `role` to `admin` and (for whoever will test the QR flow before Oct 17) `testBypass` to `true`.
-3. Add the four Supabase env vars to Vercel's Production environment (see Prerequisite section) and redeploy.
-4. Confirm login works end-to-end against the live site, not just `localhost`.
+1. In Supabase Dashboard → Authentication → Providers, **disable public sign-ups** (or explicitly confirm they're already disabled). `requireAdmin()` now rejects any session whose `AdminProfile.role` isn't `admin`, but the Postgres trigger from Task 4 still auto-creates an `AdminProfile` with role `scanner` for every row inserted into `auth.users` — if public sign-up is left enabled, self-registered users can still create accounts and reach `/admin/login` (they just land on `scanner`, not `admin`, and get bounced). This toggle is Supabase-side and cannot be verified or changed from this codebase, so it must be checked manually.
+2. In Supabase Dashboard → Authentication → Users → **Invite user**, create the first real admin account (Christelle, or whoever runs the team).
+3. Open Prisma Studio (`npm run db:studio`), find that user's `AdminProfile` row, and set `role` to `admin` — it must be changed manually; the auto-provisioning trigger leaves every new row at its default `scanner`, which `requireAdmin()` now rejects. Also set `testBypass` to `true` (for whoever will test the QR flow before Oct 17).
+4. Add the four Supabase env vars to Vercel's Production environment (see Prerequisite section) and redeploy.
+5. Confirm login works end-to-end against the live site, not just `localhost`.
 
 ## Spec sections covered by this plan
 

@@ -30,11 +30,17 @@ describe("getAdminSession", () => {
 
   it("returns the matching AdminProfile fields when a session exists", async () => {
     mockGetClaims.mockResolvedValue({ data: { claims: { sub: "user-123" } }, error: null });
-    mockFindUnique.mockResolvedValue({ id: "user-123", fullName: "Christelle", role: "admin" });
+    mockFindUnique.mockResolvedValue({
+      id: "user-123",
+      fullName: "Christelle",
+      role: "admin",
+      testBypass: true,
+    });
 
     const session = await getAdminSession();
 
     expect(session).toEqual({ id: "user-123", fullName: "Christelle", role: "admin" });
+    expect(session).not.toHaveProperty("testBypass");
     expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "user-123" } });
   });
 });
