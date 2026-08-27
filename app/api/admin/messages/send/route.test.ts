@@ -6,6 +6,12 @@ vi.mock("@/lib/admin/auth", () => ({
   requireAdmin: async () => ({ id: "admin-1", fullName: "Admin Test", role: "admin" }),
 }));
 
+// Sans ce stub, sendSms() court-circuite vers { ok: false } dès que
+// BREVO_API_KEY est absente du process, et le fetch mocké plus bas n'est
+// jamais atteint. Même pattern déjà utilisé dans lib/messaging/sms.test.ts
+// et app/api/cigibm-register/route.test.ts pour la même raison.
+vi.stubEnv("BREVO_API_KEY", "test-key");
+
 // Domaine distinct de celui des autres fichiers de test (cf.
 // app/api/cigibm-register/route.test.ts, lib/admin/participants.test.ts) :
 // Vitest exécute les fichiers en parallèle contre la même base partagée, et
