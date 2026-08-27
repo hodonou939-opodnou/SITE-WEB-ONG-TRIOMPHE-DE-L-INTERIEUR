@@ -30,6 +30,12 @@ function buildRequest(fields: Record<string, string>) {
 describe("POST /api/cigibm-register", () => {
   afterEach(async () => {
     await db.participant.deleteMany({ where: { email: { endsWith: TEST_EMAIL_DOMAIN } } });
+    // Task 9 added logging to sendTransactionalEmail (lib/email.ts): every
+    // POST here that reaches the confirmation-email step now also writes a
+    // real MessagingLog row (fetch is mocked, but logMessage()/db aren't).
+    // Without this, those rows accumulate in the shared Supabase instance
+    // on every test run.
+    await db.messagingLog.deleteMany({ where: { recipientEmail: { endsWith: TEST_EMAIL_DOMAIN } } });
     vi.restoreAllMocks();
   });
 

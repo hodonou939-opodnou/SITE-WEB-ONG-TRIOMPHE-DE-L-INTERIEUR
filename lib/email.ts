@@ -1,4 +1,5 @@
 import { cigibm, siteConfig } from "./content";
+import { logMessage } from "./messaging/log";
 
 const SITE_URL = "https://ongtriomphedelinterieur.com";
 const LOGO_URL = `${SITE_URL}/images/logo-mark.png`;
@@ -150,7 +151,8 @@ const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" }
 export async function sendTransactionalEmail(
   apiKey: string,
   to: { email: string; name?: string },
-  message: { subject: string; html: string }
+  message: { subject: string; html: string },
+  meta?: { participantId?: string; batchId?: string; batchLabel?: string; sentByAdminId?: string }
 ) {
   async function attempt(sender: { name: string; email: string }) {
     return fetch("https://api.brevo.com/v3/smtp/email", {
@@ -177,5 +179,30 @@ export async function sendTransactionalEmail(
     console.warn("Primary sender failed, retrying with fallback", res.status, body);
     res = await attempt(FALLBACK_SENDER);
   }
+
+  const responseBody = await res.clone().json().catch(() => null);
+
+  // logMessage() writing to Postgres is a separate failure mode from the
+  // Brevo send itself: if it throws, that must not stop us from returning
+  // the already-computed `res` (the caller — app/api/cigibm-register's
+  // confirmation-email block — decides success/failure from `res.ok`, and
+  // shouldn't see a logging outage misreported as an email-send outage).
+  try {
+    await logMessage({
+      channel: "email",
+      recipientEmail: to.email,
+      subject: message.subject,
+      status: res.ok ? "sent" : "failed",
+      providerMessageId: responseBody?.messageId,
+      errorMessage: res.ok ? undefined : await res.clone().text().catch(() => "unknown error"),
+      participantId: meta?.participantId,
+      batchId: meta?.batchId,
+      batchLabel: meta?.batchLabel,
+      sentByAdminId: meta?.sentByAdminId,
+    });
+  } catch (err) {
+    console.error("logMessage failed for transactional email", err);
+  }
+
   return res;
 }
