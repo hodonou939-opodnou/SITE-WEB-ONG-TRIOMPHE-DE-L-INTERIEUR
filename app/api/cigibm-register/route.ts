@@ -79,11 +79,25 @@ export async function POST(request: NextRequest) {
   // Deuxième écriture, additive : la CRM a besoin d'un Participant en base,
   // mais un échec ici ne doit jamais faire échouer l'inscription elle-même
   // (Brevo reste la preuve d'inscription tant que ce n'est pas le cas).
+  //
+  // upsert sur (édition, email) plutôt qu'un simple create : une
+  // resoumission du même formulaire — y compris le cas « duplicate_parameter
+  // sur l'email seul » ci-dessus, que Brevo traite comme un succès et qui
+  // retombe donc ici comme une inscription normale — met à jour la ligne
+  // existante au lieu d'en créer une seconde (double comptage au dashboard,
+  // double message une fois la messagerie branchée, deux jetons de présence
+  // valides pour la même personne). email est garanti non vide à ce stade
+  // (validé en tête de fonction), donc pas de cas « email null » à gérer
+  // pour cette route précise.
   try {
+    // La clé composite (editionId, email) de l'upsert exige un editionId
+    // entier littéral — Prisma ne permet pas d'y substituer un connect
+    // imbriqué sur edition.number — d'où cette résolution préalable.
     const edition4 = await db.edition.findUnique({ where: { number: 4 } });
     if (edition4) {
-      await db.participant.create({
-        data: {
+      await db.participant.upsert({
+        where: { editionId_email: { editionId: edition4.id, email } },
+        create: {
           editionId: edition4.id,
           fullName: name,
           phone,
@@ -91,12 +105,17 @@ export async function POST(request: NextRequest) {
           consent: true,
           registrationSource: "form",
         },
+        update: {
+          fullName: name,
+          phone,
+          consent: true,
+        },
       });
     } else {
-      console.error("Edition 4 not found, skipping Participant creation");
+      console.error("Edition 4 not found, skipping Participant creation", { email, name });
     }
   } catch (err) {
-    console.error("Participant creation failed", err);
+    console.error("Participant creation failed", { email, name }, err);
   }
 
   // L'envoi de l'email de confirmation ne doit jamais faire échouer

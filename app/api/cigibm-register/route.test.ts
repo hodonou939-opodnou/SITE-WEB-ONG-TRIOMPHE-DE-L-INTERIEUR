@@ -51,7 +51,11 @@ describe("POST /api/cigibm-register", () => {
 
   it("still redirects to /merci even when the Participant write fails", async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
-    vi.spyOn(db.participant, "create").mockRejectedValueOnce(new Error("DB is down"));
+    // La route écrit via upsert (voir plus bas), pas via create : c'est donc
+    // upsert qu'il faut faire échouer ici pour exercer le vrai chemin de
+    // code — un mock sur create ne serait jamais appelé et ne prouverait
+    // rien.
+    vi.spyOn(db.participant, "upsert").mockRejectedValueOnce(new Error("DB is down"));
 
     const { POST } = await import("./route");
     const response = await POST(
@@ -60,5 +64,41 @@ describe("POST /api/cigibm-register", () => {
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+  });
+
+  it("does not create a second Participant row when the same person resubmits", async () => {
+    // Simule une vraie resoumission : premier appel de création de contact
+    // Brevo accepté (201), second rejeté en double (email ET SMS déjà
+    // connus) — exactement la branche « duplicate on email alone => treat
+    // as success » de la route, qui laisse le code continuer jusqu'à
+    // l'écriture Participant comme pour une inscription normale. Seul
+    // l'endpoint /v3/contacts varie ; /v3/smtp/email (email de confirmation)
+    // répond toujours 201 pour ne pas polluer ce test avec un échec email
+    // qui n'a rien à voir avec ce qui est testé ici.
+    let contactCalls = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        contactCalls += 1;
+        if (contactCalls === 1) {
+          return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+        }
+        return new Response(
+          JSON.stringify({ code: "duplicate_parameter", metadata: { duplicate_identifiers: ["email", "SMS"] } }),
+          { status: 400 }
+        );
+      }
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `resubmit${TEST_EMAIL_DOMAIN}`;
+    const fields = { name: "Resubmitting Person", phone: "0100000013", email, consent: "1" };
+
+    await POST(buildRequest(fields));
+    await POST(buildRequest(fields));
+
+    const rows = await db.participant.findMany({ where: { email } });
+    expect(rows).toHaveLength(1);
   });
 });
