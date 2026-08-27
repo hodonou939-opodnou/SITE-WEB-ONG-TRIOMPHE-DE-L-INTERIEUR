@@ -1,16 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { cigibm } from "@/lib/content";
 
 const SHOWN_KEY = "cigibm2026-popup-shown";
 const TRIGGER_SCROLL_RATIO = 0.35;
 const TRIGGER_DELAY_MS = 8000;
+// La page dédiée à l'inscription EST déjà l'action qu'on voudrait pousser
+// via ce popup — l'y afficher serait redondant, voire agaçant.
+const SUPPRESSED_PATHS = ["/cigibm-2026/inscription"];
 
 export default function RegistrationPopup() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const suppressed = SUPPRESSED_PATHS.includes(pathname);
 
   useEffect(() => {
+    if (suppressed) return;
     if (sessionStorage.getItem(SHOWN_KEY)) return;
 
     let shown = false;
@@ -45,7 +52,7 @@ export default function RegistrationPopup() {
       document.removeEventListener("mouseleave", onMouseLeave);
       clearTimeout(timer);
     };
-  }, []);
+  }, [suppressed]);
 
   function dismiss() {
     setOpen(false);
