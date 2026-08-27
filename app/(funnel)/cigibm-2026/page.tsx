@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Reveal from "@/components/Reveal";
 import Photo from "@/components/Photo";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
 import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
+import ReferralCapture from "@/components/ReferralCapture";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
@@ -96,6 +98,9 @@ export default async function Cigibm2026Page({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ReferralCapture />
+      </Suspense>
       {/* Hero */}
       <section className="relative overflow-hidden bg-leaf-950">
         <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
