@@ -23,6 +23,22 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 // already approach/exceed 5s under parallel test-file load; these timeouts
 // exist to turn "hangs forever" into "fails after single-digit seconds",
 // not to police normal latency.
+//
+// `after()` (next/server) a été envisagé pour ce même problème : il aurait
+// supprimé la latence résiduelle en renvoyant la réponse (email de
+// confirmation compris) avant même de lancer l'écriture Participant.
+// Rejeté après investigation, pas par principe : `after()` lève
+// systématiquement une erreur (« called outside a request scope ») dès
+// qu'il est appelé en dehors du pipeline de requête réel de Next.js — or
+// tous les tests de ce dépôt invoquent les route handlers directement
+// (`await POST(request)`), sans serveur Next réel. Le problème n'est donc
+// pas que `after()` ne fonctionnerait pas en production ; c'est qu'il
+// rendrait ce chemin de code invérifiable avec le style de test actuel,
+// sans construire une infrastructure de test d'intégration (serveur réel,
+// requêtes HTTP) qui n'existe nulle part ailleurs dans ce projet. Ces
+// timeouts sont donc le compromis délibéré retenu à la place. Ne pas les
+// retirer en les croyant arbitraires, et ne pas retenter `after()` sans
+// relire ce commentaire d'abord.
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
   connectionTimeoutMillis: 10_000,
