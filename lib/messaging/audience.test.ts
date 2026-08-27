@@ -17,6 +17,12 @@ describe("resolveAudience", () => {
 
   it("returns every participant of the given édition by default", async () => {
     const edition4 = await db.edition.findUniqueOrThrow({ where: { number: 4 } });
+    // Édition 2 délibérément : ni édition 4 (déjà les fixtures « cible » de
+    // ce test), ni édition 1 (réservée à app/api/admin/messages/send/route.test.ts,
+    // qui compte TOUS les participants de cette édition sans filtre de
+    // domaine — y ajouter une fixture ferait dériver son sentCount attendu).
+    // Éditions 2 et 3 ne sont utilisées par aucune autre fixture du plan.
+    const edition2 = await db.edition.findUniqueOrThrow({ where: { number: 2 } });
     await db.participant.createMany({
       data: [
         {
@@ -34,6 +40,13 @@ describe("resolveAudience", () => {
           email: `notatt${TEST_EMAIL_DOMAIN}`,
           registrationSource: "form",
         },
+        {
+          editionId: edition2.id,
+          fullName: "Audience Other Edition",
+          phone: "+2290100000025",
+          email: `otheredition${TEST_EMAIL_DOMAIN}`,
+          registrationSource: "form",
+        },
       ],
     });
 
@@ -41,6 +54,9 @@ describe("resolveAudience", () => {
 
     expect(audience.some((p) => p.fullName === "Audience Attended")).toBe(true);
     expect(audience.some((p) => p.fullName === "Audience Not Attended")).toBe(true);
+    // Preuve indépendante du scoping par édition : sans filtre editionId
+    // effectif, ce participant d'une autre édition apparaîtrait aussi ici.
+    expect(audience.some((p) => p.fullName === "Audience Other Edition")).toBe(false);
   });
 
   it("excludes participants who already attended when onlyNonAttendees is true", async () => {
