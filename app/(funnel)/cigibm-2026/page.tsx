@@ -163,15 +163,15 @@ export default async function Cigibm2026Page({
             </dl>
           </Reveal>
 
-          <div className="order-1 lg:order-2">
-            <Reveal delay={0.1} scale>
+          <div className="order-1 flex flex-col gap-8 lg:order-2">
+            <Reveal delay={0.1} scale className="order-2 lg:order-1">
               {poster ? (
                 <Photo src={poster} alt="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
               ) : (
                 <ImagePlaceholder label="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
               )}
             </Reveal>
-            <Reveal delay={0.16} scale className="mt-8">
+            <Reveal delay={0.16} scale className="order-1 lg:order-2">
               {erreur && (
                 <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                   Une erreur est survenue, votre inscription n&apos;a pas pu être

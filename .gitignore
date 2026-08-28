@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# generated at build/dev time by scripts/generate-media-manifest.mjs
+/lib/media-manifest.generated.json
+
 # production
 /build
 

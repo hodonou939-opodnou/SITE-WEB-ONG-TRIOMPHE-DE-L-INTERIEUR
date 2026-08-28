@@ -109,7 +109,7 @@ describe("POST /api/ambassador-signup", () => {
   it("still creates the ambassador and redirects to success even when the admin notification fails", async () => {
     global.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const body = JSON.parse(init?.body as string);
-      if (body.to[0].email === "ongtriomphedelinterieur@gmail.com" || body.subject?.includes("À valider")) {
+      if (body.subject?.includes("À valider")) {
         return new Response("server error", { status: 500 });
       }
       return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });

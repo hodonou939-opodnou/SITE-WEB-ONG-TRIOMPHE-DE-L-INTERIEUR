@@ -59,8 +59,8 @@ function emailShell(content: string) {
 </html>`;
 }
 
-function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" = "primary") {
-  const background = variant === "whatsapp" ? "#25d366" : "#3684c4";
+function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" | "tiktok" = "primary") {
+  const background = variant === "whatsapp" ? "#25d366" : variant === "tiktok" ? "#000000" : "#3684c4";
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px auto 0;">
     <tr>
       <td style="background:${background}; border-radius:999px;">
@@ -135,10 +135,26 @@ export function buildReminderEmail(firstName: string) {
   };
 }
 
+// Deux visuels possibles pour le partage : l'affiche officielle et la
+// photo de Coach Christelle (seringue en forme de cœur, tirée de la
+// campagne "Le vaccin de la dépression"). Un seul par email, tiré au
+// hasard, pour varier ce que voient les proches invités d'un ambassadeur
+// à l'autre plutôt que de toujours montrer le même visuel.
+const AMBASSADOR_SHARE_IMAGES = [
+  { path: "/images/cigibm-poster.jpg", alt: "Affiche officielle, CIGIBM 2026" },
+  { path: "/images/christelle-avec-le-vaccin.jpg", alt: "Coach Christelle, campagne « Le vaccin de la dépression »" },
+];
+
 export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string) {
   const first = fullName.split(/\s+/)[0];
   const shareMessage = `Je vous invite au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Réservez votre place gratuite ici : ${referralUrl}`;
   const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+  // TikTok, contrairement à WhatsApp, n'expose aucun lien web permettant de
+  // pré-remplir une publication (légende, image) depuis un tiers — ce
+  // bouton ouvre simplement l'espace de publication, l'image ci-dessous
+  // reste à enregistrer et joindre à la main.
+  const tiktokUploadUrl = "https://www.tiktok.com/upload";
+  const shareImage = AMBASSADOR_SHARE_IMAGES[Math.floor(Math.random() * AMBASSADOR_SHARE_IMAGES.length)];
 
   const html = emailShell(`
     <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
@@ -149,6 +165,16 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
     </h1>
     <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
       Sauvez des vies. Invitez vos proches au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Chaque personne qui s&apos;inscrit grâce à vous compte.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; border-radius:14px; overflow:hidden;">
+      <tr>
+        <td>
+          <img src="${SITE_URL}${shareImage.path}" alt="${shareImage.alt}" width="520" style="display:block; width:100%; max-width:520px; height:auto; border-radius:14px;" />
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 20px; font-size:13px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif; text-align:center;">
+      Enregistrez cette image et joignez-la à votre message quand vous partagez votre lien — sur WhatsApp, TikTok, ou ailleurs.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px; background:#f9fbf9; border:1.5px dashed #307335; border-radius:14px; font-family:Arial, sans-serif;">
       <tr>
@@ -164,6 +190,11 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
       <tr>
         <td align="center" style="padding:6px 0 8px;">
           ${ctaButton("Partager sur WhatsApp", whatsappShareUrl, "whatsapp")}
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding:6px 0 8px;">
+          ${ctaButton("Partager sur TikTok", tiktokUploadUrl, "tiktok")}
         </td>
       </tr>
     </table>
@@ -312,23 +343,30 @@ export function buildReminderCampaignHtml() {
   `);
 }
 
-// siteConfig.email (ongtriomphedelinterieur@gmail.com) n'est PAS un
-// expéditeur validé dans Brevo (confirmé via GET /v3/senders : "active":
-// false). Résultat concret, vérifié en direct pendant cette session : un
-// envoi avec cet expéditeur répond quand même 201 Created avec un
-// messageId normal — Brevo n'expose ce rejet que de façon asynchrone (API
-// Events), jamais dans la réponse HTTP synchrone. Le repli ci-dessous sur
-// `!res.ok` ne peut donc JAMAIS se déclencher pour ce cas précis : chaque
-// envoi avec siteConfig.email comme expéditeur échouait silencieusement
-// tout en étant journalisé "sent" côté application — des inscrits réels
-// n'ont jamais reçu leur confirmation à cause de ça. hodonou939@gmail.com
-// est le seul expéditeur confirmé actif ; il est donc désormais
-// l'expéditeur principal, pas le repli. Ne pas remettre siteConfig.email
-// en position PRIMARY_SENDER sans d'abord confirmer via GET
-// https://api.brevo.com/v3/senders que son "active" est repassé à true
-// (validation manuelle requise dans le compte Brevo).
-const PRIMARY_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" };
-const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou@a6ko.com" };
+// Le domaine ongtriomphedelinterieur.com est authentifié dans Brevo
+// (SPF/DKIM/DMARC vérifiés via GET /v3/senders/domains, "authenticated":
+// true) — contact@ongtriomphedelinterieur.com peut donc servir
+// d'expéditeur sans validation individuelle. Confirmé par un envoi réel
+// pendant cette session : événement "delivered" reçu côté Brevo (API
+// Events), pas seulement une réponse HTTP 201 — un 201 seul ne prouve
+// rien, cf. l'incident ci-dessous.
+//
+// hodonou939@gmail.com reste le repli : c'est l'expéditeur validé qui a
+// permis de diagnostiquer et corriger un vrai incident de production plus
+// tôt dans cette session — siteConfig.email pointait alors vers
+// ongtriomphedelinterieur@gmail.com, un expéditeur JAMAIS validé dans
+// Brevo ("active": false). Brevo avait quand même répondu 201 Created
+// avec un messageId normal à chaque envoi ; le rejet n'apparaissait que
+// dans l'API Events, jamais dans la réponse HTTP synchrone — le repli
+// `!res.ok` ci-dessous ne pouvait donc jamais se déclencher. Des inscrits
+// réels n'ont pas reçu leur confirmation à cause de ça. Ne pas faire
+// confiance à un 201 seul pour un nouvel expéditeur : toujours vérifier
+// via GET /v3/senders (sender individuel) ou GET
+// /v3/senders/domains/<domaine> ("authenticated": true), puis confirmer
+// par un envoi réel suivi d'un événement "delivered" dans
+// GET /v3/smtp/statistics/events avant de le mettre en PRIMARY_SENDER.
+const PRIMARY_SENDER = { name: siteConfig.name, email: siteConfig.email };
+const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" };
 
 export async function sendTransactionalEmail(
   apiKey: string,

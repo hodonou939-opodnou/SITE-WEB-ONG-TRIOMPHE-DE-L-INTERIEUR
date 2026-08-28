@@ -1,28 +1,27 @@
-// Détection automatique des visuels déposés dans public/images.
-// Ces fonctions ne s'exécutent que côté serveur (composants serveur / layout).
+// Détection automatique des visuels déposés dans public/images, résolue au
+// moment du build plutôt qu'à la requête.
+//
+// scripts/generate-media-manifest.mjs scanne public/images/ et écrit
+// media-manifest.generated.json ; predev/prebuild (package.json) le
+// régénèrent avant chaque next dev / next build. L'ancienne implémentation
+// appelait fs.existsSync()/fs.readdirSync() directement depuis une route
+// serveur Vercel — @vercel/nft ne peut pas déduire d'un chemin fs
+// dynamique (`${name}${ext}`) quels fichiers inclure dans le bundle de la
+// fonction serverless, ce qui faisait retomber l'affiche CIGIBM (et
+// potentiellement toute autre image nommée) sur ImagePlaceholder de façon
+// intermittente en production, selon l'instance serverless traitant la
+// requête — alors que le fichier était bien présent et servi correctement
+// en tant qu'asset statique. Un import JSON statique, contrairement à un
+// chemin fs dynamique, est correctement tracé et embarqué par le bundler :
+// plus aucun accès fs au moment de la requête.
+import manifest from "./media-manifest.generated.json";
 
-import fs from "node:fs";
-import path from "node:path";
-
-const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".svg"];
-
-function imagesDir(...segments: string[]) {
-  return path.join(process.cwd(), "public", "images", ...segments);
-}
+const namedImages: Record<string, string> = manifest.named;
+const galleries: Record<string, string[]> = manifest.galleries;
 
 /** Renvoie le chemin public de public/images/{name}.* s'il existe, sinon null. */
 export function getNamedImage(name: string): string | null {
-  // Scope volontairement restreint à public/images : accès bon marché, sans
-  // risque, mais l'analyse statique de Turbopack ne peut pas le déduire d'un
-  // chemin dynamique, on l'exempte donc explicitement du tracing du build.
-  const dir = imagesDir();
-  if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) return null;
-  for (const ext of IMAGE_EXTENSIONS) {
-    const file = `${name}${ext}`;
-    const filePath = path.join(/*turbopackIgnore: true*/ dir, file);
-    if (fs.existsSync(/*turbopackIgnore: true*/ filePath)) return `/images/${file}`;
-  }
-  return null;
+  return namedImages[name] ?? null;
 }
 
 /** Renvoie le chemin public du logo (public/images/logo.*) s'il existe, sinon null. */
@@ -32,11 +31,5 @@ export function getLogoSrc(): string | null {
 
 /** Renvoie tous les chemins publics des images d'un sous-dossier (ex. "cigibm"). */
 export function getGalleryImages(subdir: string): string[] {
-  const dir = imagesDir(subdir);
-  if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) return [];
-  return fs
-    .readdirSync(/*turbopackIgnore: true*/ dir)
-    .filter((f) => IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase()))
-    .sort()
-    .map((f) => `/images/${subdir}/${f}`);
+  return galleries[subdir] ?? [];
 }

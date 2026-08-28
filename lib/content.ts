@@ -16,7 +16,7 @@ export const siteConfig = {
   founder: "Christelle Eugénie Gnimassou",
   founderTitle: "Présidente-fondatrice & coach",
   location: "Godomey, Abomey-Calavi, Bénin", // [PLACEHOLDER] adresse précise à confirmer
-  email: "ongtriomphedelinterieur@gmail.com",
+  email: "contact@ongtriomphedelinterieur.com",
   phone: "01 68 28 06 75",
   phoneHref: "tel:+2290168280675",
   social: {
@@ -235,7 +235,7 @@ export const cigibm = {
     id: "edition-4",
     edition: "4ème édition",
     theme: "Le vaccin de la dépression",
-    dates: "17 et 18 octobre 2026",
+    dates: "17 octobre 2026",
     venue: "Palais des Congrès de Cotonou",
     note: "Participation gratuite sur inscription.",
     registrationPhones: ["+229 01 68 28 06 75", "+229 01 57 30 43 29"],
