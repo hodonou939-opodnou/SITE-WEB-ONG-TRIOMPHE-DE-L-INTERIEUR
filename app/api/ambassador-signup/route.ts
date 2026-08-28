@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const consent = formData.get("consent")?.toString();
 
   if (!fullName || !phoneRaw || !email || consent !== "1") {
-    return NextResponse.redirect(`${origin}/cigibm-2026?ambassadeur=erreur#ambassadeurs`, 303);
+    return NextResponse.redirect(`${origin}/cigibm?ambassadeur=erreur#ambassadeurs`, 303);
   }
 
   const phone = normalizePhone(phoneRaw);
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     slug = result.slug;
   } catch (err) {
     console.error("Ambassador self-signup creation failed", { email }, err);
-    return NextResponse.redirect(`${origin}/cigibm-2026?ambassadeur=erreur#ambassadeurs`, 303);
+    return NextResponse.redirect(`${origin}/cigibm?ambassadeur=erreur#ambassadeurs`, 303);
   }
 
   const referralUrl = `${origin}/cigibm-2026?ref=${slug}`;
@@ -70,5 +70,5 @@ export async function POST(request: NextRequest) {
     console.error("BREVO_API_KEY is not configured, skipping ambassador welcome email");
   }
 
-  return NextResponse.redirect(`${origin}/cigibm-2026?ambassadeur=succes#ambassadeurs`, 303);
+  return NextResponse.redirect(`${origin}/cigibm?ambassadeur=succes#ambassadeurs`, 303);
 }

@@ -59,7 +59,7 @@ describe("POST /api/ambassador-signup", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain("/cigibm-2026?ambassadeur=succes");
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=succes");
 
     const ambassador = await db.ambassador.findFirst({ where: { email } });
     expect(ambassador).not.toBeNull();
@@ -91,7 +91,7 @@ describe("POST /api/ambassador-signup", () => {
     const response = await POST(buildRequest({ fullName: `${TEST_SLUG_PREFIX} Gamma`, email, consent: "1" }));
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain("/cigibm-2026?ambassadeur=erreur");
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=erreur");
     const ambassador = await db.ambassador.findFirst({ where: { email } });
     expect(ambassador).toBeNull();
   });
@@ -104,7 +104,7 @@ describe("POST /api/ambassador-signup", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain("/cigibm-2026?ambassadeur=erreur");
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=erreur");
   });
 
   it("still redirects to the success state even when the welcome email fails", async () => {
@@ -117,7 +117,7 @@ describe("POST /api/ambassador-signup", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain("/cigibm-2026?ambassadeur=succes");
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=succes");
     const ambassador = await db.ambassador.findFirst({ where: { email } });
     expect(ambassador).not.toBeNull();
   });
@@ -149,7 +149,7 @@ describe("POST /api/ambassador-signup", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain("/cigibm-2026?ambassadeur=succes");
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=succes");
     const ambassador = await db.ambassador.findFirst({ where: { email } });
     expect(ambassador).not.toBeNull();
     expect(ambassador?.photoUrl).toBeNull();

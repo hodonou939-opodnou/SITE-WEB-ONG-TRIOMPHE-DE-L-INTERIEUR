@@ -7,12 +7,9 @@ import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
 import ReferralCapture from "@/components/ReferralCapture";
-import AmbassadorSlider from "@/components/AmbassadorSlider";
-import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
-import { listActiveAmbassadors } from "@/lib/ambassadors/public";
 
 export const metadata: Metadata = pageMetadata({
   title: `CIGIBM 2026, ${cigibm.nextEdition.theme}`,
@@ -90,20 +87,9 @@ const faqs = [
 export default async function Cigibm2026Page({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string; ambassadeur?: string }>;
+  searchParams: Promise<{ erreur?: string }>;
 }) {
-  const { erreur, ambassadeur } = await searchParams;
-  let activeAmbassadors: Awaited<ReturnType<typeof listActiveAmbassadors>> = [];
-  try {
-    activeAmbassadors = await listActiveAmbassadors();
-  } catch (err) {
-    // Ne doit jamais faire tomber la page /cigibm-2026 (page de conversion
-    // principale, et page d'atterrissage des liens de parrainage déjà en
-    // circulation) : une base indisponible dégrade simplement vers l'état
-    // "aucun ambassadeur", déjà géré plus bas par la condition
-    // activeAmbassadors.length > 0 — cf. Finding 3 de la revue finale.
-    console.error("listActiveAmbassadors failed", err);
-  }
+  const { erreur } = await searchParams;
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
@@ -332,51 +318,6 @@ export default async function Cigibm2026Page({
               ))}
             </Reveal>
           )}
-        </div>
-      </section>
-
-      {/* Ambassadors */}
-      <section id="ambassadeurs" className="scroll-mt-4 bg-mist-200 py-20 sm:py-24">
-        <div className="mx-auto max-w-5xl px-6 sm:px-8">
-          <Reveal className="text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
-              Programme Ambassadeurs
-            </p>
-            <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
-              {activeAmbassadors.length > 0
-                ? "Ils et elles ont déjà invité leur entourage"
-                : "Invitez votre entourage au CIGIBM 2026"}
-            </h2>
-          </Reveal>
-
-          {activeAmbassadors.length > 0 && (
-            <div className="mt-10">
-              <AmbassadorSlider ambassadors={activeAmbassadors} />
-            </div>
-          )}
-
-          <Reveal delay={0.1} className="mx-auto mt-12 max-w-md">
-            {ambassadeur === "succes" && (
-              <p className="mb-5 rounded-xl border border-leaf-400/30 bg-leaf-500/10 px-4 py-3 text-center text-sm text-leaf-800">
-                Votre compte ambassadeur a bien été créé. Vous allez recevoir
-                un email avec votre lien personnel dès qu&apos;il sera validé
-                par notre équipe.
-              </p>
-            )}
-            {ambassadeur === "erreur" && (
-              <p className="mb-5 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-700">
-                Une erreur est survenue, votre inscription n&apos;a pas pu
-                être enregistrée. Réessayez, ou appelez le {phones[0]}.
-              </p>
-            )}
-            <AmbassadorSignupForm />
-            <p className="mt-4 text-center text-xs text-ink/50">
-              Vous préférez de vive voix ? Appelez le{" "}
-              <a href={primaryPhoneHref} className="font-semibold underline underline-offset-4">
-                {phones[0]}
-              </a>
-            </p>
-          </Reveal>
         </div>
       </section>
 

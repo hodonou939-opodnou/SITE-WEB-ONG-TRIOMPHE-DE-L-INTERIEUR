@@ -10,9 +10,35 @@ import ImagePlaceholder from "@/components/ImagePlaceholder";
 import Photo from "@/components/Photo";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import Reveal from "@/components/Reveal";
+import AmbassadorSlider from "@/components/AmbassadorSlider";
+import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
 import { cigibm, foundingStory, mentalHealthStats, pressMentions } from "@/lib/content";
 import { getGalleryImages, getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
+import { listActiveAmbassadors } from "@/lib/ambassadors/public";
+
+const ambassadorBenefits = [
+  {
+    title: "Un statut officiel",
+    description:
+      "Vous devenez Ambassadeur ou Ambassadrice CIGIBM 2026, un titre qui vous engage aux côtés de l'ONG pour toute la durée de l'édition.",
+  },
+  {
+    title: "Un certificat de reconnaissance",
+    description:
+      "Un certificat officiel, à votre nom, atteste de votre contribution et vous est remis par l'ONG Triomphe de l'Intérieur.",
+  },
+  {
+    title: "Une mise à l'honneur au congrès",
+    description:
+      "Vous êtes présenté·e devant l'ensemble des participants, le jour du congrès, pour ce que vous avez accompli.",
+  },
+  {
+    title: "Une visibilité officielle",
+    description:
+      "Votre nom et votre photo apparaissent sur le site et les canaux officiels du CIGIBM, une fois votre compte validé.",
+  },
+];
 
 export const metadata: Metadata = pageMetadata({
   title: "CIGIBM",
@@ -22,12 +48,28 @@ export const metadata: Metadata = pageMetadata({
   image: { url: "/images/cigibm-featured.jpg", alt: "Congrès CIGIBM" },
 });
 
-export default function CigibmPage() {
+export default async function CigibmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ambassadeur?: string }>;
+}) {
+  const { ambassadeur } = await searchParams;
   const featured = getNamedImage("cigibm-featured") ?? getGalleryImages("cigibm")[0];
   const poster = getNamedImage("cigibm-poster");
   const nextEditionPhotos = getGalleryImages(`cigibm-${cigibm.nextEdition.id}`);
   const featuredSpeakers = cigibm.nextEdition.speakers.filter((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
+
+  let activeAmbassadors: Awaited<ReturnType<typeof listActiveAmbassadors>> = [];
+  try {
+    activeAmbassadors = await listActiveAmbassadors();
+  } catch (err) {
+    // Ne doit jamais faire tomber la page /cigibm : une base indisponible
+    // dégrade simplement vers l'état "aucun ambassadeur" (même garde que
+    // /cigibm-2026 avant ce déplacement — cf. Finding 3 de la revue finale
+    // de l'Ambassador Program).
+    console.error("listActiveAmbassadors failed", err);
+  }
 
   return (
     <>
@@ -252,6 +294,107 @@ export default function CigibmPage() {
               Seulement quelques places restantes
             </p>
           </Reveal>
+        </Container>
+      </div>
+
+      {/* Programme Ambassadeurs */}
+      <div className="bg-leaf-950">
+        <Container className="py-24 sm:py-28">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
+              Programme Ambassadeurs
+            </p>
+            <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
+              {activeAmbassadors.length > 0
+                ? "Ils et elles relèvent déjà le défi"
+                : "Relevez le défi CIGIBM 2026"}
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-mist-100/75">
+              Chaque ambassadeur invite son entourage grâce à un lien unique.
+              Celui ou celle qui obtient le plus d&apos;inscriptions valides
+              remporte le trophée officiel de l&apos;édition.
+            </p>
+          </Reveal>
+
+          <Reveal
+            delay={0.08}
+            className="mx-auto mt-10 flex max-w-xs flex-col items-center rounded-2xl border border-leaf-400/25 bg-mist-50/5 px-8 py-6 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-300">
+              Objectif
+            </p>
+            <p className="mt-2 font-display text-5xl text-mist-50">500+</p>
+            <p className="mt-1 text-sm text-mist-100/70">inscriptions valides</p>
+          </Reveal>
+
+          <div className="mt-16 grid gap-6 sm:grid-cols-2">
+            {ambassadorBenefits.map((item, i) => (
+              <Reveal key={item.title} delay={i * 0.06}>
+                <div className="h-full rounded-2xl border border-mist-50/10 bg-mist-50/5 p-7 transition-colors duration-300 hover:border-leaf-400/30">
+                  <span className="font-display text-2xl text-leaf-300">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-3 font-display text-xl leading-snug text-mist-50">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-mist-100/70">
+                    {item.description}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <div className="mt-16 grid items-center gap-12 lg:grid-cols-2">
+            <Reveal>
+              <Photo
+                src="/images/ambassadors/ambassadrice-2025.jpg"
+                alt="Ambassadrice CIGIBM 2025, récompensée pour ses inscriptions"
+                ratio="aspect-[4/5]"
+              />
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-leaf-300">
+                Édition 2025
+              </p>
+              <p className="mt-3 font-display text-2xl leading-snug text-mist-50">
+                Le trophée a déjà un visage.
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-mist-100/70">
+                Ambassadrice CIGIBM 2025, récompensée pour le plus grand
+                nombre d&apos;inscriptions valides et mise à l&apos;honneur
+                devant tout le congrès. La 4ème édition cherche déjà celui ou
+                celle qui prendra sa suite.
+              </p>
+            </Reveal>
+          </div>
+
+          {activeAmbassadors.length > 0 && (
+            <div className="mt-16">
+              <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-leaf-300">
+                Ambassadeurs de l&apos;édition 2026
+              </p>
+              <AmbassadorSlider ambassadors={activeAmbassadors} />
+            </div>
+          )}
+
+          <div className="mx-auto mt-16 max-w-md">
+            {ambassadeur === "succes" && (
+              <p className="mb-5 rounded-xl border border-leaf-400/30 bg-leaf-500/10 px-4 py-3 text-center text-sm text-leaf-200">
+                Votre compte ambassadeur a bien été créé. Vous allez recevoir
+                un email avec votre lien personnel dès qu&apos;il sera validé
+                par notre équipe.
+              </p>
+            )}
+            {ambassadeur === "erreur" && (
+              <p className="mb-5 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300">
+                Une erreur est survenue, votre inscription n&apos;a pas pu
+                être enregistrée. Réessayez, ou appelez le{" "}
+                {cigibm.nextEdition.registrationPhones[0]}.
+              </p>
+            )}
+            <AmbassadorSignupForm />
+          </div>
         </Container>
       </div>
 
