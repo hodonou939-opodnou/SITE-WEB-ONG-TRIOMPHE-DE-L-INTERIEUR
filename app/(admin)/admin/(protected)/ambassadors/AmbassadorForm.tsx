@@ -77,13 +77,15 @@ export default function AmbassadorForm({ ambassador, action, submitLabel, showAc
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">
-          URL de la photo (optionnel, pour la section publique du site)
+          URL de la photo (optionnel, pour la section publique du site) — un chemin
+          local comme <code>/images/ambassadors/prenom-nom.jpg</code> ou une URL
+          complète (<code>https://...</code>) fonctionnent tous les deux
         </label>
         <input
           name="photoUrl"
-          type="url"
+          type="text"
           defaultValue={ambassador?.photoUrl ?? ""}
-          placeholder="https://..."
+          placeholder="/images/ambassadors/prenom-nom.jpg"
           className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm"
         />
       </div>
