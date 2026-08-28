@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAmbassador } from "@/lib/admin/ambassadors";
+import { uploadAmbassadorPhoto } from "@/lib/ambassadors/photo";
 import { buildAmbassadorSignupEmail, sendTransactionalEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/phone";
 
@@ -24,13 +25,26 @@ export async function POST(request: NextRequest) {
 
   const phone = normalizePhone(phoneRaw);
 
+  // La photo est optionnelle et son échec ne doit jamais bloquer la
+  // création du compte ambassadeur : au pire, le carrousel public retombe
+  // sur l'avatar par défaut (ImagePlaceholder) une fois le compte validé.
+  const photoFile = formData.get("photo");
+  let photoUrl: string | undefined;
+  if (photoFile instanceof File && photoFile.size > 0) {
+    try {
+      photoUrl = await uploadAmbassadorPhoto(photoFile);
+    } catch (err) {
+      console.error("Ambassador photo upload failed, continuing without photo", { email }, err);
+    }
+  }
+
   let slug: string;
   try {
     // active: false — un ambassadeur qui s'inscrit lui-même reste invisible
     // du carrousel public tant qu'un admin ne l'a pas validé depuis
     // /admin/ambassadors (choix explicite de l'utilisateur : approbation
     // requise plutôt qu'une mise en ligne immédiate).
-    const result = await createAmbassador({ fullName, phone, email, active: false });
+    const result = await createAmbassador({ fullName, phone, email, photoUrl, active: false });
     slug = result.slug;
   } catch (err) {
     console.error("Ambassador self-signup creation failed", { email }, err);

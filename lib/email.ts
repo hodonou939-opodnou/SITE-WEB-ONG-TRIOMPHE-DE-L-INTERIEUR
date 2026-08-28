@@ -4,6 +4,10 @@ import { logMessage } from "./messaging/log";
 const SITE_URL = "https://ongtriomphedelinterieur.com";
 const LOGO_URL = `${SITE_URL}/images/logo-mark.png`;
 
+// Bandeau or (#c9a227) + carte fermée haut/bas en vert profond, contenu
+// blanc au centre : traitement "premium" partagé par tous les emails
+// transactionnels (pas seulement ceux du programme Ambassadeurs), pour que
+// la marque reste cohérente d'un email à l'autre.
 function emailShell(content: string) {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -11,33 +15,39 @@ function emailShell(content: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body style="margin:0; padding:0; background:#f5f9f7; font-family:Georgia, 'Times New Roman', serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f9f7; padding:32px 16px;">
+  <body style="margin:0; padding:0; background:#eef3ee; font-family:Georgia, 'Times New Roman', serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef3ee; padding:40px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" style="max-width:560px; background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(14,33,24,0.08);">
+          <table role="presentation" width="100%" style="max-width:580px; border-radius:20px; overflow:hidden; box-shadow:0 12px 32px rgba(14,33,24,0.12);">
             <tr>
-              <td style="background:#0e2118; padding:32px 40px; text-align:center;">
-                <img src="${LOGO_URL}" alt="${siteConfig.name}" width="56" height="56" style="display:block; margin:0 auto 12px;" />
-                <p style="margin:0; color:#7fd99a; font-family:Arial, sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase;">
+              <td style="height:4px; line-height:4px; font-size:0; background:#c9a227;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="background:#0e2118; padding:36px 40px 30px; text-align:center;">
+                <img src="${LOGO_URL}" alt="${siteConfig.name}" width="52" height="52" style="display:block; margin:0 auto 14px;" />
+                <p style="margin:0 0 5px; color:#fcfdfd; font-family:Georgia, 'Times New Roman', serif; font-size:17px; font-weight:bold;">
                   ${siteConfig.name}
+                </p>
+                <p style="margin:0; color:#c9a227; font-family:Arial, sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;">
+                  ${siteConfig.tagline}
                 </p>
               </td>
             </tr>
             <tr>
-              <td style="padding:40px;">
+              <td style="background:#ffffff; padding:44px 40px;">
                 ${content}
               </td>
             </tr>
             <tr>
-              <td style="background:#f5f9f7; padding:24px 40px; text-align:center; font-family:Arial, sans-serif;">
-                <p style="margin:0 0 6px; font-size:12px; color:#16211d99;">
+              <td style="background:#0e2118; padding:22px 40px; text-align:center; font-family:Arial, sans-serif;">
+                <p style="margin:0 0 6px; font-size:12px; color:#ffffff99;">
                   ${siteConfig.name} &middot; ${siteConfig.location}
                 </p>
-                <p style="margin:0; font-size:12px; color:#16211d99;">
-                  <a href="tel:${siteConfig.phoneHref.replace("tel:", "")}" style="color:#307335; text-decoration:none;">${siteConfig.phone}</a>
+                <p style="margin:0; font-size:12px;">
+                  <a href="tel:${siteConfig.phoneHref.replace("tel:", "")}" style="color:#7fd99a; text-decoration:none;">${siteConfig.phone}</a>
                   &middot;
-                  <a href="mailto:${siteConfig.email}" style="color:#307335; text-decoration:none;">${siteConfig.email}</a>
+                  <a href="mailto:${siteConfig.email}" style="color:#7fd99a; text-decoration:none;">${siteConfig.email}</a>
                 </p>
               </td>
             </tr>
@@ -49,10 +59,11 @@ function emailShell(content: string) {
 </html>`;
 }
 
-function ctaButton(label: string, href: string) {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px auto 0;">
+function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" = "primary") {
+  const background = variant === "whatsapp" ? "#25d366" : "#3684c4";
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px auto 0;">
     <tr>
-      <td style="background:#3684c4; border-radius:999px;">
+      <td style="background:${background}; border-radius:999px;">
         <a href="${href}" style="display:inline-block; padding:14px 32px; color:#fcfdfd; font-family:Arial, sans-serif; font-size:15px; font-weight:bold; text-decoration:none; border-radius:999px;">
           ${label}
         </a>
@@ -126,6 +137,9 @@ export function buildReminderEmail(firstName: string) {
 
 export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string) {
   const first = fullName.split(/\s+/)[0];
+  const shareMessage = `Je vous invite au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Réservez votre place gratuite ici : ${referralUrl}`;
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+
   const html = emailShell(`
     <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
       Programme Ambassadeurs
@@ -133,27 +147,70 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
     <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
       Vous avez pris la bonne décision, ${first}.
     </h1>
-    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+    <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
       Sauvez des vies. Invitez vos proches au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Chaque personne qui s&apos;inscrit grâce à vous compte.
     </p>
-    <p style="margin:0 0 8px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
-      Voici votre lien personnel, à partager où vous le souhaitez :
-    </p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px; background:#f9fbf9; border:1.5px dashed #307335; border-radius:14px; font-family:Arial, sans-serif;">
       <tr>
-        <td style="padding:16px 20px;">
-          <a href="${referralUrl}" style="font-size:14px; color:#3684c4; word-break:break-all;">${referralUrl}</a>
+        <td style="padding:18px 20px;">
+          <p style="margin:0 0 6px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+            Votre lien personnel
+          </p>
+          <a href="${referralUrl}" style="font-size:14px; color:#183a1a; word-break:break-all; text-decoration:none;">${referralUrl}</a>
         </td>
       </tr>
     </table>
-    <p style="margin:0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
-      Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques heures. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte.
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:6px 0 8px;">
+          ${ctaButton("Partager sur WhatsApp", whatsappShareUrl, "whatsapp")}
+        </td>
+      </tr>
+    </table>
+    <p style="margin:20px 0 0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
+      Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques heures. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte — et vous recevrez un email à chaque nouvelle inscription.
     </p>
     ${ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
   `);
 
   return {
     subject: `${first}, votre lien d'ambassadeur pour le CIGIBM ${cigibm.nextEdition.edition}`,
+    html,
+  };
+}
+
+export function buildAmbassadorReferralEmail(ambassadorFirstNameOrFullName: string, totalReferrals: number) {
+  const first = ambassadorFirstNameOrFullName.split(/\s+/)[0];
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Une nouvelle inscription
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      Bonne nouvelle, ${first} !
+    </h1>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Quelqu&apos;un vient de réserver sa place au CIGIBM ${cigibm.nextEdition.edition} grâce à votre lien. C&apos;est une vie de plus qui prend ce premier pas, et c&apos;est grâce à vous.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px; text-align:center;">
+          <p style="margin:0; font-size:32px; line-height:1; color:#183a1a; font-weight:bold; font-family:Georgia, 'Times New Roman', serif;">
+            ${totalReferrals}
+          </p>
+          <p style="margin:6px 0 0; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:#307335;">
+            inscription${totalReferrals !== 1 ? "s" : ""} grâce à vous
+          </p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Continuez à partager votre lien, chaque invitation compte.
+    </p>
+    ${ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
+  `);
+
+  return {
+    subject: `${first}, quelqu'un vient de s'inscrire grâce à vous !`,
     html,
   };
 }

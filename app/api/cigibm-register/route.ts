@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { brevo } from "@/lib/content";
 import { db } from "@/lib/db";
-import { buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
+import { buildAmbassadorReferralEmail, buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/phone";
 
 // Cette route enchaîne jusqu'à trois attentes bornées côté DB (Task 8) : la
@@ -52,7 +52,9 @@ async function createBrevoContact(
 // de simplement priver l'écriture Participant de son attribution — même
 // classe de risque que celle documentée dans lib/db.ts pour le reste de la
 // route.
-async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string | null> {
+type ReferringAmbassador = { id: string; fullName: string; email: string | null };
+
+async function resolveAmbassadorFromCookie(request: NextRequest): Promise<ReferringAmbassador | null> {
   const slug = request.cookies.get("cigibm_ref")?.value;
   if (!slug) return null;
 
@@ -60,7 +62,7 @@ async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string
     const ambassador = await db.ambassador.findUnique({ where: { slug } });
     if (!ambassador || !ambassador.active) return null;
 
-    return ambassador.id;
+    return { id: ambassador.id, fullName: ambassador.fullName, email: ambassador.email };
   } catch (err) {
     console.error("Ambassador lookup failed", { slug }, err);
     return null;
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
   }
 
   const phone = normalizePhone(phoneRaw);
-  const ambassadorId = await resolveAmbassadorFromCookie(request);
+  const ambassador = await resolveAmbassadorFromCookie(request);
 
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
@@ -138,12 +140,23 @@ export async function POST(request: NextRequest) {
   // valides pour la même personne). email est garanti non vide à ce stade
   // (validé en tête de fonction), donc pas de cas « email null » à gérer
   // pour cette route précise.
+  // isNewParticipant distingue une vraie première inscription d'une simple
+  // resoumission (ex. la personne corrige une faute de frappe) : sans ce
+  // contrôle, chaque resoumission redéclencherait l'email « quelqu'un vient
+  // de s'inscrire grâce à vous » ci-dessous vers l'ambassadeur pour la même
+  // personne.
+  let isNewParticipant = false;
   try {
     // La clé composite (editionId, email) de l'upsert exige un editionId
     // entier littéral — Prisma ne permet pas d'y substituer un connect
     // imbriqué sur edition.number — d'où cette résolution préalable.
     const edition4 = await db.edition.findUnique({ where: { number: 4 } });
     if (edition4) {
+      const existing = await db.participant.findUnique({
+        where: { editionId_email: { editionId: edition4.id, email } },
+      });
+      isNewParticipant = existing === null;
+
       await db.participant.upsert({
         where: { editionId_email: { editionId: edition4.id, email } },
         create: {
@@ -153,7 +166,7 @@ export async function POST(request: NextRequest) {
           email,
           consent: true,
           registrationSource: "form",
-          ambassadorId,
+          ambassadorId: ambassador?.id,
         },
         update: {
           fullName: name,
@@ -178,6 +191,24 @@ export async function POST(request: NextRequest) {
     }
   } catch (err) {
     console.error("Confirmation email request failed", err);
+  }
+
+  // Notifie l'ambassadeur référent qu'une nouvelle inscription vient de lui
+  // être attribuée. Best-effort comme le reste des blocs ci-dessus : ne doit
+  // jamais faire échouer l'inscription elle-même. isNewParticipant exclut
+  // les resoumissions ; ambassador?.email exclut les ambassadeurs créés
+  // sans adresse email (formulaire admin) ou pas encore attribués.
+  if (isNewParticipant && ambassador?.email) {
+    try {
+      const totalReferrals = await db.participant.count({ where: { ambassadorId: ambassador.id } });
+      const message = buildAmbassadorReferralEmail(ambassador.fullName, totalReferrals);
+      const emailRes = await sendTransactionalEmail(apiKey, { email: ambassador.email, name: ambassador.fullName }, message);
+      if (!emailRes.ok) {
+        console.error("Ambassador referral notification failed", emailRes.status, await emailRes.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.error("Ambassador referral notification request failed", err);
+    }
   }
 
   return NextResponse.redirect(`${origin}/cigibm-2026/merci`, 303);

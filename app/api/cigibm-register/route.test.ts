@@ -232,4 +232,103 @@ describe("POST /api/cigibm-register", () => {
     const participant = await db.participant.findFirst({ where: { email } });
     expect(participant?.ambassadorId).toBeNull();
   });
+
+  it("notifies the ambassador by email when someone new registers via their link", async () => {
+    const emailCalls: Array<{ to: string; subject: string; html: string }> = [];
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      const body = JSON.parse(init?.body as string);
+      emailCalls.push({ to: body.to[0].email, subject: body.subject, html: body.htmlContent });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-notif`,
+        fullName: "Ambassadeur Notifie",
+        phone: "+2290100000098",
+        email: `ambassador-notif${TEST_EMAIL_DOMAIN}`,
+      },
+    });
+
+    const { POST } = await import("./route");
+    const email = `referred-notif${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "Referred Notif Participant", phone: "0100000099", email, consent: "1" });
+    request.cookies.set("cigibm_ref", ambassador.slug);
+
+    await POST(request);
+
+    const referralEmail = emailCalls.find((c) => c.to === ambassador.email);
+    expect(referralEmail).toBeDefined();
+    expect(referralEmail?.subject).toContain("quelqu'un vient de s'inscrire");
+    expect(referralEmail?.html).toMatch(/>\s*1\s*</);
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
+  it("does not notify the ambassador again when the same person resubmits", async () => {
+    let referralNotifications = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      const body = JSON.parse(init?.body as string);
+      if (body.to[0].email === ambassadorEmail) referralNotifications += 1;
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const ambassadorEmail = `ambassador-resubmit${TEST_EMAIL_DOMAIN}`;
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-resubmit`,
+        fullName: "Ambassadeur Resubmit",
+        phone: "+2290100000100",
+        email: ambassadorEmail,
+      },
+    });
+
+    const { POST } = await import("./route");
+    const email = `referred-resubmit${TEST_EMAIL_DOMAIN}`;
+    const fields = { name: "Resubmit Referred Participant", phone: "0100000101", email, consent: "1" };
+
+    const firstRequest = buildRequest(fields);
+    firstRequest.cookies.set("cigibm_ref", ambassador.slug);
+    await POST(firstRequest);
+
+    const secondRequest = buildRequest(fields);
+    secondRequest.cookies.set("cigibm_ref", ambassador.slug);
+    await POST(secondRequest);
+
+    expect(referralNotifications).toBe(1);
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
+  it("does not attempt an ambassador notification when the ambassador has no email on file", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-noemail`,
+        fullName: "Ambassadeur Sans Email",
+        phone: "+2290100000102",
+      },
+    });
+
+    const { POST } = await import("./route");
+    const email = `referred-noemail${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "Referred No Email Participant", phone: "0100000103", email, consent: "1" });
+    request.cookies.set("cigibm_ref", ambassador.slug);
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
 });

@@ -12,7 +12,28 @@ export default function AmbassadorSignupForm() {
         par email dès que votre compte est validé par notre équipe.
       </p>
 
-      <form action="/api/ambassador-signup" method="POST" className="mt-6 space-y-4">
+      <form
+        action="/api/ambassador-signup"
+        method="POST"
+        encType="multipart/form-data"
+        className="mt-6 space-y-4"
+      >
+        <div>
+          <label
+            htmlFor="amb-photo"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/50"
+          >
+            Votre photo (optionnel, mais recommandé)
+          </label>
+          <input
+            id="amb-photo"
+            name="photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="block w-full text-sm text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-leaf-100 file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-wide file:text-leaf-700 hover:file:bg-leaf-200"
+          />
+        </div>
+
         <div>
           <label
             htmlFor="amb-fullname"
