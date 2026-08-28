@@ -206,4 +206,30 @@ describe("POST /api/cigibm-register", () => {
     const participant = await db.participant.findFirst({ where: { email } });
     expect(participant?.ambassadorId).toBeNull();
   });
+
+  it("does not throw or block registration when the ambassador cookie value contains a %-sequence", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `percent-cookie${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "Percent Cookie Participant", phone: "0100000097", email, consent: "1" });
+    // NextRequest.cookies.get(...).value is already decoded once by Next's
+    // own parseCookie (see node_modules/next/dist/compiled/@edge-runtime/
+    // cookies/index.js) while parsing the raw `Cookie` header — e.g. a wire
+    // value of `cigibm_ref=%25zz` decodes once to the string "%zz" by the
+    // time route.ts ever sees it. request.cookies.set(...) writes straight
+    // into that already-parsed map, so setting "%zz" here simulates exactly
+    // that already-decoded value. A second decodeURIComponent call on "%zz"
+    // throws URIError: URI malformed (zz is not a valid hex escape) — this
+    // test proves the route does not perform that redundant second decode.
+    request.cookies.set("cigibm_ref", "%zz");
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant?.ambassadorId).toBeNull();
+  });
 });

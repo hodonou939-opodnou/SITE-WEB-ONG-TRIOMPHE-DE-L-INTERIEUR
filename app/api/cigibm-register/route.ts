@@ -31,12 +31,18 @@ async function createBrevoContact(
 }
 
 // Résout l'ambassadeur (Task 1) référent depuis le cookie cigibm_ref écrit
-// par ReferralCapture (Task 5). Le cookie est encodé via
-// encodeURIComponent côté écriture : on décode ici avant de l'utiliser
-// comme clé de recherche, sinon un slug contenant un caractère
-// effectivement échappé par encodeURIComponent ne matcherait jamais (sans
-// incidence aujourd'hui, les slugs produits par slugify() — Task 1 — étant
-// déjà URL-safe, mais c'est le traitement correct et robuste).
+// par ReferralCapture (Task 5). Le cookie est encodé via encodeURIComponent
+// côté écriture, mais request.cookies.get(...).value est déjà la valeur
+// décodée : le parseCookie() interne de Next (voir
+// node_modules/next/dist/compiled/@edge-runtime/cookies/index.js) appelle
+// lui-même decodeURIComponent en analysant l'en-tête `Cookie` brut, avant
+// que RequestCookies n'expose la moindre valeur. Un decodeURIComponent
+// applicatif supplémentaire ici serait donc redondant — et activement
+// dangereux : une valeur brute comme `cigibm_ref=%25zz` redevient "%zz"
+// après le décodage (unique) de Next, et un second decodeURIComponent sur
+// "%zz" lève URIError: URI malformed (constaté empiriquement — cf.
+// route.test.ts, régression ajoutée après un premier correctif erroné qui
+// avait réintroduit ce même decode ici).
 // Retourne null pour tout cas — cookie absent, slug inconnu, ambassadeur
 // inactif, échec de la requête DB elle-même — de sorte que l'attribution
 // reste strictement optionnelle et ne puisse jamais faire échouer
@@ -47,10 +53,8 @@ async function createBrevoContact(
 // classe de risque que celle documentée dans lib/db.ts pour le reste de la
 // route.
 async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string | null> {
-  const rawSlug = request.cookies.get("cigibm_ref")?.value;
-  if (!rawSlug) return null;
-
-  const slug = decodeURIComponent(rawSlug);
+  const slug = request.cookies.get("cigibm_ref")?.value;
+  if (!slug) return null;
 
   try {
     const ambassador = await db.ambassador.findUnique({ where: { slug } });
