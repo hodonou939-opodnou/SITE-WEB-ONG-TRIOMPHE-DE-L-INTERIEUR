@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import RegistrationForm from "@/components/RegistrationForm";
+import ReferralCapture from "@/components/ReferralCapture";
 import { cigibm } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 
@@ -19,12 +21,17 @@ export const metadata: Metadata = pageMetadata({
 // d'erreur (comportement historique, indépendant de la page d'origine) —
 // donc pas de gestion de ?erreur= ici pour l'instant, ce serait du code mort.
 // Rendre la route consciente de la page d'origine touche à nouveau le
-// chemin d'inscription critique, déjà durci et revu de façon adversariale ;
-// à faire une fois la branche Ambassador Program fusionnée, pour éviter un
-// conflit garanti sur ce même fichier.
+// chemin d'inscription critique, déjà durci et revu de façon adversariale.
+//
+// ReferralCapture : cette page existe précisément pour le trafic de liens
+// de parrainage (cf. commentaire ci-dessus), donc elle doit capturer
+// ?ref=<slug> exactement comme /cigibm-2026 (Ambassador Program, fusionné).
 export default function InscriptionPage() {
   return (
     <section className="flex min-h-[calc(100vh-9rem)] items-center bg-leaf-950 px-6 py-12 sm:px-8">
+      <Suspense fallback={null}>
+        <ReferralCapture />
+      </Suspense>
       <div className="mx-auto w-full max-w-md">
         <p className="mb-2 text-center text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
           {cigibm.nextEdition.edition} · {cigibm.nextEdition.dates}
