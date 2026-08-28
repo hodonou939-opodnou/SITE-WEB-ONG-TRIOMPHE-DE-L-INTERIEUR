@@ -18,6 +18,13 @@ vi.stubEnv("BREVO_API_KEY", "test-key");
 // déterministes avant ce changement).
 const TEST_EMAIL_DOMAIN = "@test.plan.register.example";
 
+// Préfixe distinct de celui de lib/admin/ambassadors.test.ts
+// ("test-plan-ambassadors") : ni l'un ni l'autre n'est un préfixe de
+// l'autre, donc leurs deux filtres startsWith (utilisés dans leurs afterEach
+// respectifs, exécutés en parallèle contre la même base partagée) ne se
+// chevauchent jamais.
+const TEST_AMBASSADOR_SLUG_PREFIX = "test-plan-register-ambassador";
+
 function buildRequest(fields: Record<string, string>) {
   const formData = new FormData();
   Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
@@ -36,6 +43,13 @@ describe("POST /api/cigibm-register", () => {
     // Without this, those rows accumulate in the shared Supabase instance
     // on every test run.
     await db.messagingLog.deleteMany({ where: { recipientEmail: { endsWith: TEST_EMAIL_DOMAIN } } });
+    // Filet de sécurité pour les Ambassador créés par les tests
+    // d'attribution ci-dessous : un afterEach s'exécute même si une
+    // assertion précédente du test a levé, contrairement aux
+    // db.ambassador.delete(...) placés en fin de corps de test (qui, eux,
+    // fuiraient des lignes dans la base partagée en cas d'échec avant leur
+    // exécution).
+    await db.ambassador.deleteMany({ where: { slug: { startsWith: TEST_AMBASSADOR_SLUG_PREFIX } } });
     vi.restoreAllMocks();
   });
 
@@ -106,5 +120,67 @@ describe("POST /api/cigibm-register", () => {
 
     const rows = await db.participant.findMany({ where: { email } });
     expect(rows).toHaveLength(1);
+  });
+
+  it("attributes the registration to the ambassador named in the cigibm_ref cookie", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: { slug: "test-plan-register-ambassador", fullName: "Ambassadeur Test", phone: "+2290100000090" },
+    });
+
+    const { POST } = await import("./route");
+    const email = `referred${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "Referred Participant", phone: "0100000091", email, consent: "1" });
+    request.cookies.set("cigibm_ref", ambassador.slug);
+
+    await POST(request);
+
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant?.ambassadorId).toBe(ambassador.id);
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
+  it("ignores an unknown or inactive ambassador slug without failing the registration", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `noref${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "No Ref Participant", phone: "0100000092", email, consent: "1" });
+    request.cookies.set("cigibm_ref", "this-slug-does-not-exist");
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant?.ambassadorId).toBeNull();
+  });
+
+  it("does not overwrite an existing ambassador attribution on resubmission", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
+
+    const ambassadorA = await db.ambassador.create({
+      data: { slug: "test-plan-register-ambassador-a", fullName: "Ambassadeur A", phone: "+2290100000093" },
+    });
+    const ambassadorB = await db.ambassador.create({
+      data: { slug: "test-plan-register-ambassador-b", fullName: "Ambassadeur B", phone: "+2290100000094" },
+    });
+
+    const { POST } = await import("./route");
+    const email = `resubmit-ref${TEST_EMAIL_DOMAIN}`;
+
+    const firstRequest = buildRequest({ name: "Resubmit Participant", phone: "0100000095", email, consent: "1" });
+    firstRequest.cookies.set("cigibm_ref", ambassadorA.slug);
+    await POST(firstRequest);
+
+    const secondRequest = buildRequest({ name: "Resubmit Participant", phone: "0100000095", email, consent: "1" });
+    secondRequest.cookies.set("cigibm_ref", ambassadorB.slug);
+    await POST(secondRequest);
+
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant?.ambassadorId).toBe(ambassadorA.id);
+
+    await db.ambassador.deleteMany({ where: { id: { in: [ambassadorA.id, ambassadorB.id] } } });
   });
 });

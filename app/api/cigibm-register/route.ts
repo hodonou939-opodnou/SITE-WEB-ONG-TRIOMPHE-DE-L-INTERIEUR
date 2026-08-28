@@ -30,6 +30,28 @@ async function createBrevoContact(
   });
 }
 
+// Résout l'ambassadeur (Task 1) référent depuis le cookie cigibm_ref écrit
+// par ReferralCapture (Task 5). Le cookie est encodé via
+// encodeURIComponent côté écriture : on décode ici avant de l'utiliser
+// comme clé de recherche, sinon un slug contenant un caractère
+// effectivement échappé par encodeURIComponent ne matcherait jamais (sans
+// incidence aujourd'hui, les slugs produits par slugify() — Task 1 — étant
+// déjà URL-safe, mais c'est le traitement correct et robuste).
+// Retourne null pour tout cas — cookie absent, slug inconnu, ambassadeur
+// inactif — de sorte que l'attribution reste strictement optionnelle et ne
+// puisse jamais faire échouer l'inscription.
+async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string | null> {
+  const rawSlug = request.cookies.get("cigibm_ref")?.value;
+  if (!rawSlug) return null;
+
+  const slug = decodeURIComponent(rawSlug);
+
+  const ambassador = await db.ambassador.findUnique({ where: { slug } });
+  if (!ambassador || !ambassador.active) return null;
+
+  return ambassador.id;
+}
+
 export async function POST(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const formData = await request.formData();
@@ -44,6 +66,7 @@ export async function POST(request: NextRequest) {
   }
 
   const phone = normalizePhone(phoneRaw);
+  const ambassadorId = await resolveAmbassadorFromCookie(request);
 
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
@@ -115,6 +138,7 @@ export async function POST(request: NextRequest) {
           email,
           consent: true,
           registrationSource: "form",
+          ambassadorId,
         },
         update: {
           fullName: name,
