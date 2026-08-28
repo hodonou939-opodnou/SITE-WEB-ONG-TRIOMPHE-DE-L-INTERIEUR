@@ -34,14 +34,21 @@ if (existsSync(imagesDir)) {
       // Plusieurs extensions pour un même nom (ex. logo.svg + logo.png) :
       // le premier trouvé gagne, même règle de priorité (ordre de
       // IMAGE_EXTENSIONS) que l'ancienne implémentation basée sur fs.
+      // encodeURIComponent sur le seul segment de fichier (jamais sur le
+      // chemin entier, qui perdrait ses "/") : un espace ou un accent non
+      // échappé dans un nom de fichier casse le parsing de l'attribut HTML
+      // srcset (délimité par des espaces) généré par next/image — constaté
+      // en production sur "Coach Christelle avec le vacin.jpg", rendu en
+      // image cassée côté navigateur alors que le fichier existait et était
+      // servi correctement à l'URL brute non encodée.
       if (!(name in manifest.named)) {
-        manifest.named[name] = `/images/${entry.name}`;
+        manifest.named[name] = `/images/${encodeURIComponent(entry.name)}`;
       } else {
         const currentExt = path.extname(manifest.named[name]).toLowerCase();
         const currentPriority = IMAGE_EXTENSIONS.indexOf(currentExt);
         const candidatePriority = IMAGE_EXTENSIONS.indexOf(path.extname(entry.name).toLowerCase());
         if (candidatePriority < currentPriority) {
-          manifest.named[name] = `/images/${entry.name}`;
+          manifest.named[name] = `/images/${encodeURIComponent(entry.name)}`;
         }
       }
     } else if (entry.isDirectory()) {
@@ -50,7 +57,7 @@ if (existsSync(imagesDir)) {
       const files = readdirSync(subdirPath)
         .filter(isImage)
         .sort()
-        .map((f) => `/images/${subdir}/${f}`);
+        .map((f) => `/images/${encodeURIComponent(subdir)}/${encodeURIComponent(f)}`);
       manifest.galleries[subdir] = files;
     }
   }

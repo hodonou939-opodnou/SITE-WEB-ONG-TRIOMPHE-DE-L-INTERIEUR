@@ -123,6 +123,41 @@ describe("POST /api/cigibm-register", () => {
     expect(rows).toHaveLength(1);
   });
 
+  it("still registers the participant when Brevo rejects the phone number as invalid", async () => {
+    // Régression réelle constatée en production : Brevo peut renvoyer un
+    // 400 "invalid_parameter" / "Invalid phone number" pour un numéro dont
+    // le format ne lui plaît pas, ce qui bloquait alors toute l'inscription
+    // — nom et email valides ou non. Seul /v3/contacts doit rejeter le
+    // numéro ; /v3/smtp/email répond toujours 201 pour isoler ce qui est
+    // testé ici.
+    let contactCalls = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        contactCalls += 1;
+        if (contactCalls === 1) {
+          return new Response(JSON.stringify({ code: "invalid_parameter", message: "Invalid phone number" }), {
+            status: 400,
+          });
+        }
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `invalidphone${TEST_EMAIL_DOMAIN}`;
+    const response = await POST(buildRequest({ name: "Invalid Phone Person", phone: "0100000014", email, consent: "1" }));
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+    expect(contactCalls).toBe(2);
+
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant).not.toBeNull();
+    expect(participant?.phone).toBe("+2290100000014");
+  });
+
   it("attributes the registration to the ambassador named in the cigibm_ref cookie", async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
 

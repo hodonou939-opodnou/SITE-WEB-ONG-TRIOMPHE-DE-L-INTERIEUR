@@ -107,12 +107,26 @@ export async function POST(request: NextRequest) {
     if (res.status === 400) {
       const body = await res.clone().json().catch(() => null);
       const duplicateFields: string[] = body?.metadata?.duplicate_identifiers ?? [];
+      const isDuplicateSmsOnly =
+        body?.code === "duplicate_parameter" && duplicateFields.includes("SMS") && !duplicateFields.includes("email");
+      // Brevo valide le format du numéro et le rejette parfois (préfixe
+      // opérateur inconnu, format inattendu) sans que ce soit une erreur de
+      // saisie réelle côté visiteur — constaté en production avec un vrai
+      // 400 "Invalid phone number" qui bloquait toute l'inscription alors
+      // que le nom et l'email étaient parfaitement valides. Le téléphone
+      // reste enregistré normalement dans notre propre base plus bas ; seul
+      // l'attribut SMS envoyé à Brevo est abandonné.
+      const isInvalidPhoneNumber =
+        body?.code === "invalid_parameter" && typeof body?.message === "string" && body.message.toLowerCase().includes("phone");
 
-      if (body?.code === "duplicate_parameter" && duplicateFields.includes("SMS") && !duplicateFields.includes("email")) {
-        // Ce numéro est déjà rattaché à un autre contact ailleurs sur ce
-        // compte Brevo (partagé entre plusieurs entreprises) : on
-        // n'empêche pas l'inscription pour autant, on retente sans le SMS.
-        console.warn("SMS already used by another contact, retrying without it", phone);
+      if (isDuplicateSmsOnly || isInvalidPhoneNumber) {
+        console.warn(
+          isInvalidPhoneNumber
+            ? "Phone number rejected by Brevo, retrying without it"
+            : "SMS already used by another contact, retrying without it",
+          phone,
+          body?.message
+        );
         res = await createBrevoContact(apiKey, {
           email,
           attributes: { FIRSTNAME: name, OPT_IN: true },
