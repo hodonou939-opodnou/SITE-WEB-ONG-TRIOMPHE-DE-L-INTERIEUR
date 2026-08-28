@@ -77,7 +77,7 @@ export default function Home() {
             variant="primary"
             className="!shrink-0 !px-7 !py-3.5 !shadow-xl !shadow-azure-950/40 ring-1 ring-mist-50/15"
           >
-            Réserver ma place →
+            Réserver ma place
           </Button>
         </Container>
       </div>

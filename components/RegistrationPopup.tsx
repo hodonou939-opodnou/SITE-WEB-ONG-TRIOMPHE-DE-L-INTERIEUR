@@ -141,7 +141,7 @@ export default function RegistrationPopup() {
             type="submit"
             className="w-full rounded-full bg-azure-500 px-6 py-3.5 text-sm font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
           >
-            Je réserve ma place gratuite →
+            Je réserve ma place gratuite
           </button>
         </form>
 

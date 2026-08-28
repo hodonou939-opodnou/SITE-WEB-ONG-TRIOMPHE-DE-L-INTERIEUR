@@ -8,6 +8,7 @@ import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
 import ReferralCapture from "@/components/ReferralCapture";
 import AmbassadorSlider from "@/components/AmbassadorSlider";
+import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
@@ -89,9 +90,9 @@ const faqs = [
 export default async function Cigibm2026Page({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string }>;
+  searchParams: Promise<{ erreur?: string; ambassadeur?: string }>;
 }) {
-  const { erreur } = await searchParams;
+  const { erreur, ambassadeur } = await searchParams;
   let activeAmbassadors: Awaited<ReturnType<typeof listActiveAmbassadors>> = [];
   try {
     activeAmbassadors = await listActiveAmbassadors();
@@ -146,7 +147,7 @@ export default async function Cigibm2026Page({
                 href="#inscription"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
               >
-                Je réserve ma place gratuite →
+                Je réserve ma place gratuite
               </a>
               <a
                 href={primaryPhoneHref}
@@ -335,36 +336,49 @@ export default async function Cigibm2026Page({
       </section>
 
       {/* Ambassadors */}
-      {activeAmbassadors.length > 0 && (
-        <section className="bg-mist-200 py-20 sm:py-24">
-          <div className="mx-auto max-w-5xl px-6 sm:px-8">
-            <Reveal className="text-center">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
-                Programme Ambassadeurs
-              </p>
-              <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
-                Ils et elles ont déjà invité leur entourage
-              </h2>
-            </Reveal>
+      <section id="ambassadeurs" className="scroll-mt-4 bg-mist-200 py-20 sm:py-24">
+        <div className="mx-auto max-w-5xl px-6 sm:px-8">
+          <Reveal className="text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
+              Programme Ambassadeurs
+            </p>
+            <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+              {activeAmbassadors.length > 0
+                ? "Ils et elles ont déjà invité leur entourage"
+                : "Invitez votre entourage au CIGIBM 2026"}
+            </h2>
+          </Reveal>
+
+          {activeAmbassadors.length > 0 && (
             <div className="mt-10">
               <AmbassadorSlider ambassadors={activeAmbassadors} />
             </div>
-            <Reveal delay={0.1} className="mt-12 text-center">
-              <p className="mx-auto max-w-md text-sm leading-relaxed text-ink/70">
-                Vous aimeriez, vous aussi, inviter votre entourage au CIGIBM
-                2026 ? Devenez ambassadeur ou ambassadrice, il suffit d&apos;un
-                appel.
+          )}
+
+          <Reveal delay={0.1} className="mx-auto mt-12 max-w-md">
+            {ambassadeur === "succes" && (
+              <p className="mb-5 rounded-xl border border-leaf-400/30 bg-leaf-500/10 px-4 py-3 text-center text-sm text-leaf-800">
+                Votre compte ambassadeur a bien été créé. Vous allez recevoir
+                un email avec votre lien personnel dès qu&apos;il sera validé
+                par notre équipe.
               </p>
-              <a
-                href={primaryPhoneHref}
-                className="mt-3 inline-block text-sm font-semibold text-leaf-700 underline underline-offset-4 transition-colors hover:text-leaf-600"
-              >
-                Appelez le {phones[0]}
+            )}
+            {ambassadeur === "erreur" && (
+              <p className="mb-5 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-700">
+                Une erreur est survenue, votre inscription n&apos;a pas pu
+                être enregistrée. Réessayez, ou appelez le {phones[0]}.
+              </p>
+            )}
+            <AmbassadorSignupForm />
+            <p className="mt-4 text-center text-xs text-ink/50">
+              Vous préférez de vive voix ? Appelez le{" "}
+              <a href={primaryPhoneHref} className="font-semibold underline underline-offset-4">
+                {phones[0]}
               </a>
-            </Reveal>
-          </div>
-        </section>
-      )}
+            </p>
+          </Reveal>
+        </div>
+      </section>
 
       {/* President quote */}
       <div className="bg-mist-warm">
@@ -415,7 +429,7 @@ export default async function Cigibm2026Page({
                 href="#inscription"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
               >
-                Je réserve ma place gratuite →
+                Je réserve ma place gratuite
               </a>
               <a
                 href={primaryPhoneHref}
@@ -434,7 +448,7 @@ export default async function Cigibm2026Page({
           href="#inscription"
           className="flex items-center justify-center gap-2 rounded-full bg-azure-500 px-6 py-3.5 text-sm font-semibold tracking-wide text-mist-50 shadow-sm"
         >
-          Je réserve ma place gratuite →
+          Je réserve ma place gratuite
         </a>
       </div>
       <div aria-hidden className="h-20 lg:hidden" />

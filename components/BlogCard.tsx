@@ -39,9 +39,6 @@ export default function BlogCard({ post, index = 0 }: { post: BlogPost; index?: 
           </p>
           <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-leaf-600">
             Lire
-            <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
-              →
-            </span>
           </span>
         </div>
       </Link>

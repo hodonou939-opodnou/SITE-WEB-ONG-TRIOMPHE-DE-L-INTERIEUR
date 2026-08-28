@@ -93,7 +93,7 @@ export default function RegistrationForm({ id }: { id?: string }) {
           type="submit"
           className="w-full rounded-full bg-azure-500 px-6 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
         >
-          Je réserve ma place gratuite →
+          Je réserve ma place gratuite
         </button>
 
         <p className="text-center text-xs leading-relaxed text-mist-100/50">

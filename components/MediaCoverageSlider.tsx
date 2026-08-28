@@ -51,9 +51,6 @@ export default function MediaCoverageSlider() {
                 <span>{mention.date}</span>
                 <span className="inline-flex items-center gap-1 font-semibold text-leaf-300">
                   Lire l&apos;article
-                  <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
-                    →
-                  </span>
                 </span>
               </div>
             </div>

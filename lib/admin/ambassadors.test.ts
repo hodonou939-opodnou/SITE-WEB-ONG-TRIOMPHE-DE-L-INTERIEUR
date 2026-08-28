@@ -33,6 +33,17 @@ describe("createAmbassador", () => {
     expect(first.slug).not.toBe(second.slug);
     expect(second.slug).toMatch(new RegExp(`^${TEST_SLUG_PREFIX}-beta-[a-z0-9]{4,6}$`));
   });
+
+  it("creates inactive when active: false is passed explicitly (self-signup path)", async () => {
+    const result = await createAmbassador({
+      fullName: `${TEST_SLUG_PREFIX} PendingReview`,
+      phone: "+2290100000050",
+      active: false,
+    });
+
+    const row = await db.ambassador.findUnique({ where: { id: result.id } });
+    expect(row?.active).toBe(false);
+  });
 });
 
 describe("listAmbassadorsWithStats", () => {

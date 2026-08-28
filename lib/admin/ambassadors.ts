@@ -43,6 +43,7 @@ export type CreateAmbassadorInput = {
   email?: string;
   photoUrl?: string;
   bio?: string;
+  active?: boolean;
 };
 
 export async function createAmbassador(
@@ -62,6 +63,7 @@ export async function createAmbassador(
       email: input.email || null,
       photoUrl: input.photoUrl || null,
       bio: input.bio || null,
+      active: input.active,
     },
   });
 

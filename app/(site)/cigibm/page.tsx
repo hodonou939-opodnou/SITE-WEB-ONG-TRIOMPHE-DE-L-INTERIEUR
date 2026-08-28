@@ -246,7 +246,7 @@ export default function CigibmPage() {
 
           <Reveal delay={0.2} className="mt-14 flex flex-col items-center gap-3 text-center">
             <Button href="/cigibm-2026" variant="primary" className="!px-8 !py-4 !text-base">
-              Inscris-toi maintenant →
+              Inscris-toi maintenant
             </Button>
             <p className="text-sm font-medium text-leaf-700">
               Seulement quelques places restantes

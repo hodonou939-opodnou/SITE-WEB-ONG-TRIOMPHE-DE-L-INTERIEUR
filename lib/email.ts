@@ -124,6 +124,40 @@ export function buildReminderEmail(firstName: string) {
   };
 }
 
+export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string) {
+  const first = fullName.split(/\s+/)[0];
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Programme Ambassadeurs
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      Vous avez pris la bonne décision, ${first}.
+    </h1>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Sauvez des vies. Invitez vos proches au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Chaque personne qui s&apos;inscrit grâce à vous compte.
+    </p>
+    <p style="margin:0 0 8px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Voici votre lien personnel, à partager où vous le souhaitez :
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <a href="${referralUrl}" style="font-size:14px; color:#3684c4; word-break:break-all;">${referralUrl}</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
+      Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques heures. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte.
+    </p>
+    ${ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
+  `);
+
+  return {
+    subject: `${first}, votre lien d'ambassadeur pour le CIGIBM ${cigibm.nextEdition.edition}`,
+    html,
+  };
+}
+
 // Variante pour une campagne groupée Brevo (envoi à toute la liste) : le
 // prénom est résolu par Brevo lui-même via ce tag de fusion, contact par
 // contact, plutôt que codé en dur comme pour l'email transactionnel unique.

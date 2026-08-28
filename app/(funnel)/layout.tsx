@@ -24,7 +24,7 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
             <span className="font-display text-sm text-mist-50">{siteConfig.shortName}</span>
           </Link>
           <Link href="/" className="text-xs text-mist-100/50 transition-colors hover:text-mist-100/80">
-            ← Retour au site
+            Retour au site
           </Link>
         </div>
       </header>
