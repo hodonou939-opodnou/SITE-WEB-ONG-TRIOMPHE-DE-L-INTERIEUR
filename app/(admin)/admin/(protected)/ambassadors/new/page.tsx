@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/admin/auth";
 import { createAmbassador } from "@/lib/admin/ambassadors";
 import AmbassadorForm from "../AmbassadorForm";
 
@@ -11,6 +12,8 @@ export default async function NewAmbassadorPage({
 
   async function createAmbassadorAction(formData: FormData) {
     "use server";
+
+    await requireAdmin();
 
     const fullName = formData.get("fullName")?.toString().trim();
     const phone = formData.get("phone")?.toString().trim();

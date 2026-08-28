@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/admin/auth";
 import { getAmbassador, updateAmbassador } from "@/lib/admin/ambassadors";
 import AmbassadorForm from "../../AmbassadorForm";
 
@@ -17,6 +18,8 @@ export default async function EditAmbassadorPage({
 
   async function updateAmbassadorAction(formData: FormData) {
     "use server";
+
+    await requireAdmin();
 
     const fullName = formData.get("fullName")?.toString().trim();
     const phone = formData.get("phone")?.toString().trim();
