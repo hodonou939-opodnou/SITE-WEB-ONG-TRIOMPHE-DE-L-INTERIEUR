@@ -241,7 +241,17 @@ export function buildAmbassadorReferralEmail(ambassadorFirstNameOrFullName: stri
   `);
 
   return {
-    subject: `${first}, quelqu'un vient de s'inscrire grâce à vous !`,
+    // Le numéro de compteur dans le sujet n'est pas qu'un ajout
+    // informatif : chaque nouvelle inscription incrémente forcément
+    // totalReferrals, ce qui garantit un sujet différent d'un envoi à
+    // l'autre. Sans ça, deux inscriptions distinctes pour le même
+    // ambassadeur produisaient un sujet identique — Gmail (et la plupart
+    // des clients mail) regroupe alors les deux emails dans une seule
+    // conversation, ce qui masque qu'il s'agit de deux inscriptions bien
+    // réelles et séparées. Constaté en production : deux notifications
+    // légitimes pour le même ambassadeur fusionnées en une seule entrée
+    // "2" dans la boîte de réception.
+    subject: `${first}, quelqu'un vient de s'inscrire grâce à vous ! (#${totalReferrals})`,
     html,
   };
 }
@@ -277,7 +287,13 @@ export function buildAmbassadorReferralAdminNotification(
   `);
 
   return {
-    subject: `Nouvelle inscription via le lien de ${ambassadorFullName}`,
+    // Même raison que buildAmbassadorReferralEmail ci-dessus : le nom du
+    // participant garantit un sujet distinct à chaque envoi (même
+    // ambassadeur, même total possible sur deux ambassadeurs différents,
+    // mais jamais la même personne inscrite deux fois de suite), pour que
+    // Gmail ne fusionne pas plusieurs notifications réelles et distinctes
+    // dans une seule conversation.
+    subject: `Nouvelle inscription via le lien de ${ambassadorFullName} : ${participantFullName}`,
     html,
   };
 }
