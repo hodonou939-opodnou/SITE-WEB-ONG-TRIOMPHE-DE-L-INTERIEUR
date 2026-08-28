@@ -71,11 +71,12 @@ describe("POST /api/cigibm-register", () => {
 
   it("still redirects to /merci even when the Participant write fails", async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
-    // La route écrit via upsert (voir plus bas), pas via create : c'est donc
-    // upsert qu'il faut faire échouer ici pour exercer le vrai chemin de
-    // code — un mock sur create ne serait jamais appelé et ne prouverait
-    // rien.
-    vi.spyOn(db.participant, "upsert").mockRejectedValueOnce(new Error("DB is down"));
+    // La route écrit via create() (avec repli sur update() en cas de
+    // P2002 — voir plus bas), pas via upsert : c'est donc create qu'il
+    // faut faire échouer ici pour exercer le vrai chemin de code. L'erreur
+    // n'est pas un P2002, donc elle remonte telle quelle jusqu'au catch
+    // englobant plutôt que de déclencher le repli update().
+    vi.spyOn(db.participant, "create").mockRejectedValueOnce(new Error("DB is down"));
 
     const { POST } = await import("./route");
     const response = await POST(
@@ -328,6 +329,50 @@ describe("POST /api/cigibm-register", () => {
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
+  it("does not notify the ambassador when the Participant write itself fails", async () => {
+    const emailCalls: Array<{ to: string }> = [];
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      const body = JSON.parse(init?.body as string);
+      emailCalls.push({ to: body.to[0].email });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-createfails`,
+        fullName: "Ambassadeur Create Fails",
+        phone: "+2290100000104",
+        email: `ambassador-createfails${TEST_EMAIL_DOMAIN}`,
+      },
+    });
+
+    // create() lève une erreur qui n'est pas un P2002 (conflit sur la
+    // contrainte unique) : la ligne Participant n'est donc jamais écrite,
+    // et l'ambassadeur ne doit recevoir aucune notification.
+    vi.spyOn(db.participant, "create").mockRejectedValueOnce(new Error("DB is down"));
+
+    const { POST } = await import("./route");
+    const email = `referred-createfails${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({
+      name: "Referred Create Fails Participant",
+      phone: "0100000105",
+      email,
+      consent: "1",
+    });
+    request.cookies.set("cigibm_ref", ambassador.slug);
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    expect(emailCalls.find((c) => c.to === ambassador.email)).toBeUndefined();
 
     await db.ambassador.delete({ where: { id: ambassador.id } });
   });

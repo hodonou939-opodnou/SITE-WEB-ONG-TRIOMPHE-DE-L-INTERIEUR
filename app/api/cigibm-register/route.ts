@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { brevo } from "@/lib/content";
+import { Prisma } from "@prisma/client";
+import { brevo, siteConfig } from "@/lib/content";
 import { db } from "@/lib/db";
-import { buildAmbassadorReferralEmail, buildConfirmationEmail, sendTransactionalEmail } from "@/lib/email";
+import {
+  buildAmbassadorReferralAdminNotification,
+  buildAmbassadorReferralEmail,
+  buildConfirmationEmail,
+  sendTransactionalEmail,
+} from "@/lib/email";
 import { normalizePhone } from "@/lib/phone";
 
 // Cette route enchaîne jusqu'à trois attentes bornées côté DB (Task 8) : la
@@ -131,49 +137,63 @@ export async function POST(request: NextRequest) {
   // mais un échec ici ne doit jamais faire échouer l'inscription elle-même
   // (Brevo reste la preuve d'inscription tant que ce n'est pas le cas).
   //
-  // upsert sur (édition, email) plutôt qu'un simple create : une
-  // resoumission du même formulaire — y compris le cas « duplicate_parameter
-  // sur l'email seul » ci-dessus, que Brevo traite comme un succès et qui
-  // retombe donc ici comme une inscription normale — met à jour la ligne
-  // existante au lieu d'en créer une seconde (double comptage au dashboard,
-  // double message une fois la messagerie branchée, deux jetons de présence
-  // valides pour la même personne). email est garanti non vide à ce stade
-  // (validé en tête de fonction), donc pas de cas « email null » à gérer
-  // pour cette route précise.
+  // create() d'abord, retombe sur update() seulement si la contrainte
+  // @@unique([editionId, email]) est violée (code Prisma P2002), plutôt
+  // qu'un findUnique() séparé suivi d'un upsert() : ce dernier ouvrait une
+  // fenêtre de course entre la lecture et l'écriture — deux resoumissions
+  // quasi simultanées pouvaient toutes les deux lire "n'existe pas encore"
+  // avant qu'aucune des deux n'ait écrit, et donc déclencher deux fois
+  // l'email "quelqu'un vient de s'inscrire grâce à vous" ci-dessous pour une
+  // seule inscription réelle. create()+catch(P2002) s'appuie sur l'atomicité
+  // de la contrainte unique de Postgres : sur deux create() concurrents pour
+  // le même (editionId, email), un seul peut réussir, l'autre reçoit
+  // toujours P2002 — aucune fenêtre de course possible.
+  //
+  // Une resoumission du même formulaire — y compris le cas
+  // « duplicate_parameter sur l'email seul » ci-dessus, que Brevo traite
+  // comme un succès et qui retombe donc ici comme une inscription normale —
+  // met à jour la ligne existante au lieu d'en créer une seconde (double
+  // comptage au dashboard, double message, deux jetons de présence valides
+  // pour la même personne). email est garanti non vide à ce stade (validé
+  // en tête de fonction), donc pas de cas « email null » à gérer ici.
+  //
   // isNewParticipant distingue une vraie première inscription d'une simple
-  // resoumission (ex. la personne corrige une faute de frappe) : sans ce
-  // contrôle, chaque resoumission redéclencherait l'email « quelqu'un vient
-  // de s'inscrire grâce à vous » ci-dessous vers l'ambassadeur pour la même
-  // personne.
+  // resoumission : sans ce contrôle, chaque resoumission redéclencherait la
+  // notification ambassadeur pour la même personne. Reste à `false` par
+  // défaut — y compris si create()/update() lève une erreur autre que
+  // P2002 — pour qu'un échec d'écriture ne puisse jamais déclencher une
+  // notification pour une inscription qui n'a en réalité jamais été
+  // enregistrée.
   let isNewParticipant = false;
   try {
-    // La clé composite (editionId, email) de l'upsert exige un editionId
-    // entier littéral — Prisma ne permet pas d'y substituer un connect
-    // imbriqué sur edition.number — d'où cette résolution préalable.
+    // editionId entier littéral requis par la contrainte composite —
+    // Prisma ne permet pas d'y substituer un connect imbriqué sur
+    // edition.number — d'où cette résolution préalable.
     const edition4 = await db.edition.findUnique({ where: { number: 4 } });
     if (edition4) {
-      const existing = await db.participant.findUnique({
-        where: { editionId_email: { editionId: edition4.id, email } },
-      });
-      isNewParticipant = existing === null;
-
-      await db.participant.upsert({
-        where: { editionId_email: { editionId: edition4.id, email } },
-        create: {
-          editionId: edition4.id,
-          fullName: name,
-          phone,
-          email,
-          consent: true,
-          registrationSource: "form",
-          ambassadorId: ambassador?.id,
-        },
-        update: {
-          fullName: name,
-          phone,
-          consent: true,
-        },
-      });
+      try {
+        await db.participant.create({
+          data: {
+            editionId: edition4.id,
+            fullName: name,
+            phone,
+            email,
+            consent: true,
+            registrationSource: "form",
+            ambassadorId: ambassador?.id,
+          },
+        });
+        isNewParticipant = true;
+      } catch (createErr) {
+        if (createErr instanceof Prisma.PrismaClientKnownRequestError && createErr.code === "P2002") {
+          await db.participant.update({
+            where: { editionId_email: { editionId: edition4.id, email } },
+            data: { fullName: name, phone, consent: true },
+          });
+        } else {
+          throw createErr;
+        }
+      }
     } else {
       console.error("Edition 4 not found, skipping Participant creation", { email, name });
     }
@@ -193,21 +213,41 @@ export async function POST(request: NextRequest) {
     console.error("Confirmation email request failed", err);
   }
 
-  // Notifie l'ambassadeur référent qu'une nouvelle inscription vient de lui
-  // être attribuée. Best-effort comme le reste des blocs ci-dessus : ne doit
-  // jamais faire échouer l'inscription elle-même. isNewParticipant exclut
-  // les resoumissions ; ambassador?.email exclut les ambassadeurs créés
-  // sans adresse email (formulaire admin) ou pas encore attribués.
-  if (isNewParticipant && ambassador?.email) {
+  // Notifie l'ambassadeur référent ET l'administration qu'une nouvelle
+  // inscription vient d'être attribuée à ce lien de parrainage. Best-effort
+  // comme le reste des blocs ci-dessus : ne doit jamais faire échouer
+  // l'inscription elle-même. isNewParticipant exclut les resoumissions.
+  // Les deux envois sont indépendants (try/catch séparés) : l'échec de
+  // l'un ne doit jamais empêcher l'autre.
+  if (isNewParticipant && ambassador) {
     try {
       const totalReferrals = await db.participant.count({ where: { ambassadorId: ambassador.id } });
-      const message = buildAmbassadorReferralEmail(ambassador.fullName, totalReferrals);
-      const emailRes = await sendTransactionalEmail(apiKey, { email: ambassador.email, name: ambassador.fullName }, message);
-      if (!emailRes.ok) {
-        console.error("Ambassador referral notification failed", emailRes.status, await emailRes.text().catch(() => ""));
+
+      // ambassador?.email exclut les ambassadeurs créés sans adresse email
+      // (formulaire admin).
+      if (ambassador.email) {
+        try {
+          const message = buildAmbassadorReferralEmail(ambassador.fullName, totalReferrals);
+          const emailRes = await sendTransactionalEmail(apiKey, { email: ambassador.email, name: ambassador.fullName }, message);
+          if (!emailRes.ok) {
+            console.error("Ambassador referral notification failed", emailRes.status, await emailRes.text().catch(() => ""));
+          }
+        } catch (err) {
+          console.error("Ambassador referral notification request failed", err);
+        }
+      }
+
+      try {
+        const adminMessage = buildAmbassadorReferralAdminNotification(ambassador.fullName, name, totalReferrals);
+        const adminEmailRes = await sendTransactionalEmail(apiKey, { email: siteConfig.email, name: siteConfig.name }, adminMessage);
+        if (!adminEmailRes.ok) {
+          console.error("Admin referral notification failed", adminEmailRes.status, await adminEmailRes.text().catch(() => ""));
+        }
+      } catch (err) {
+        console.error("Admin referral notification request failed", err);
       }
     } catch (err) {
-      console.error("Ambassador referral notification request failed", err);
+      console.error("Referral count lookup failed", err);
     }
   }
 

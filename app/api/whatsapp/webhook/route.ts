@@ -49,6 +49,16 @@ type WhatsAppWebhookPayload = {
   }>;
 };
 
+// JSON.parse() garantit une syntaxe valide, pas une forme conforme au type
+// WhatsAppWebhookPayload déclaré au-dessus — TypeScript l'accepte quand
+// même (JSON.parse renvoie `any`), mais un corps comme `null` ou
+// `{"entry": {}}` (objet au lieu d'un tableau) passerait la vérification
+// de type à la compilation puis ferait planter `for...of` à l'exécution.
+// asArray() est le seul point où cette forme est réellement vérifiée.
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
 // Meta exige un accusé 200 rapide, sans quoi il retente puis finit par
 // désactiver le webhook — les blocs ci-dessous restent donc best-effort et
 // ne doivent jamais faire échouer la réponse.
@@ -61,35 +71,42 @@ export async function POST(request: NextRequest) {
 
   let payload: WhatsAppWebhookPayload;
   try {
-    payload = JSON.parse(rawBody);
+    const parsed: unknown = JSON.parse(rawBody);
+    payload = parsed !== null && typeof parsed === "object" ? (parsed as WhatsAppWebhookPayload) : {};
   } catch (err) {
     console.error("WhatsApp webhook: invalid JSON body", err);
     return NextResponse.json({ ok: true });
   }
 
-  for (const entry of payload.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      for (const status of change.value?.statuses ?? []) {
-        try {
-          await db.messagingLog.updateMany({
-            where: { providerMessageId: status.id },
-            data: { status: status.status === "failed" ? "failed" : "sent" },
+  try {
+    for (const entry of asArray<NonNullable<WhatsAppWebhookPayload["entry"]>[number]>(payload.entry)) {
+      for (const change of asArray<NonNullable<typeof entry.changes>[number]>(entry?.changes)) {
+        for (const status of asArray<{ id: string; status: string }>(change?.value?.statuses)) {
+          try {
+            await db.messagingLog.updateMany({
+              where: { providerMessageId: status?.id },
+              data: { status: status?.status === "failed" ? "failed" : "sent" },
+            });
+          } catch (err) {
+            console.error("WhatsApp webhook: status update failed", status, err);
+          }
+        }
+
+        for (const message of asArray<{ id: string; from: string; type: string }>(change?.value?.messages)) {
+          // Pas encore de boîte de réception WhatsApp côté admin : on se
+          // contente de tracer l'événement pour l'instant, à brancher sur une
+          // vraie table le jour où ce besoin est confirmé.
+          console.log("WhatsApp webhook: inbound message received", {
+            from: message?.from,
+            type: message?.type,
           });
-        } catch (err) {
-          console.error("WhatsApp webhook: status update failed", status, err);
         }
       }
-
-      for (const message of change.value?.messages ?? []) {
-        // Pas encore de boîte de réception WhatsApp côté admin : on se
-        // contente de tracer l'événement pour l'instant, à brancher sur une
-        // vraie table le jour où ce besoin est confirmé.
-        console.log("WhatsApp webhook: inbound message received", {
-          from: message.from,
-          type: message.type,
-        });
-      }
     }
+  } catch (err) {
+    // Filet de sécurité final : une forme de payload totalement inattendue
+    // ne doit jamais faire échouer l'accusé de réception.
+    console.error("WhatsApp webhook: unexpected payload shape", err);
   }
 
   return NextResponse.json({ ok: true });

@@ -12,7 +12,19 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   const origin = request.nextUrl.origin;
-  const formData = await request.formData();
+
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch (err) {
+    // Content-Type absent/non multipart, corps mal formé, etc. — jamais
+    // déclenché par le formulaire réel (le navigateur pose toujours un
+    // Content-Type multipart correct), mais un POST direct forgé sur cette
+    // route publique le peut. Sans ce garde, la requête levait un 500 brut
+    // sans redirection au lieu de l'état d'erreur normal de la page.
+    console.error("Ambassador signup formData parse failed", err);
+    return NextResponse.redirect(`${origin}/cigibm?ambassadeur=erreur#ambassadeurs`, 303);
+  }
 
   const fullName = formData.get("fullName")?.toString().trim();
   const phoneRaw = formData.get("phone")?.toString().trim();
@@ -70,5 +82,5 @@ export async function POST(request: NextRequest) {
     console.error("BREVO_API_KEY is not configured, skipping ambassador welcome email");
   }
 
-  return NextResponse.redirect(`${origin}/cigibm?ambassadeur=succes#ambassadeurs`, 303);
+  return NextResponse.redirect(`${origin}/cigibm?ambassadeur=succes&ref=${slug}#ambassadeurs`, 303);
 }

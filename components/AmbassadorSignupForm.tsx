@@ -59,11 +59,31 @@ export default function AmbassadorSignupForm() {
       formData.set("photo", await compressPhoto(photo));
     }
 
+    // Navigation en dur plutôt que router.push() : cohérent avec le reste
+    // du site, où RegistrationForm et toutes les autres pages de ce tunnel
+    // reposent sur une vraie soumission de formulaire + redirection navigateur
+    // plutôt que sur une transition client-side. La seule raison pour
+    // laquelle celui-ci passe par fetch() est la compression de la photo
+    // avant l'envoi (cf. compressPhoto ci-dessus) — la navigation finale
+    // doit se comporter de façon identique aux autres formulaires du site.
     try {
       const response = await fetch("/api/ambassador-signup", { method: "POST", body: formData });
-      window.location.href = response.url || "/cigibm?ambassadeur=succes#ambassadeurs";
+      // fetch() suit les redirections lui-même : response.redirected/.ok
+      // ne sont fiables ici que si le serveur a effectivement répondu par
+      // une redirection 303 (comportement normal de cette route). Un 500
+      // brut sans Location laisserait response.url pointer vers l'URL de
+      // la requête d'origine — sans ce garde, la navigation finale
+      // atterrirait sur du 404/405 plutôt que sur l'état d'erreur normal
+      // de la page.
+      if (response.redirected && response.ok) {
+        window.location.href = response.url;
+      } else {
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- voir le commentaire au-dessus du bloc try
+        window.location.href = "/cigibm?ambassadeur=erreur#ambassadeurs";
+      }
     } catch (err) {
       console.error("Ambassador signup request failed", err);
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- voir le commentaire ci-dessus
       window.location.href = "/cigibm?ambassadeur=erreur#ambassadeurs";
     }
   }

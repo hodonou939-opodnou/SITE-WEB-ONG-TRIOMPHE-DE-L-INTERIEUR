@@ -102,10 +102,10 @@ export default async function Cigibm2026Page({
         <ReferralCapture />
       </Suspense>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-leaf-950">
+      <section id="inscription" className="relative scroll-mt-4 overflow-hidden bg-leaf-950">
         <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/20 blur-3xl" />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <Reveal scale>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-leaf-300">
               {cigibm.nextEdition.edition} · {cigibm.nextEdition.dates}
@@ -144,13 +144,25 @@ export default async function Cigibm2026Page({
             </div>
           </Reveal>
 
-          <Reveal delay={0.1} scale>
-            {poster ? (
-              <Photo src={poster} alt="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
-            ) : (
-              <ImagePlaceholder label="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
-            )}
-          </Reveal>
+          <div>
+            <Reveal delay={0.1} scale>
+              {poster ? (
+                <Photo src={poster} alt="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
+              ) : (
+                <ImagePlaceholder label="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
+              )}
+            </Reveal>
+            <Reveal delay={0.16} scale className="mt-8">
+              {erreur && (
+                <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  Une erreur est survenue, votre inscription n&apos;a pas pu être
+                  enregistrée. Réessayez, ou appelez directement le{" "}
+                  {cigibm.nextEdition.registrationPhones[0]}.
+                </p>
+              )}
+              <RegistrationForm />
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -225,51 +237,46 @@ export default async function Cigibm2026Page({
         </div>
       </div>
 
-      {/* Value stack + registration */}
-      <section id="inscription" className="scroll-mt-4 bg-leaf-950 py-20 sm:py-24">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-start">
-          <Reveal>
+      {/* Value stack */}
+      <section className="bg-leaf-950 py-20 sm:py-24">
+        <div className="mx-auto max-w-2xl px-6 sm:px-8">
+          <Reveal className="text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
               Ce que comprend votre place
             </p>
             <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
               Tout cela, sans avoir à payer quoi que ce soit
             </h2>
-            <ul className="mt-8 space-y-4">
-              {valueStack.map((item, i) => (
-                <Reveal key={item} delay={i * 0.05}>
-                  <li className="flex items-start gap-3.5">
-                    <span
-                      aria-hidden
-                      className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-500/20 text-xs font-bold text-leaf-300"
-                    >
-                      ✓
-                    </span>
-                    <span className="text-base leading-relaxed text-mist-100/85">
-                      {item}
-                    </span>
-                  </li>
-                </Reveal>
-              ))}
-            </ul>
-            <Reveal delay={0.3}>
-              <p className="mt-8 border-l-2 border-leaf-400 py-2 pl-5 text-base leading-relaxed text-mist-100/70">
-                La seule chose que nous vous demandons, c&apos;est de réserver
-                votre place, pour que nous sachions vous accueillir
-                correctement.
-              </p>
-            </Reveal>
           </Reveal>
-
-          <Reveal delay={0.12} scale>
-            {erreur && (
-              <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                Une erreur est survenue, votre inscription n&apos;a pas pu être
-                enregistrée. Réessayez, ou appelez directement le{" "}
-                {cigibm.nextEdition.registrationPhones[0]}.
-              </p>
-            )}
-            <RegistrationForm />
+          <ul className="mt-10 space-y-4">
+            {valueStack.map((item, i) => (
+              <Reveal key={item} delay={i * 0.05}>
+                <li className="flex items-start gap-3.5">
+                  <span
+                    aria-hidden
+                    className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-500/20 text-xs font-bold text-leaf-300"
+                  >
+                    ✓
+                  </span>
+                  <span className="text-base leading-relaxed text-mist-100/85">
+                    {item}
+                  </span>
+                </li>
+              </Reveal>
+            ))}
+          </ul>
+          <Reveal delay={0.3} className="text-center">
+            <p className="mx-auto mt-8 max-w-lg border-l-2 border-leaf-400 py-2 pl-5 text-left text-base leading-relaxed text-mist-100/70">
+              La seule chose que nous vous demandons, c&apos;est de réserver
+              votre place, pour que nous sachions vous accueillir
+              correctement.
+            </p>
+            <a
+              href="#inscription"
+              className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
+            >
+              Je réserve ma place gratuite
+            </a>
           </Reveal>
         </div>
       </section>

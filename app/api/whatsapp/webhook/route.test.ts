@@ -147,4 +147,22 @@ describe("POST /api/whatsapp/webhook", () => {
 
     expect(response.status).toBe(200);
   });
+
+  it("does not crash on a JSON body that is not an object (e.g. a bare null)", async () => {
+    const { POST } = await import("./route");
+    const response = await POST(buildPostRequest(null));
+
+    expect(response.status).toBe(200);
+  });
+
+  it("does not crash when entry/changes/statuses/messages are the wrong shape (objects instead of arrays)", async () => {
+    const { POST } = await import("./route");
+    const response = await POST(
+      buildPostRequest({
+        entry: { changes: { value: { statuses: { id: "x" }, messages: { id: "y" } } } },
+      })
+    );
+
+    expect(response.status).toBe(200);
+  });
 });

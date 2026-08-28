@@ -215,6 +215,42 @@ export function buildAmbassadorReferralEmail(ambassadorFirstNameOrFullName: stri
   };
 }
 
+// Pendant interne de buildAmbassadorReferralEmail : même événement, mais
+// adressé à l'administration plutôt qu'à l'ambassadeur. Contrairement à
+// l'email ambassadeur (qui reste volontairement muet sur l'identité de la
+// personne inscrite), celui-ci peut nommer le participant sans problème de
+// confidentialité — l'administration a de toute façon accès à la fiche
+// complète depuis le CRM.
+export function buildAmbassadorReferralAdminNotification(
+  ambassadorFullName: string,
+  participantFullName: string,
+  totalReferrals: number
+) {
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Notification interne
+    </p>
+    <h1 style="margin:0 0 20px; font-size:24px; line-height:1.3; color:#183a1a;">
+      Nouvelle inscription via un lien de parrainage
+    </h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 8px; font-size:14px; color:#16211d;"><strong>Ambassadeur :</strong> ${ambassadorFullName}</p>
+          <p style="margin:0 0 8px; font-size:14px; color:#16211d;"><strong>Personne inscrite :</strong> ${participantFullName}</p>
+          <p style="margin:0; font-size:14px; color:#16211d;"><strong>Total pour cet ambassadeur :</strong> ${totalReferrals}</p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir les ambassadeurs", `${SITE_URL}/admin/ambassadors`)}
+  `);
+
+  return {
+    subject: `Nouvelle inscription via le lien de ${ambassadorFullName}`,
+    html,
+  };
+}
+
 // Variante pour une campagne groupée Brevo (envoi à toute la liste) : le
 // prénom est résolu par Brevo lui-même via ce tag de fusion, contact par
 // contact, plutôt que codé en dur comme pour l'email transactionnel unique.

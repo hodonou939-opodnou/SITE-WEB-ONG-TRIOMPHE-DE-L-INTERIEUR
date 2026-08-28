@@ -12,6 +12,7 @@ import PhotoCarousel from "@/components/PhotoCarousel";
 import Reveal from "@/components/Reveal";
 import AmbassadorSlider from "@/components/AmbassadorSlider";
 import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
+import AmbassadorSuccessPopup from "@/components/AmbassadorSuccessPopup";
 import { cigibm, foundingStory, mentalHealthStats, pressMentions } from "@/lib/content";
 import { getGalleryImages, getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
@@ -51,9 +52,9 @@ export const metadata: Metadata = pageMetadata({
 export default async function CigibmPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ambassadeur?: string }>;
+  searchParams: Promise<{ ambassadeur?: string; ref?: string }>;
 }) {
-  const { ambassadeur } = await searchParams;
+  const { ambassadeur, ref } = await searchParams;
   const featured = getNamedImage("cigibm-featured") ?? getGalleryImages("cigibm")[0];
   const poster = getNamedImage("cigibm-poster");
   const nextEditionPhotos = getGalleryImages(`cigibm-${cigibm.nextEdition.id}`);
@@ -378,14 +379,9 @@ export default async function CigibmPage({
             </div>
           )}
 
+          {ambassadeur === "succes" && ref && <AmbassadorSuccessPopup slug={ref} />}
+
           <div className="mx-auto mt-16 max-w-md">
-            {ambassadeur === "succes" && (
-              <p className="mb-5 rounded-xl border border-leaf-400/30 bg-leaf-500/10 px-4 py-3 text-center text-sm text-leaf-200">
-                Votre compte ambassadeur a bien été créé. Vous allez recevoir
-                un email avec votre lien personnel dès qu&apos;il sera validé
-                par notre équipe.
-              </p>
-            )}
             {ambassadeur === "erreur" && (
               <p className="mb-5 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300">
                 Une erreur est survenue, votre inscription n&apos;a pas pu
