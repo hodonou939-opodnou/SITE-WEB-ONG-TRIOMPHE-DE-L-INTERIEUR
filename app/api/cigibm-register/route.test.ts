@@ -183,4 +183,27 @@ describe("POST /api/cigibm-register", () => {
 
     await db.ambassador.deleteMany({ where: { id: { in: [ambassadorA.id, ambassadorB.id] } } });
   });
+
+  it("still redirects to /merci even when the ambassador lookup itself fails", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
+    // resolveAmbassadorFromCookie runs before the Brevo block (right after
+    // normalizePhone), so an unhandled rejection here would abort the whole
+    // handler, not just skip attribution — proving this survives is the
+    // point of this test, distinct from the Participant-write resilience
+    // test above.
+    vi.spyOn(db.ambassador, "findUnique").mockRejectedValueOnce(new Error("DB is down"));
+
+    const { POST } = await import("./route");
+    const email = `ambassador-lookup-fails${TEST_EMAIL_DOMAIN}`;
+    const request = buildRequest({ name: "Lookup Failure Participant", phone: "0100000096", email, consent: "1" });
+    request.cookies.set("cigibm_ref", "test-plan-register-ambassador");
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    const participant = await db.participant.findFirst({ where: { email } });
+    expect(participant?.ambassadorId).toBeNull();
+  });
 });

@@ -38,18 +38,29 @@ async function createBrevoContact(
 // incidence aujourd'hui, les slugs produits par slugify() — Task 1 — étant
 // déjà URL-safe, mais c'est le traitement correct et robuste).
 // Retourne null pour tout cas — cookie absent, slug inconnu, ambassadeur
-// inactif — de sorte que l'attribution reste strictement optionnelle et ne
-// puisse jamais faire échouer l'inscription.
+// inactif, échec de la requête DB elle-même — de sorte que l'attribution
+// reste strictement optionnelle et ne puisse jamais faire échouer
+// l'inscription. Ce dernier cas compte particulièrement ici : cet appel a
+// lieu avant le bloc Brevo (donc avant tout le reste du handler), donc une
+// exception non rattrapée ici bloquerait l'inscription entière plutôt que
+// de simplement priver l'écriture Participant de son attribution — même
+// classe de risque que celle documentée dans lib/db.ts pour le reste de la
+// route.
 async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string | null> {
   const rawSlug = request.cookies.get("cigibm_ref")?.value;
   if (!rawSlug) return null;
 
   const slug = decodeURIComponent(rawSlug);
 
-  const ambassador = await db.ambassador.findUnique({ where: { slug } });
-  if (!ambassador || !ambassador.active) return null;
+  try {
+    const ambassador = await db.ambassador.findUnique({ where: { slug } });
+    if (!ambassador || !ambassador.active) return null;
 
-  return ambassador.id;
+    return ambassador.id;
+  } catch (err) {
+    console.error("Ambassador lookup failed", { slug }, err);
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest) {
