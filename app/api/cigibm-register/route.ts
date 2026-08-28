@@ -30,6 +30,43 @@ async function createBrevoContact(
   });
 }
 
+// Résout l'ambassadeur (Task 1) référent depuis le cookie cigibm_ref écrit
+// par ReferralCapture (Task 5). Le cookie est encodé via encodeURIComponent
+// côté écriture, mais request.cookies.get(...).value est déjà la valeur
+// décodée : le parseCookie() interne de Next (voir
+// node_modules/next/dist/compiled/@edge-runtime/cookies/index.js) appelle
+// lui-même decodeURIComponent en analysant l'en-tête `Cookie` brut, avant
+// que RequestCookies n'expose la moindre valeur. Un decodeURIComponent
+// applicatif supplémentaire ici serait donc redondant — et activement
+// dangereux : une valeur brute comme `cigibm_ref=%25zz` redevient "%zz"
+// après le décodage (unique) de Next, et un second decodeURIComponent sur
+// "%zz" lève URIError: URI malformed (constaté empiriquement — cf.
+// route.test.ts, régression ajoutée après un premier correctif erroné qui
+// avait réintroduit ce même decode ici).
+// Retourne null pour tout cas — cookie absent, slug inconnu, ambassadeur
+// inactif, échec de la requête DB elle-même — de sorte que l'attribution
+// reste strictement optionnelle et ne puisse jamais faire échouer
+// l'inscription. Ce dernier cas compte particulièrement ici : cet appel a
+// lieu avant le bloc Brevo (donc avant tout le reste du handler), donc une
+// exception non rattrapée ici bloquerait l'inscription entière plutôt que
+// de simplement priver l'écriture Participant de son attribution — même
+// classe de risque que celle documentée dans lib/db.ts pour le reste de la
+// route.
+async function resolveAmbassadorFromCookie(request: NextRequest): Promise<string | null> {
+  const slug = request.cookies.get("cigibm_ref")?.value;
+  if (!slug) return null;
+
+  try {
+    const ambassador = await db.ambassador.findUnique({ where: { slug } });
+    if (!ambassador || !ambassador.active) return null;
+
+    return ambassador.id;
+  } catch (err) {
+    console.error("Ambassador lookup failed", { slug }, err);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const formData = await request.formData();
@@ -44,6 +81,7 @@ export async function POST(request: NextRequest) {
   }
 
   const phone = normalizePhone(phoneRaw);
+  const ambassadorId = await resolveAmbassadorFromCookie(request);
 
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
@@ -115,6 +153,7 @@ export async function POST(request: NextRequest) {
           email,
           consent: true,
           registrationSource: "form",
+          ambassadorId,
         },
         update: {
           fullName: name,

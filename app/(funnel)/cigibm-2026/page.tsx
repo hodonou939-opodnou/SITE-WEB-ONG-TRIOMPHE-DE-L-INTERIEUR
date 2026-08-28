@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Reveal from "@/components/Reveal";
 import Photo from "@/components/Photo";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
 import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
+import ReferralCapture from "@/components/ReferralCapture";
+import AmbassadorSlider from "@/components/AmbassadorSlider";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
+import { listActiveAmbassadors } from "@/lib/ambassadors/public";
 
 export const metadata: Metadata = pageMetadata({
   title: `CIGIBM 2026, ${cigibm.nextEdition.theme}`,
@@ -88,6 +92,17 @@ export default async function Cigibm2026Page({
   searchParams: Promise<{ erreur?: string }>;
 }) {
   const { erreur } = await searchParams;
+  let activeAmbassadors: Awaited<ReturnType<typeof listActiveAmbassadors>> = [];
+  try {
+    activeAmbassadors = await listActiveAmbassadors();
+  } catch (err) {
+    // Ne doit jamais faire tomber la page /cigibm-2026 (page de conversion
+    // principale, et page d'atterrissage des liens de parrainage déjà en
+    // circulation) : une base indisponible dégrade simplement vers l'état
+    // "aucun ambassadeur", déjà géré plus bas par la condition
+    // activeAmbassadors.length > 0 — cf. Finding 3 de la revue finale.
+    console.error("listActiveAmbassadors failed", err);
+  }
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
@@ -96,6 +111,9 @@ export default async function Cigibm2026Page({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ReferralCapture />
+      </Suspense>
       {/* Hero */}
       <section className="relative overflow-hidden bg-leaf-950">
         <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
@@ -315,6 +333,38 @@ export default async function Cigibm2026Page({
           )}
         </div>
       </section>
+
+      {/* Ambassadors */}
+      {activeAmbassadors.length > 0 && (
+        <section className="bg-mist-200 py-20 sm:py-24">
+          <div className="mx-auto max-w-5xl px-6 sm:px-8">
+            <Reveal className="text-center">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">
+                Programme Ambassadeurs
+              </p>
+              <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
+                Ils et elles ont déjà invité leur entourage
+              </h2>
+            </Reveal>
+            <div className="mt-10">
+              <AmbassadorSlider ambassadors={activeAmbassadors} />
+            </div>
+            <Reveal delay={0.1} className="mt-12 text-center">
+              <p className="mx-auto max-w-md text-sm leading-relaxed text-ink/70">
+                Vous aimeriez, vous aussi, inviter votre entourage au CIGIBM
+                2026 ? Devenez ambassadeur ou ambassadrice, il suffit d&apos;un
+                appel.
+              </p>
+              <a
+                href={primaryPhoneHref}
+                className="mt-3 inline-block text-sm font-semibold text-leaf-700 underline underline-offset-4 transition-colors hover:text-leaf-600"
+              >
+                Appelez le {phones[0]}
+              </a>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* President quote */}
       <div className="bg-mist-warm">
