@@ -365,8 +365,15 @@ export function buildReminderCampaignHtml() {
 // /v3/senders/domains/<domaine> ("authenticated": true), puis confirmer
 // par un envoi réel suivi d'un événement "delivered" dans
 // GET /v3/smtp/statistics/events avant de le mettre en PRIMARY_SENDER.
-const PRIMARY_SENDER = { name: siteConfig.name, email: siteConfig.email };
-const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" };
+// Nom d'expéditeur "Coach Christelle" — choisi par l'ONG, configuré tel
+// quel côté Brevo pour contact@ongtriomphedelinterieur.com (GET
+// /v3/senders, id 4). Distinct de siteConfig.name (utilisé pour le pied de
+// page des emails, où l'identité institutionnelle reste appropriée) —
+// c'est spécifiquement le nom affiché comme expéditeur qui doit être
+// personnel.
+const SENDER_NAME = "Coach Christelle";
+const PRIMARY_SENDER = { name: SENDER_NAME, email: siteConfig.email };
+const FALLBACK_SENDER = { name: SENDER_NAME, email: "hodonou939@gmail.com" };
 
 export async function sendTransactionalEmail(
   apiKey: string,

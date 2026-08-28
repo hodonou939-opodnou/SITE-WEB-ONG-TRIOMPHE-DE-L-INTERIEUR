@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/content";
@@ -35,7 +35,9 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
         © {new Date().getFullYear()} {siteConfig.name}, {siteConfig.location}
       </footer>
 
-      <RegistrationPopup />
+      <Suspense fallback={null}>
+        <RegistrationPopup />
+      </Suspense>
     </>
   );
 }

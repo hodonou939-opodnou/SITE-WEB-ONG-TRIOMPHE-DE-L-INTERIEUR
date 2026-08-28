@@ -21,9 +21,8 @@ export const siteConfig = {
   phoneHref: "tel:+2290168280675",
   social: {
     facebook: "https://www.facebook.com/share/1D4sEtaPUN/?mibextid=wwXIfr",
-    instagram: "#", // [PLACEHOLDER]
-    tiktok: "#", // [PLACEHOLDER]
-    linkedin: "#", // [PLACEHOLDER]
+    tiktok: "https://www.tiktok.com/@ongtdi1?_r=1&_t=ZP-99Gb2T2M7LT",
+    linkedin: "https://www.linkedin.com/in/ong-triomphedelinterieur-a52635365/",
   },
 };
 
@@ -235,7 +234,7 @@ export const cigibm = {
     id: "edition-4",
     edition: "4ème édition",
     theme: "Le vaccin de la dépression",
-    dates: "17 octobre 2026",
+    dates: "17 octobre 2026, dès 9h00",
     venue: "Palais des Congrès de Cotonou",
     note: "Participation gratuite sur inscription.",
     registrationPhones: ["+229 01 68 28 06 75", "+229 01 57 30 43 29"],

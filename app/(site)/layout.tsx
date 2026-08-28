@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RegistrationPopup from "@/components/RegistrationPopup";
@@ -12,7 +12,9 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <Header logoSrc={logoSrc} />
       <main className="flex-1">{children}</main>
       <Footer logoSrc={logoSrc} />
-      <RegistrationPopup />
+      <Suspense fallback={null}>
+        <RegistrationPopup />
+      </Suspense>
     </>
   );
 }

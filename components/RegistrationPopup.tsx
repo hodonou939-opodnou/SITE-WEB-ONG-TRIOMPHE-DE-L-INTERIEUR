@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cigibm } from "@/lib/content";
 
 const SHOWN_KEY = "cigibm2026-popup-shown";
@@ -13,8 +13,13 @@ const SUPPRESSED_PATHS = ["/cigibm-2026/inscription"];
 
 export default function RegistrationPopup() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const suppressed = SUPPRESSED_PATHS.includes(pathname);
+  // Quelqu'un qui arrive via un lien d'ambassadeur (?ref=...) a déjà sa
+  // propre porte d'entrée dédiée vers l'inscription (le formulaire est
+  // désormais la première chose visible dans le hero de /cigibm-2026) —
+  // lui superposer ce popup générique serait redondant.
+  const suppressed = SUPPRESSED_PATHS.includes(pathname) || Boolean(searchParams.get("ref"));
 
   useEffect(() => {
     if (suppressed) return;

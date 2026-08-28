@@ -11,16 +11,6 @@ function FacebookIcon() {
   );
 }
 
-function InstagramIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 function TikTokIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
@@ -39,7 +29,6 @@ function LinkedInIcon() {
 
 const socialLinks = [
   { label: "Facebook", href: siteConfig.social.facebook, Icon: FacebookIcon },
-  { label: "Instagram", href: siteConfig.social.instagram, Icon: InstagramIcon },
   { label: "TikTok", href: siteConfig.social.tiktok, Icon: TikTokIcon },
   { label: "LinkedIn", href: siteConfig.social.linkedin, Icon: LinkedInIcon },
 ];
