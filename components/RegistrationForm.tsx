@@ -1,6 +1,11 @@
 import { cigibm } from "@/lib/content";
 
-export default function RegistrationForm({ id }: { id?: string }) {
+// idPrefix : ce formulaire apparaît désormais à deux endroits sur
+// /cigibm-2026 (hero + après la section "Ce que comprend votre place").
+// Sans préfixe distinct, les deux instances généreraient des id="reg-*"
+// dupliqués — HTML invalide, associations label/input cassées pour l'un
+// des deux exemplaires.
+export default function RegistrationForm({ id, idPrefix = "reg" }: { id?: string; idPrefix?: string }) {
   const phones = cigibm.nextEdition.registrationPhones;
   const inputClass =
     "w-full rounded-xl border border-mist-50/20 bg-mist-50/10 px-4 py-3.5 text-sm text-mist-50 placeholder:text-mist-100/40 outline-none transition-colors focus:border-azure-400 focus:bg-mist-50/15";
@@ -22,13 +27,13 @@ export default function RegistrationForm({ id }: { id?: string }) {
       >
         <div>
           <label
-            htmlFor="reg-firstname"
+            htmlFor={`${idPrefix}-firstname`}
             className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-mist-100/60"
           >
             Prénom & nom
           </label>
           <input
-            id="reg-firstname"
+            id={`${idPrefix}-firstname`}
             name="name"
             type="text"
             required
@@ -40,13 +45,13 @@ export default function RegistrationForm({ id }: { id?: string }) {
 
         <div>
           <label
-            htmlFor="reg-phone"
+            htmlFor={`${idPrefix}-phone`}
             className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-mist-100/60"
           >
             Téléphone (WhatsApp de préférence)
           </label>
           <input
-            id="reg-phone"
+            id={`${idPrefix}-phone`}
             name="phone"
             type="tel"
             required
@@ -58,13 +63,13 @@ export default function RegistrationForm({ id }: { id?: string }) {
 
         <div>
           <label
-            htmlFor="reg-email"
+            htmlFor={`${idPrefix}-email`}
             className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-mist-100/60"
           >
             Email
           </label>
           <input
-            id="reg-email"
+            id={`${idPrefix}-email`}
             name="email"
             type="email"
             required

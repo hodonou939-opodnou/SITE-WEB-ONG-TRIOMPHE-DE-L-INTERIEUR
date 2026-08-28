@@ -168,7 +168,7 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
       </tr>
     </table>
     <p style="margin:20px 0 0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
-      Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques heures. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte — et vous recevrez un email à chaque nouvelle inscription.
+      Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques minutes. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte — et vous recevrez un email à chaque nouvelle inscription.
     </p>
     ${ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
   `);
@@ -251,6 +251,46 @@ export function buildAmbassadorReferralAdminNotification(
   };
 }
 
+// Déclenché à l'inscription d'un nouvel ambassadeur (compte créé avec
+// active: false, cf. app/api/ambassador-signup/route.ts) : l'approbation
+// reste entièrement manuelle (aucune tâche planifiée, aucune approbation
+// automatique) — sans cet email, l'administration ne découvre une nouvelle
+// candidature qu'en consultant /admin/ambassadors de sa propre initiative,
+// ce qui rend la promesse « sous quelques minutes » faite à l'ambassadeur
+// intenable. Le lien pointe directement sur la fiche d'édition pour que la
+// validation prenne un clic.
+export function buildAmbassadorPendingApprovalAdminNotification(
+  ambassadorId: string,
+  ambassadorFullName: string,
+  ambassadorEmail: string
+) {
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Action requise
+    </p>
+    <h1 style="margin:0 0 20px; font-size:24px; line-height:1.3; color:#183a1a;">
+      Nouveau candidat ambassadeur à valider
+    </h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 8px; font-size:14px; color:#16211d;"><strong>Nom :</strong> ${ambassadorFullName}</p>
+          <p style="margin:0; font-size:14px; color:#16211d;"><strong>Email :</strong> ${ambassadorEmail}</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
+      Son compte reste invisible du site tant qu&apos;il n&apos;est pas activé. Nous lui avons annoncé une validation sous quelques minutes.
+    </p>
+    ${ctaButton("Valider ce compte", `${SITE_URL}/admin/ambassadors/${ambassadorId}/edit`)}
+  `);
+
+  return {
+    subject: `À valider : ${ambassadorFullName} veut devenir ambassadeur`,
+    html,
+  };
+}
+
 // Variante pour une campagne groupée Brevo (envoi à toute la liste) : le
 // prénom est résolu par Brevo lui-même via ce tag de fusion, contact par
 // contact, plutôt que codé en dur comme pour l'email transactionnel unique.
@@ -272,8 +312,23 @@ export function buildReminderCampaignHtml() {
   `);
 }
 
-const PRIMARY_SENDER = { name: siteConfig.name, email: siteConfig.email };
-const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" };
+// siteConfig.email (ongtriomphedelinterieur@gmail.com) n'est PAS un
+// expéditeur validé dans Brevo (confirmé via GET /v3/senders : "active":
+// false). Résultat concret, vérifié en direct pendant cette session : un
+// envoi avec cet expéditeur répond quand même 201 Created avec un
+// messageId normal — Brevo n'expose ce rejet que de façon asynchrone (API
+// Events), jamais dans la réponse HTTP synchrone. Le repli ci-dessous sur
+// `!res.ok` ne peut donc JAMAIS se déclencher pour ce cas précis : chaque
+// envoi avec siteConfig.email comme expéditeur échouait silencieusement
+// tout en étant journalisé "sent" côté application — des inscrits réels
+// n'ont jamais reçu leur confirmation à cause de ça. hodonou939@gmail.com
+// est le seul expéditeur confirmé actif ; il est donc désormais
+// l'expéditeur principal, pas le repli. Ne pas remettre siteConfig.email
+// en position PRIMARY_SENDER sans d'abord confirmer via GET
+// https://api.brevo.com/v3/senders que son "active" est repassé à true
+// (validation manuelle requise dans le compte Brevo).
+const PRIMARY_SENDER = { name: siteConfig.name, email: "hodonou939@gmail.com" };
+const FALLBACK_SENDER = { name: siteConfig.name, email: "hodonou@a6ko.com" };
 
 export async function sendTransactionalEmail(
   apiKey: string,

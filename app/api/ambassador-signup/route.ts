@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAmbassador } from "@/lib/admin/ambassadors";
 import { uploadAmbassadorPhoto } from "@/lib/ambassadors/photo";
-import { buildAmbassadorSignupEmail, sendTransactionalEmail } from "@/lib/email";
+import { buildAmbassadorPendingApprovalAdminNotification, buildAmbassadorSignupEmail, sendTransactionalEmail } from "@/lib/email";
+import { siteConfig } from "@/lib/content";
+import { db } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 
 // Même raisonnement que app/api/cigibm-register/route.ts (Task 8/9 de ce
@@ -36,6 +38,38 @@ export async function POST(request: NextRequest) {
   }
 
   const phone = normalizePhone(phoneRaw);
+  const apiKey = process.env.BREVO_API_KEY;
+
+  // Détection de doublon (même email OU même téléphone) : plutôt que de
+  // créer un second compte, on renvoie simplement le lien existant à la
+  // personne. Vérifié avant l'upload de la photo — inutile de l'uploader
+  // pour un compte qui ne sera jamais créé.
+  try {
+    const existing = await db.ambassador.findFirst({ where: { OR: [{ email }, { phone }] } });
+    if (existing) {
+      if (apiKey) {
+        try {
+          const referralUrl = `${origin}/cigibm-2026?ref=${existing.slug}`;
+          const message = buildAmbassadorSignupEmail(fullName, referralUrl);
+          const emailRes = await sendTransactionalEmail(apiKey, { email, name: fullName }, message);
+          if (!emailRes.ok) {
+            console.error("Ambassador link resend failed", emailRes.status, await emailRes.text().catch(() => ""));
+          }
+        } catch (err) {
+          console.error("Ambassador link resend request failed", err);
+        }
+      } else {
+        console.error("BREVO_API_KEY is not configured, skipping ambassador link resend");
+      }
+
+      return NextResponse.redirect(`${origin}/cigibm?ambassadeur=existant&ref=${existing.slug}#ambassadeurs`, 303);
+    }
+  } catch (err) {
+    // Une panne de la vérification de doublon ne doit pas empêcher une
+    // inscription par ailleurs légitime — on continue vers la création
+    // normale plutôt que d'échouer la requête entière.
+    console.error("Ambassador duplicate check failed, continuing with normal signup", { email }, err);
+  }
 
   // La photo est optionnelle et son échec ne doit jamais bloquer la
   // création du compte ambassadeur : au pire, le carrousel public retombe
@@ -50,6 +84,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  let ambassadorId: string;
   let slug: string;
   try {
     // active: false — un ambassadeur qui s'inscrit lui-même reste invisible
@@ -57,6 +92,7 @@ export async function POST(request: NextRequest) {
     // /admin/ambassadors (choix explicite de l'utilisateur : approbation
     // requise plutôt qu'une mise en ligne immédiate).
     const result = await createAmbassador({ fullName, phone, email, photoUrl, active: false });
+    ambassadorId = result.id;
     slug = result.slug;
   } catch (err) {
     console.error("Ambassador self-signup creation failed", { email }, err);
@@ -65,9 +101,10 @@ export async function POST(request: NextRequest) {
 
   const referralUrl = `${origin}/cigibm-2026?ref=${slug}`;
 
-  // L'envoi de l'email de bienvenue ne doit jamais faire échouer
-  // l'inscription elle-même : le compte ambassadeur est déjà créé.
-  const apiKey = process.env.BREVO_API_KEY;
+  // Ni l'un ni l'autre de ces deux envois ne doit jamais faire échouer
+  // l'inscription elle-même : le compte ambassadeur est déjà créé. Deux
+  // try/catch indépendants pour que l'échec de l'un ne bloque jamais
+  // l'autre.
   if (apiKey) {
     try {
       const message = buildAmbassadorSignupEmail(fullName, referralUrl);
@@ -78,8 +115,23 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error("Ambassador welcome email request failed", err);
     }
+
+    // L'approbation est entièrement manuelle (aucune tâche planifiée) :
+    // sans cette notification, l'administration ne découvre une nouvelle
+    // candidature qu'en consultant /admin/ambassadors de sa propre
+    // initiative, ce qui rend illusoire la promesse de validation "sous
+    // quelques minutes" faite à l'ambassadeur ci-dessus.
+    try {
+      const adminMessage = buildAmbassadorPendingApprovalAdminNotification(ambassadorId, fullName, email);
+      const adminEmailRes = await sendTransactionalEmail(apiKey, { email: siteConfig.email, name: siteConfig.name }, adminMessage);
+      if (!adminEmailRes.ok) {
+        console.error("Admin pending-approval notification failed", adminEmailRes.status, await adminEmailRes.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.error("Admin pending-approval notification request failed", err);
+    }
   } else {
-    console.error("BREVO_API_KEY is not configured, skipping ambassador welcome email");
+    console.error("BREVO_API_KEY is not configured, skipping ambassador signup emails");
   }
 
   return NextResponse.redirect(`${origin}/cigibm?ambassadeur=succes&ref=${slug}#ambassadeurs`, 303);

@@ -68,9 +68,13 @@ describe("POST /api/ambassador-signup", () => {
   });
 
   it("sends a welcome email containing the ambassador's referral URL", async () => {
-    let capturedBody: Record<string, unknown> | null = null;
+    // Deux emails partent désormais par inscription (bienvenue + notification
+    // admin) : on capture chaque appel séparément plutôt qu'une seule
+    // variable, pour retrouver précisément celui adressé à l'ambassadeur.
+    const sentEmails: Array<{ to: string; htmlContent: string; subject: string }> = [];
     global.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-      capturedBody = JSON.parse(init?.body as string);
+      const body = JSON.parse(init?.body as string);
+      sentEmails.push({ to: body.to[0].email, htmlContent: body.htmlContent, subject: body.subject });
       return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
     }) as typeof fetch;
 
@@ -79,10 +83,48 @@ describe("POST /api/ambassador-signup", () => {
     await POST(buildRequest({ fullName: `${TEST_SLUG_PREFIX} Beta`, phone: "0100000061", email, consent: "1" }));
 
     const ambassador = await db.ambassador.findFirstOrThrow({ where: { email } });
-    expect(capturedBody).not.toBeNull();
-    expect((capturedBody as unknown as { htmlContent: string }).htmlContent).toContain(
-      `/cigibm-2026?ref=${ambassador.slug}`
+    const welcomeEmail = sentEmails.find((e) => e.to === email);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.htmlContent).toContain(`/cigibm-2026?ref=${ambassador.slug}`);
+  });
+
+  it("also notifies the admin address that a new ambassador is pending approval", async () => {
+    const sentEmails: Array<{ to: string; htmlContent: string; subject: string }> = [];
+    global.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(init?.body as string);
+      sentEmails.push({ to: body.to[0].email, htmlContent: body.htmlContent, subject: body.subject });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `adminnotif${TEST_EMAIL_DOMAIN}`;
+    await POST(buildRequest({ fullName: `${TEST_SLUG_PREFIX} Iota`, phone: "0100000067", email, consent: "1" }));
+
+    const ambassador = await db.ambassador.findFirstOrThrow({ where: { email } });
+    const adminEmail = sentEmails.find((e) => e.subject.includes(`${TEST_SLUG_PREFIX} Iota`));
+    expect(adminEmail).toBeDefined();
+    expect(adminEmail?.htmlContent).toContain(`/admin/ambassadors/${ambassador.id}/edit`);
+  });
+
+  it("still creates the ambassador and redirects to success even when the admin notification fails", async () => {
+    global.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(init?.body as string);
+      if (body.to[0].email === "ongtriomphedelinterieur@gmail.com" || body.subject?.includes("À valider")) {
+        return new Response("server error", { status: 500 });
+      }
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `adminnotiffails${TEST_EMAIL_DOMAIN}`;
+    const response = await POST(
+      buildRequest({ fullName: `${TEST_SLUG_PREFIX} Kappa`, phone: "0100000068", email, consent: "1" })
     );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=succes");
+    const ambassador = await db.ambassador.findFirst({ where: { email } });
+    expect(ambassador).not.toBeNull();
   });
 
   it("redirects to the error state when a required field is missing", async () => {
@@ -165,5 +207,76 @@ describe("POST /api/ambassador-signup", () => {
     expect(uploadAmbassadorPhoto).not.toHaveBeenCalled();
     const ambassador = await db.ambassador.findFirst({ where: { email } });
     expect(ambassador?.photoUrl).toBeNull();
+  });
+
+  it("detects a duplicate by email and resends the existing link instead of creating a second account", async () => {
+    const sentEmails: Array<{ to: string; htmlContent: string }> = [];
+    global.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(init?.body as string);
+      sentEmails.push({ to: body.to[0].email, htmlContent: body.htmlContent });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const email = `dupemail${TEST_EMAIL_DOMAIN}`;
+    const existing = await db.ambassador.create({
+      data: { slug: `${TEST_SLUG_PREFIX}-dupemail`, fullName: "Existing Ambassador", phone: "+2290100000070", email },
+    });
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      buildRequest({ fullName: `${TEST_SLUG_PREFIX} Lambda`, phone: "0100000071", email, consent: "1" })
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain(`/cigibm?ambassadeur=existant&ref=${existing.slug}`);
+
+    const rows = await db.ambassador.findMany({ where: { email } });
+    expect(rows).toHaveLength(1);
+
+    const resend = sentEmails.find((e) => e.to === email);
+    expect(resend).toBeDefined();
+    expect(resend?.htmlContent).toContain(`/cigibm-2026?ref=${existing.slug}`);
+  });
+
+  it("detects a duplicate by phone number even when the email differs", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const existing = await db.ambassador.create({
+      data: {
+        slug: `${TEST_SLUG_PREFIX}-dupphone`,
+        fullName: "Existing Phone Ambassador",
+        phone: "+2290100000072",
+        email: `original${TEST_EMAIL_DOMAIN}`,
+      },
+    });
+
+    const { POST } = await import("./route");
+    const newEmail = `dupphone-new${TEST_EMAIL_DOMAIN}`;
+    const response = await POST(
+      buildRequest({ fullName: `${TEST_SLUG_PREFIX} Mu`, phone: "0100000072", email: newEmail, consent: "1" })
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain(`/cigibm?ambassadeur=existant&ref=${existing.slug}`);
+
+    const newRow = await db.ambassador.findFirst({ where: { email: newEmail } });
+    expect(newRow).toBeNull();
+  });
+
+  it("still redirects to the existing-account state even when the resend email fails", async () => {
+    global.fetch = vi.fn(async () => new Response("server error", { status: 500 })) as typeof fetch;
+
+    const email = `dupemailfails${TEST_EMAIL_DOMAIN}`;
+    const existing = await db.ambassador.create({
+      data: { slug: `${TEST_SLUG_PREFIX}-dupfails`, fullName: "Existing Fails Ambassador", phone: "+2290100000073", email },
+    });
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      buildRequest({ fullName: `${TEST_SLUG_PREFIX} Nu`, phone: "0100000074", email, consent: "1" })
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain(`/cigibm?ambassadeur=existant&ref=${existing.slug}`);
   });
 });

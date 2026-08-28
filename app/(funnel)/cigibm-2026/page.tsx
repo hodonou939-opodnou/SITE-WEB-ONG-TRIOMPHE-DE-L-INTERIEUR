@@ -102,15 +102,18 @@ export default async function Cigibm2026Page({
         <ReferralCapture />
       </Suspense>
       {/* Hero */}
-      <section id="inscription" className="relative scroll-mt-4 overflow-hidden bg-leaf-950">
-        <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/20 blur-3xl" />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <Reveal scale>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-leaf-300">
+      <section id="inscription" className="relative scroll-mt-4 bg-leaf-950">
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/20 blur-3xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-leaf-400/40 to-transparent" />
+        </div>
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-24 sm:px-8 sm:py-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:py-32">
+          <Reveal scale className="order-2 lg:order-1">
+            <span className="inline-flex items-center rounded-full border border-leaf-400/30 bg-leaf-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-leaf-300">
               {cigibm.nextEdition.edition} · {cigibm.nextEdition.dates}
-            </p>
-            <h1 className="font-display text-4xl leading-[1.1] text-mist-50 sm:text-5xl md:text-6xl">
+            </span>
+            <h1 className="mt-6 text-balance font-display text-4xl leading-[1.15] text-mist-50 sm:text-5xl md:text-6xl">
               {cigibm.nextEdition.theme}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-mist-100/85">
@@ -131,9 +134,12 @@ export default async function Cigibm2026Page({
             <div className="mt-7 flex flex-wrap items-center gap-4">
               <a
                 href="#inscription"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl hover:shadow-azure-900/35"
               >
                 Je réserve ma place gratuite
+                <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
+                  →
+                </span>
               </a>
               <a
                 href={primaryPhoneHref}
@@ -142,9 +148,22 @@ export default async function Cigibm2026Page({
                 Ou appelez le {phones[0]}
               </a>
             </div>
+
+            <dl className="mt-12 grid grid-cols-3 gap-6 border-t border-mist-50/10 pt-8">
+              {impactStats.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="sr-only">{stat.label}</dt>
+                  <dd className="font-display text-2xl text-mist-50 sm:text-3xl">
+                    {stat.value.toLocaleString("fr-FR")}
+                    {stat.suffix}
+                  </dd>
+                  <p className="mt-1 text-xs leading-snug text-mist-100/55">{stat.label}</p>
+                </div>
+              ))}
+            </dl>
           </Reveal>
 
-          <div>
+          <div className="order-1 lg:order-2">
             <Reveal delay={0.1} scale>
               {poster ? (
                 <Photo src={poster} alt="Affiche, CIGIBM 2026" ratio="aspect-[4/5]" />
@@ -237,46 +256,45 @@ export default async function Cigibm2026Page({
         </div>
       </div>
 
-      {/* Value stack */}
-      <section className="bg-leaf-950 py-20 sm:py-24">
-        <div className="mx-auto max-w-2xl px-6 sm:px-8">
-          <Reveal className="text-center">
+      {/* Value stack + registration (bis) */}
+      <section className="relative overflow-hidden bg-leaf-950 py-20 sm:py-24">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-leaf-400/40 to-transparent" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+          <Reveal>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-300">
               Ce que comprend votre place
             </p>
             <h2 className="font-display text-3xl leading-tight text-mist-50 sm:text-4xl">
               Tout cela, sans avoir à payer quoi que ce soit
             </h2>
+            <ul className="mt-8 space-y-4">
+              {valueStack.map((item, i) => (
+                <Reveal key={item} delay={i * 0.05}>
+                  <li className="flex items-start gap-3.5">
+                    <span
+                      aria-hidden
+                      className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-500/20 text-xs font-bold text-leaf-300"
+                    >
+                      ✓
+                    </span>
+                    <span className="text-base leading-relaxed text-mist-100/85">
+                      {item}
+                    </span>
+                  </li>
+                </Reveal>
+              ))}
+            </ul>
+            <Reveal delay={0.3}>
+              <p className="mt-8 border-l-2 border-leaf-400 py-2 pl-5 text-base leading-relaxed text-mist-100/70">
+                La seule chose que nous vous demandons, c&apos;est de réserver
+                votre place, pour que nous sachions vous accueillir
+                correctement.
+              </p>
+            </Reveal>
           </Reveal>
-          <ul className="mt-10 space-y-4">
-            {valueStack.map((item, i) => (
-              <Reveal key={item} delay={i * 0.05}>
-                <li className="flex items-start gap-3.5">
-                  <span
-                    aria-hidden
-                    className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-500/20 text-xs font-bold text-leaf-300"
-                  >
-                    ✓
-                  </span>
-                  <span className="text-base leading-relaxed text-mist-100/85">
-                    {item}
-                  </span>
-                </li>
-              </Reveal>
-            ))}
-          </ul>
-          <Reveal delay={0.3} className="text-center">
-            <p className="mx-auto mt-8 max-w-lg border-l-2 border-leaf-400 py-2 pl-5 text-left text-base leading-relaxed text-mist-100/70">
-              La seule chose que nous vous demandons, c&apos;est de réserver
-              votre place, pour que nous sachions vous accueillir
-              correctement.
-            </p>
-            <a
-              href="#inscription"
-              className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-azure-500 px-8 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-azure-900/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-azure-600 hover:shadow-xl"
-            >
-              Je réserve ma place gratuite
-            </a>
+
+          <Reveal delay={0.12} scale>
+            <RegistrationForm idPrefix="reg-bis" />
           </Reveal>
         </div>
       </section>

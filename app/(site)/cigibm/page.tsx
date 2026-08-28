@@ -380,6 +380,7 @@ export default async function CigibmPage({
           )}
 
           {ambassadeur === "succes" && ref && <AmbassadorSuccessPopup slug={ref} />}
+          {ambassadeur === "existant" && ref && <AmbassadorSuccessPopup slug={ref} alreadyExists />}
 
           <div className="mx-auto mt-16 max-w-md">
             {ambassadeur === "erreur" && (

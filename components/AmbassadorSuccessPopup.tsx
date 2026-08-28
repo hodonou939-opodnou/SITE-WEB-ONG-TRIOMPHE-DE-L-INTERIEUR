@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-export default function AmbassadorSuccessPopup({ slug }: { slug: string }) {
+export default function AmbassadorSuccessPopup({
+  slug,
+  alreadyExists = false,
+}: {
+  slug: string;
+  alreadyExists?: boolean;
+}) {
   const [open, setOpen] = useState(true);
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -60,15 +66,25 @@ export default function AmbassadorSuccessPopup({ slug }: { slug: string }) {
         </button>
 
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-300">
-          Bienvenue, ambassadeur !
+          {alreadyExists ? "Déjà ambassadeur !" : "Bienvenue, ambassadeur !"}
         </p>
         <h3 id="ambassador-success-title" className="mt-2 font-display text-2xl leading-snug text-mist-50">
-          Vous avez pris la bonne décision.
+          {alreadyExists ? "Vous avez déjà un compte." : "Vous avez pris la bonne décision."}
         </h3>
         <p className="mt-2 text-sm leading-relaxed text-mist-100/70">
-          Voici déjà votre lien personnel. Il devient actif dès que notre
-          équipe valide votre compte, généralement sous quelques heures.
-          Nous venons aussi de vous l&apos;envoyer par email.
+          {alreadyExists ? (
+            <>
+              Il semble que vous soyez déjà inscrit·e comme ambassadeur ou
+              ambassadrice. Nous venons de vous renvoyer votre lien
+              personnel par email — voici le même, en attendant.
+            </>
+          ) : (
+            <>
+              Voici déjà votre lien personnel. Il devient actif dès que
+              notre équipe valide votre compte, généralement sous quelques
+              minutes. Nous venons aussi de vous l&apos;envoyer par email.
+            </>
+          )}
         </p>
 
         <div className="mt-5 flex items-center gap-2 rounded-xl border border-mist-50/20 bg-mist-50/10 px-3.5 py-3">
