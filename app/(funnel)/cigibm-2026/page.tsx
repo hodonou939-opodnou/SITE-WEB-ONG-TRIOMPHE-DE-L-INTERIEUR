@@ -92,7 +92,17 @@ export default async function Cigibm2026Page({
   searchParams: Promise<{ erreur?: string }>;
 }) {
   const { erreur } = await searchParams;
-  const activeAmbassadors = await listActiveAmbassadors();
+  let activeAmbassadors: Awaited<ReturnType<typeof listActiveAmbassadors>> = [];
+  try {
+    activeAmbassadors = await listActiveAmbassadors();
+  } catch (err) {
+    // Ne doit jamais faire tomber la page /cigibm-2026 (page de conversion
+    // principale, et page d'atterrissage des liens de parrainage déjà en
+    // circulation) : une base indisponible dégrade simplement vers l'état
+    // "aucun ambassadeur", déjà géré plus bas par la condition
+    // activeAmbassadors.length > 0 — cf. Finding 3 de la revue finale.
+    console.error("listActiveAmbassadors failed", err);
+  }
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
