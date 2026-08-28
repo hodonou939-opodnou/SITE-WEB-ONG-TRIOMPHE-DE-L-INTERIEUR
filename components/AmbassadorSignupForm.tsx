@@ -1,6 +1,72 @@
+"use client";
+
+import { useState } from "react";
+
+const MAX_UNCOMPRESSED_BYTES = 1.5 * 1024 * 1024;
+const MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 0.8;
+
+// Les photos prises directement au téléphone dépassent très souvent la
+// limite dure de 4.5 Mo imposée par les Serverless Functions Vercel pour le
+// corps d'une requête (non configurable, contrairement à l'ancienne
+// bodyParser.sizeLimit des Pages API) — la quasi-totalité des ambassadeurs
+// qui choisissaient une vraie photo de téléphone se heurtait donc à un 413
+// avant même que le code de la route ne s'exécute. On compresse donc côté
+// navigateur avant l'envoi plutôt que de dépendre d'une limite serveur
+// qu'on ne peut pas relever.
+async function compressPhoto(file: File): Promise<File> {
+  if (file.size <= MAX_UNCOMPRESSED_BYTES) return file;
+  if (typeof createImageBitmap !== "function") return file;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY));
+    if (!blob) return file;
+
+    return new File([blob], "photo.jpg", { type: "image/jpeg" });
+  } catch (err) {
+    console.error("Photo compression failed, submitting the original file", err);
+    return file;
+  }
+}
+
 export default function AmbassadorSignupForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputClass =
     "w-full rounded-xl border border-ink/12 bg-mist-50 px-4 py-3.5 text-sm text-leaf-950 placeholder:text-ink/35 outline-none transition-colors focus:border-leaf-400";
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const photo = formData.get("photo");
+    if (photo instanceof File && photo.size > 0) {
+      formData.set("photo", await compressPhoto(photo));
+    }
+
+    try {
+      const response = await fetch("/api/ambassador-signup", { method: "POST", body: formData });
+      window.location.href = response.url || "/cigibm-2026?ambassadeur=succes#ambassadeurs";
+    } catch (err) {
+      console.error("Ambassador signup request failed", err);
+      window.location.href = "/cigibm-2026?ambassadeur=erreur#ambassadeurs";
+    }
+  }
 
   return (
     <div className="rounded-3xl border border-ink/8 bg-mist-50 p-6 sm:p-8">
@@ -12,12 +78,7 @@ export default function AmbassadorSignupForm() {
         par email dès que votre compte est validé par notre équipe.
       </p>
 
-      <form
-        action="/api/ambassador-signup"
-        method="POST"
-        encType="multipart/form-data"
-        className="mt-6 space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label
             htmlFor="amb-photo"
@@ -105,9 +166,10 @@ export default function AmbassadorSignupForm() {
 
         <button
           type="submit"
-          className="w-full rounded-full bg-leaf-600 px-6 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-leaf-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-leaf-700 hover:shadow-xl"
+          disabled={isSubmitting}
+          className="w-full rounded-full bg-leaf-600 px-6 py-4 text-base font-semibold tracking-wide text-mist-50 shadow-lg shadow-leaf-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-leaf-700 hover:shadow-xl disabled:pointer-events-none disabled:opacity-60"
         >
-          Créer mon lien d&apos;ambassadeur
+          {isSubmitting ? "Création en cours..." : "Créer mon lien d'ambassadeur"}
         </button>
       </form>
     </div>

@@ -36,8 +36,8 @@ describe("uploadAmbassadorPhoto", () => {
     await expect(uploadAmbassadorPhoto(file)).rejects.toBeInstanceOf(InvalidAmbassadorPhotoError);
   });
 
-  it("rejects a file over the 5MB size limit", async () => {
-    const oversized = Buffer.alloc(5 * 1024 * 1024 + 1);
+  it("rejects a file over the 4MB size limit", async () => {
+    const oversized = Buffer.alloc(4 * 1024 * 1024 + 1);
     const file = buildFile("image/png", "huge.png", oversized);
     await expect(uploadAmbassadorPhoto(file)).rejects.toBeInstanceOf(InvalidAmbassadorPhotoError);
   });
