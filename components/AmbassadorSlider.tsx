@@ -38,9 +38,11 @@ export default function AmbassadorSlider({ ambassadors }: { ambassadors: PublicA
             <div className="flex flex-1 flex-col p-5">
               <h3 className="font-display text-lg text-leaf-900">{a.fullName}</h3>
               {a.bio && <p className="mt-2 text-sm leading-relaxed text-ink/70">{a.bio}</p>}
-              <p className="mt-3 text-xs font-semibold text-leaf-600">
-                {a.referredCount} personne{a.referredCount !== 1 ? "s" : ""} inscrite{a.referredCount !== 1 ? "s" : ""} grâce à {a.fullName.split(" ")[0]}
-              </p>
+              {a.referredCount > 0 && (
+                <p className="mt-3 text-xs font-semibold text-leaf-600">
+                  {a.referredCount} personne{a.referredCount !== 1 ? "s" : ""} inscrite{a.referredCount !== 1 ? "s" : ""} grâce à {a.fullName.split(" ")[0]}
+                </p>
+              )}
             </div>
           </div>
         ))}
