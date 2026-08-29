@@ -41,17 +41,27 @@ model Edition {
 }
 
 model Ambassador {
-  id             String        @id @default(uuid())
-  slug           String        @unique
-  fullName       String
-  phone          String
-  whatsappNumber String?
-  email          String?
-  photoUrl       String?
-  bio            String?
-  active         Boolean       @default(true)
-  participants   Participant[]
-  createdAt      DateTime      @default(now())
+  id                        String        @id @default(uuid())
+  slug                      String        @unique
+  fullName                  String
+  phone                     String
+  whatsappNumber            String?
+  email                     String?
+  photoUrl                  String?
+  bio                       String?
+  active                    Boolean       @default(true)
+  participants              Participant[]
+  createdAt                 DateTime      @default(now())
+
+  // Suivi de l'automatisation de motivation quotidienne (cron
+  // /api/cron/ambassador-nudges) : lastNudgeSentAt évite qu'un ambassadeur
+  // reçoive deux nudges le même jour si le cron est rejoué ; il est mis à
+  // jour par TOUT type de nudge (zéro parrainage ou palier atteint), pas un
+  // champ par type. highestMilestoneCelebrated retient le dernier palier de
+  // 5 déjà félicité, pour ne pas refêter le même total à chaque exécution
+  // du cron tant qu'aucun nouveau palier n'est franchi.
+  lastNudgeSentAt           DateTime?
+  highestMilestoneCelebrated Int          @default(0)
 }
 
 model Participant {

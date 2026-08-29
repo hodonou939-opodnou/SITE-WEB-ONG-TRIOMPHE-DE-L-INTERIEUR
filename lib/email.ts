@@ -2,12 +2,20 @@ import { brevo, cigibm, siteConfig } from "./content";
 import { logMessage } from "./messaging/log";
 
 const SITE_URL = "https://ongtriomphedelinterieur.com";
-const LOGO_URL = `${SITE_URL}/images/logo-mark.png`;
+// logo.png porte le blason complet (papillon + nom de l'ONG gravé dans
+// l'image elle-même, typographie serif) — contrairement à logo-mark.png
+// (le blason seul, utilisé sur le site où le nom est déjà composé en HTML à
+// côté), c'est un bloc de marque autonome, pensé pour remplacer à la fois
+// l'icône et le nom qu'affichait l'ancien bandeau vert foncé de l'email.
+const FULL_LOGO_URL = `${SITE_URL}/images/logo.png`;
 
-// Bandeau or (#c9a227) + carte fermée haut/bas en vert profond, contenu
-// blanc au centre : traitement "premium" partagé par tous les emails
-// transactionnels (pas seulement ceux du programme Ambassadeurs), pour que
-// la marque reste cohérente d'un email à l'autre.
+// Fond et carte blancs du premier au dernier pixel, blason en pleine
+// couleur en tête (le vert/bleu du papillon ressort davantage sur blanc
+// que sur l'ancien bandeau vert foncé où il se fondait), et un simple
+// filet or (#c9a227) en séparateur plutôt qu'un bandeau plein — ce même
+// gabarit alimente tous les emails transactionnels, pour que la marque
+// reste cohérente d'un email à l'autre sans jamais revenir à un fond
+// sombre qui écrasait la sensation "premium" recherchée.
 function emailShell(content: string) {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -15,39 +23,36 @@ function emailShell(content: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body style="margin:0; padding:0; background:#eef3ee; font-family:Georgia, 'Times New Roman', serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef3ee; padding:40px 16px;">
+  <body style="margin:0; padding:0; background:#f4f6f2; font-family:Georgia, 'Times New Roman', serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f2; padding:40px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" style="max-width:580px; border-radius:20px; overflow:hidden; box-shadow:0 12px 32px rgba(14,33,24,0.12);">
+          <table role="presentation" width="100%" style="max-width:580px; border-radius:20px; overflow:hidden; background:#ffffff; box-shadow:0 16px 40px rgba(14,33,24,0.08);">
             <tr>
-              <td style="height:4px; line-height:4px; font-size:0; background:#c9a227;">&nbsp;</td>
-            </tr>
-            <tr>
-              <td style="background:#0e2118; padding:36px 40px 30px; text-align:center;">
-                <img src="${LOGO_URL}" alt="${siteConfig.name}" width="52" height="52" style="display:block; margin:0 auto 14px;" />
-                <p style="margin:0 0 5px; color:#fcfdfd; font-family:Georgia, 'Times New Roman', serif; font-size:17px; font-weight:bold;">
-                  ${siteConfig.name}
-                </p>
-                <p style="margin:0; color:#c9a227; font-family:Arial, sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;">
+              <td style="background:#ffffff; padding:44px 40px 26px; text-align:center;">
+                <img src="${FULL_LOGO_URL}" alt="${siteConfig.name}" width="160" style="display:block; width:160px; max-width:55%; height:auto; margin:0 auto;" />
+                <p style="margin:16px 0 0; font-family:Georgia, 'Times New Roman', serif; font-style:italic; font-size:13px; color:#307335;">
                   ${siteConfig.tagline}
                 </p>
               </td>
             </tr>
             <tr>
-              <td style="background:#ffffff; padding:44px 40px;">
+              <td style="height:2px; line-height:2px; font-size:0; background:#c9a227;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff; padding:36px 40px 44px;">
                 ${content}
               </td>
             </tr>
             <tr>
-              <td style="background:#0e2118; padding:22px 40px; text-align:center; font-family:Arial, sans-serif;">
-                <p style="margin:0 0 6px; font-size:12px; color:#ffffff99;">
+              <td style="background:#f2f7f3; padding:22px 40px; text-align:center; font-family:Arial, sans-serif; border-top:1px solid #e3ece4;">
+                <p style="margin:0 0 6px; font-size:12px; color:#16211d99;">
                   ${siteConfig.name} &middot; ${siteConfig.location}
                 </p>
                 <p style="margin:0; font-size:12px;">
-                  <a href="tel:${siteConfig.phoneHref.replace("tel:", "")}" style="color:#7fd99a; text-decoration:none;">${siteConfig.phone}</a>
+                  <a href="tel:${siteConfig.phoneHref.replace("tel:", "")}" style="color:#307335; text-decoration:none; font-weight:bold;">${siteConfig.phone}</a>
                   &middot;
-                  <a href="mailto:${siteConfig.email}" style="color:#7fd99a; text-decoration:none;">${siteConfig.email}</a>
+                  <a href="mailto:${siteConfig.email}" style="color:#307335; text-decoration:none; font-weight:bold;">${siteConfig.email}</a>
                 </p>
               </td>
             </tr>
@@ -67,6 +72,44 @@ function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" 
         <a href="${href}" style="display:inline-block; padding:14px 32px; color:#fcfdfd; font-family:Arial, sans-serif; font-size:15px; font-weight:bold; text-decoration:none; border-radius:999px;">
           ${label}
         </a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+// Partagé par l'email de bienvenue ambassadeur et les deux nudges
+// automatiques (zéro parrainage, palier atteint) : les trois montrent le
+// même lien personnel dans le même encart, pas de raison de dupliquer le
+// balisage trois fois.
+function referralLinkBox(referralUrl: string) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px; background:#f9fbf9; border:1.5px dashed #307335; border-radius:14px; font-family:Arial, sans-serif;">
+    <tr>
+      <td style="padding:18px 20px;">
+        <p style="margin:0 0 6px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+          Votre lien personnel
+        </p>
+        <a href="${referralUrl}" style="font-size:14px; color:#183a1a; word-break:break-all; text-decoration:none;">${referralUrl}</a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+function shareButtons(shareMessage: string) {
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+  // TikTok, contrairement à WhatsApp, n'expose aucun lien web permettant de
+  // pré-remplir une publication (légende, image) depuis un tiers — ce
+  // bouton ouvre simplement l'espace de publication, l'image reste à
+  // enregistrer et joindre à la main.
+  const tiktokUploadUrl = "https://www.tiktok.com/upload";
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding:6px 0 8px;">
+        ${ctaButton("Partager sur WhatsApp", whatsappShareUrl, "whatsapp")}
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:6px 0 8px;">
+        ${ctaButton("Partager sur TikTok", tiktokUploadUrl, "tiktok")}
       </td>
     </tr>
   </table>`;
@@ -148,12 +191,6 @@ const AMBASSADOR_SHARE_IMAGES = [
 export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string) {
   const first = fullName.split(/\s+/)[0];
   const shareMessage = `Je vous invite au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Réservez votre place gratuite ici : ${referralUrl}`;
-  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
-  // TikTok, contrairement à WhatsApp, n'expose aucun lien web permettant de
-  // pré-remplir une publication (légende, image) depuis un tiers — ce
-  // bouton ouvre simplement l'espace de publication, l'image ci-dessous
-  // reste à enregistrer et joindre à la main.
-  const tiktokUploadUrl = "https://www.tiktok.com/upload";
   const shareImage = AMBASSADOR_SHARE_IMAGES[Math.floor(Math.random() * AMBASSADOR_SHARE_IMAGES.length)];
 
   const html = emailShell(`
@@ -176,28 +213,8 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
     <p style="margin:0 0 20px; font-size:13px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif; text-align:center;">
       Enregistrez cette image et joignez-la à votre message quand vous partagez votre lien — sur WhatsApp, TikTok, ou ailleurs.
     </p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px; background:#f9fbf9; border:1.5px dashed #307335; border-radius:14px; font-family:Arial, sans-serif;">
-      <tr>
-        <td style="padding:18px 20px;">
-          <p style="margin:0 0 6px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
-            Votre lien personnel
-          </p>
-          <a href="${referralUrl}" style="font-size:14px; color:#183a1a; word-break:break-all; text-decoration:none;">${referralUrl}</a>
-        </td>
-      </tr>
-    </table>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td align="center" style="padding:6px 0 8px;">
-          ${ctaButton("Partager sur WhatsApp", whatsappShareUrl, "whatsapp")}
-        </td>
-      </tr>
-      <tr>
-        <td align="center" style="padding:6px 0 8px;">
-          ${ctaButton("Partager sur TikTok", tiktokUploadUrl, "tiktok")}
-        </td>
-      </tr>
-    </table>
+    ${referralLinkBox(referralUrl)}
+    ${shareButtons(shareMessage)}
     <p style="margin:20px 0 0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
       Notre équipe valide chaque nouvel ambassadeur avant que ce lien apparaisse publiquement sur le site, généralement sous quelques minutes. Vous n&apos;avez rien à faire d&apos;autre : dès la validation, ce même lien commence à compter chaque inscription qu&apos;il apporte — et vous recevrez un email à chaque nouvelle inscription.
     </p>
@@ -206,6 +223,84 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
 
   return {
     subject: `${first}, votre lien d'ambassadeur pour le CIGIBM ${cigibm.nextEdition.edition}`,
+    html,
+  };
+}
+
+// Déclenché par le cron quotidien /api/cron/ambassador-nudges (cf.
+// lib/ambassadors/nudges.ts) pour un ambassadeur encore à zéro parrainage,
+// au plus une fois tous les quelques jours. Ton volontairement léger —
+// « ce n'est pas grave » — plutôt que culpabilisant : le but est de
+// relancer le partage, pas de faire sentir à quelqu'un qu'il a échoué.
+export function buildAmbassadorZeroNudgeEmail(fullName: string, referralUrl: string) {
+  const first = fullName.split(/\s+/)[0];
+  const shareMessage = `Je vous invite au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Réservez votre place gratuite ici : ${referralUrl}`;
+
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Programme Ambassadeurs
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, une seule personne suffit pour commencer.
+    </h1>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Votre lien d&apos;ambassadeur est prêt et n&apos;attend qu&apos;à être partagé. Envoyez-le aujourd&apos;hui à une seule personne — un membre de la famille, un(e) collègue, un groupe WhatsApp — et vous aurez déjà fait la différence pour quelqu&apos;un.
+    </p>
+    ${referralLinkBox(referralUrl)}
+    ${shareButtons(shareMessage)}
+    <p style="margin:20px 0 0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
+      Pas encore de première inscription grâce à vous ? Ce n&apos;est pas grave, le congrès est encore loin — chaque partage compte, même s&apos;il ne donne rien tout de suite.
+    </p>
+  `);
+
+  return {
+    subject: `${first}, votre lien d'ambassadeur n'attend qu'un partage`,
+    html,
+  };
+}
+
+// Déclenché par le même cron dès qu'un ambassadeur franchit un nouveau
+// palier de 5 parrainages (5, 10, 15…) — jamais deux fois pour le même
+// palier, cf. highestMilestoneCelebrated dans lib/ambassadors/nudges.ts.
+// Distinct de buildAmbassadorReferralEmail : celui-ci célèbre un cap
+// franchi et relance l'élan, l'autre confirme chaque inscription une par
+// une en temps réel — les deux peuvent arriver le même jour sans se
+// répéter (sujets et contenus différents).
+export function buildAmbassadorMilestoneEmail(
+  fullName: string,
+  milestone: number,
+  totalReferrals: number,
+  referralUrl: string
+) {
+  const first = fullName.split(/\s+/)[0];
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Programme Ambassadeurs
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${milestone} inscriptions grâce à vous, ${first}. Bravo !
+    </h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px; text-align:center;">
+          <p style="margin:0; font-size:32px; line-height:1; color:#183a1a; font-weight:bold; font-family:Georgia, 'Times New Roman', serif;">
+            ${totalReferrals}
+          </p>
+          <p style="margin:6px 0 0; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:#307335;">
+            inscription${totalReferrals !== 1 ? "s" : ""} grâce à vous
+          </p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Vous faites une vraie différence pour le CIGIBM ${cigibm.nextEdition.edition}. Continuez à partager votre lien : chaque nouvelle personne compte autant que la première.
+    </p>
+    ${referralLinkBox(referralUrl)}
+    ${ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
+  `);
+
+  return {
+    subject: `${milestone} inscriptions grâce à vous, ${first} ! Continuez comme ça`,
     html,
   };
 }
