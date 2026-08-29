@@ -1,14 +1,7 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { createClient } from "@/lib/supabase/server";
-
-const navItems = [
-  { href: "/admin", label: "Tableau de bord" },
-  { href: "/admin/participants", label: "Participants" },
-  { href: "/admin/ambassadors", label: "Ambassadeurs" },
-  { href: "/admin/messages", label: "Messages" },
-];
+import { AdminBottomNav, AdminSidebarNav } from "./AdminNav";
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
   const session = await requireAdmin();
@@ -21,19 +14,12 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
 
   return (
     <div className="flex min-h-screen bg-mist-100">
-      <aside className="w-56 shrink-0 border-r border-ink/8 bg-mist-50 p-6">
+      {/* Barre latérale desktop uniquement — sur mobile, la navigation
+          principale vit dans AdminBottomNav (barre du bas), et l'en-tête
+          ci-dessous ne porte plus que la marque et la déconnexion. */}
+      <aside className="hidden w-56 shrink-0 border-r border-ink/8 bg-mist-50 p-6 lg:block">
         <p className="font-display text-lg text-leaf-900">Admin CIGIBM</p>
-        <nav className="mt-8 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block rounded-lg px-3 py-2 text-sm text-ink/75 transition-colors hover:bg-leaf-50 hover:text-leaf-900"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <AdminSidebarNav />
         <div className="mt-10 border-t border-ink/8 pt-4 text-xs text-ink/50">
           <p>{session.fullName}</p>
           <p className="uppercase tracking-wide">{session.role}</p>
@@ -44,7 +30,23 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
           </form>
         </div>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-ink/8 bg-mist-50/95 px-4 py-3 backdrop-blur lg:hidden">
+          <p className="font-display text-base text-leaf-900">Admin CIGIBM</p>
+          <form action={signOut}>
+            <button type="submit" className="text-xs font-medium text-leaf-700 underline underline-offset-2">
+              Déconnexion
+            </button>
+          </form>
+        </header>
+
+        {/* pb-20 : place pour la barre du bas fixe sur mobile, retirée dès lg:
+            où cette barre est masquée. */}
+        <main className="min-w-0 flex-1 p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8">{children}</main>
+      </div>
+
+      <AdminBottomNav />
     </div>
   );
 }

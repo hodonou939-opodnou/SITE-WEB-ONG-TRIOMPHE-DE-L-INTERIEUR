@@ -1,4 +1,4 @@
-import { cigibm, siteConfig } from "./content";
+import { brevo, cigibm, siteConfig } from "./content";
 import { logMessage } from "./messaging/log";
 
 const SITE_URL = "https://ongtriomphedelinterieur.com";
@@ -445,6 +445,48 @@ export async function sendTransactionalEmail(
     });
   } catch (err) {
     console.error("logMessage failed for transactional email", err);
+  }
+
+  return res;
+}
+
+// Les emails ambassadeur (bienvenue, notifications de parrainage) passent
+// tous par sendTransactionalEmail ci-dessus, l'API transactionnelle de
+// Brevo — qui ne crée jamais de Contact de son côté (Contacts et
+// Transactionnel sont deux systèmes Brevo distincts). Sans cet appel
+// séparé à /v3/contacts, un ambassadeur n'apparaît nulle part dans le CRM
+// Brevo malgré des emails bien envoyés — constaté en production par
+// l'ONG elle-même en cherchant un ambassadeur dans Contacts. Best-effort
+// et jamais bloquant : un échec ici ne doit jamais empêcher la création
+// du compte ambassadeur.
+export async function addAmbassadorToBrevoList(apiKey: string, email: string, fullName: string, phone: string) {
+  async function attempt(attributes: Record<string, unknown>) {
+    return fetch("https://api.brevo.com/v3/contacts", {
+      method: "POST",
+      headers: {
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        attributes,
+        listIds: [brevo.cigibm4AmbassadorsListId],
+        updateEnabled: true,
+      }),
+    });
+  }
+
+  let res = await attempt({ FIRSTNAME: fullName, SMS: phone });
+  if (res.status === 400) {
+    const body = await res.clone().json().catch(() => null);
+    const duplicateFields: string[] = body?.metadata?.duplicate_identifiers ?? [];
+    if (body?.code === "duplicate_parameter" && duplicateFields.includes("SMS") && !duplicateFields.includes("email")) {
+      // Même numéro déjà associé à un autre contact Brevo (ex. la personne
+      // est aussi inscrite comme participant·e) — on retente sans le SMS
+      // plutôt que d'abandonner l'ajout à la liste.
+      res = await attempt({ FIRSTNAME: fullName });
+    }
   }
 
   return res;

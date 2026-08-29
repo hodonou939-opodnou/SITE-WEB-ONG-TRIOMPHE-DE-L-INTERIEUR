@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
 import { createAmbassador } from "@/lib/admin/ambassadors";
+import { uploadAmbassadorPhoto } from "@/lib/ambassadors/photo";
+import { addAmbassadorToBrevoList } from "@/lib/email";
+import { normalizePhone } from "@/lib/phone";
 import AmbassadorForm from "../AmbassadorForm";
 
 export default async function NewAmbassadorPage({
@@ -22,14 +25,42 @@ export default async function NewAmbassadorPage({
       redirect("/admin/ambassadors/new?erreur=1");
     }
 
+    const email = formData.get("email")?.toString().trim() || undefined;
+
+    // Le fichier téléversé prend le pas sur l'URL saisie à la main : celle-ci
+    // ne sert que si aucun fichier n'a été choisi (photo déjà hébergée
+    // ailleurs, ou saisie manuelle historique). Un échec d'upload ne doit
+    // jamais bloquer la création de l'ambassadeur.
+    const photoFile = formData.get("photo");
+    let photoUrl = formData.get("photoUrl")?.toString().trim() || undefined;
+    if (photoFile instanceof File && photoFile.size > 0) {
+      try {
+        photoUrl = await uploadAmbassadorPhoto(photoFile);
+      } catch (err) {
+        console.error("Admin ambassador photo upload failed, continuing without it", err);
+      }
+    }
+
     await createAmbassador({
       fullName,
       phone,
       whatsappNumber: formData.get("whatsappNumber")?.toString().trim() || undefined,
-      email: formData.get("email")?.toString().trim() || undefined,
-      photoUrl: formData.get("photoUrl")?.toString().trim() || undefined,
+      email,
+      photoUrl,
       bio: formData.get("bio")?.toString().trim() || undefined,
     });
+
+    // Best-effort, comme pour l'inscription publique : donne à cet
+    // ambassadeur une visibilité dans le CRM Brevo (Contacts), distinct des
+    // emails transactionnels qui n'en créent jamais.
+    const apiKey = process.env.BREVO_API_KEY;
+    if (apiKey && email) {
+      try {
+        await addAmbassadorToBrevoList(apiKey, email, fullName, normalizePhone(phone));
+      } catch (err) {
+        console.error("Adding admin-created ambassador to Brevo list failed", err);
+      }
+    }
 
     redirect("/admin/ambassadors");
   }

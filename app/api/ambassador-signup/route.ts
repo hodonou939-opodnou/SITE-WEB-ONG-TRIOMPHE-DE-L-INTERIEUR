@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAmbassador } from "@/lib/admin/ambassadors";
 import { uploadAmbassadorPhoto } from "@/lib/ambassadors/photo";
-import { buildAmbassadorPendingApprovalAdminNotification, buildAmbassadorSignupEmail, sendTransactionalEmail } from "@/lib/email";
+import {
+  addAmbassadorToBrevoList,
+  buildAmbassadorPendingApprovalAdminNotification,
+  buildAmbassadorSignupEmail,
+  sendTransactionalEmail,
+} from "@/lib/email";
 import { siteConfig } from "@/lib/content";
 import { db } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
@@ -114,6 +119,19 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       console.error("Ambassador welcome email request failed", err);
+    }
+
+    // Ajout à la liste Brevo « CIGIBM4 - Ambassadeurs » : les emails
+    // ci-dessus passent par l'API transactionnelle, qui ne crée jamais de
+    // Contact — sans cet appel séparé, l'ambassadeur n'apparaît nulle part
+    // dans le CRM Brevo malgré des emails bien envoyés.
+    try {
+      const listRes = await addAmbassadorToBrevoList(apiKey, email, fullName, phone);
+      if (!listRes.ok) {
+        console.error("Adding ambassador to Brevo list failed", listRes.status, await listRes.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.error("Adding ambassador to Brevo list request failed", err);
     }
 
     // L'approbation est entièrement manuelle (aucune tâche planifiée) :

@@ -49,6 +49,44 @@ describe("POST /api/ambassador-signup", () => {
     vi.mocked(uploadAmbassadorPhoto).mockReset();
   });
 
+  it("adds the new ambassador to the Brevo CIGIBM4 ambassadors list", async () => {
+    const contactCalls: Array<{ listIds: number[] }> = [];
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        contactCalls.push(JSON.parse(init?.body as string));
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `brevolist${TEST_EMAIL_DOMAIN}`;
+    await POST(buildRequest({ fullName: `${TEST_SLUG_PREFIX} Omega`, phone: "0100000069", email, consent: "1" }));
+
+    expect(contactCalls).toHaveLength(1);
+    expect(contactCalls[0].listIds).toEqual([10]);
+  });
+
+  it("still redirects to success even when adding to the Brevo list fails", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response("server error", { status: 500 });
+      }
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `brevolistfails${TEST_EMAIL_DOMAIN}`;
+    const response = await POST(
+      buildRequest({ fullName: `${TEST_SLUG_PREFIX} Pi`, phone: "0100000070", email, consent: "1" })
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cigibm?ambassadeur=succes");
+  });
+
   it("creates an inactive Ambassador row and redirects to the success state", async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
 

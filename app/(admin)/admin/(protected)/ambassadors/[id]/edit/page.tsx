@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAmbassador, updateAmbassador } from "@/lib/admin/ambassadors";
+import { uploadAmbassadorPhoto } from "@/lib/ambassadors/photo";
 import AmbassadorForm from "../../AmbassadorForm";
 
 export default async function EditAmbassadorPage({
@@ -28,12 +29,25 @@ export default async function EditAmbassadorPage({
       redirect(`/admin/ambassadors/${id}/edit?erreur=1`);
     }
 
+    // Le fichier téléversé prend le pas sur l'URL saisie à la main (qui
+    // reflète par défaut la photo déjà enregistrée) — un échec d'upload ne
+    // doit jamais bloquer l'enregistrement des autres champs.
+    const photoFile = formData.get("photo");
+    let photoUrl = formData.get("photoUrl")?.toString().trim() || null;
+    if (photoFile instanceof File && photoFile.size > 0) {
+      try {
+        photoUrl = await uploadAmbassadorPhoto(photoFile);
+      } catch (err) {
+        console.error("Admin ambassador photo upload failed, keeping the existing value", err);
+      }
+    }
+
     await updateAmbassador(id, {
       fullName,
       phone,
       whatsappNumber: formData.get("whatsappNumber")?.toString().trim() || null,
       email: formData.get("email")?.toString().trim() || null,
-      photoUrl: formData.get("photoUrl")?.toString().trim() || null,
+      photoUrl,
       bio: formData.get("bio")?.toString().trim() || null,
       active: formData.get("active") === "on",
     });

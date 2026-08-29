@@ -30,9 +30,13 @@ export const siteConfig = {
 // serveur Next.js), qui crée le contact via l'API Brevo avec une clé stockée
 // côté serveur (variable d'environnement BREVO_API_KEY sur Vercel, jamais
 // exposée au navigateur), puis redirige vers /cigibm-2026/merci.
-// Dossier Brevo « Triomphe de l'Intérieur » (id 6) > liste « CIGIBM 2026 ».
+// Dossier Brevo « Triomphe de l'Intérieur » (id 6) > listes « CIGIBM 2026 »
+// (participants) et « CIGIBM4 - Ambassadeurs » (ambassadeurs, créée pour
+// donner une visibilité CRM sur ce groupe — les emails ambassadeur passent
+// par l'API transactionnelle, qui ne crée jamais de Contact de son côté).
 export const brevo = {
   cigibm2026ListId: 7,
+  cigibm4AmbassadorsListId: 10,
 };
 
 export const navigation = [
