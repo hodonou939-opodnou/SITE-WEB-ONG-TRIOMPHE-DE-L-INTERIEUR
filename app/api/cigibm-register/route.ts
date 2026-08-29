@@ -171,14 +171,14 @@ export async function POST(request: NextRequest) {
   // pour la même personne). email est garanti non vide à ce stade (validé
   // en tête de fonction), donc pas de cas « email null » à gérer ici.
   //
-  // isNewParticipant distingue une vraie première inscription d'une simple
-  // resoumission : sans ce contrôle, chaque resoumission redéclencherait la
-  // notification ambassadeur pour la même personne. Reste à `false` par
-  // défaut — y compris si create()/update() lève une erreur autre que
-  // P2002 — pour qu'un échec d'écriture ne puisse jamais déclencher une
-  // notification pour une inscription qui n'a en réalité jamais été
-  // enregistrée.
-  let isNewParticipant = false;
+  // shouldNotifyAmbassador distingue une vraie attribution nouvelle d'une
+  // simple resoumission déjà attribuée : sans ce contrôle, chaque
+  // resoumission redéclencherait la notification ambassadeur pour la même
+  // personne. Reste à `false` par défaut — y compris si create()/update()
+  // lève une erreur autre que P2002 — pour qu'un échec d'écriture ne
+  // puisse jamais déclencher une notification pour une inscription qui
+  // n'a en réalité jamais été enregistrée.
+  let shouldNotifyAmbassador = false;
   try {
     // editionId entier littéral requis par la contrainte composite —
     // Prisma ne permet pas d'y substituer un connect imbriqué sur
@@ -197,13 +197,40 @@ export async function POST(request: NextRequest) {
             ambassadorId: ambassador?.id,
           },
         });
-        isNewParticipant = true;
+        shouldNotifyAmbassador = ambassador !== null;
       } catch (createErr) {
         if (createErr instanceof Prisma.PrismaClientKnownRequestError && createErr.code === "P2002") {
+          // Rétro-attribution : une ligne déjà existante (première
+          // inscription faite sans lien de parrainage, ambassadorId resté
+          // null) peut légitimement recevoir l'attribution résolue pour
+          // CETTE requête si elle n'en avait encore aucune — ce n'est pas
+          // le cas que "premier attribué reste attribué" est censé
+          // protéger, puisqu'il n'y avait justement personne avant. Un
+          // ambassadorId déjà non-null, lui, reste intact (protection
+          // inchangée contre l'écrasement par un lien plus récent). Bug
+          // réel constaté en production : avant ce correctif, cette
+          // branche n'incluait jamais ambassadorId dans data — une
+          // personne qui s'inscrivait d'abord sans lien puis resoumettait
+          // via un lien d'ambassadeur valide perdait cette attribution
+          // pour toujours, silencieusement, sans que rien ne le signale
+          // (le compte de l'ambassadeur restait simplement inchangé).
+          const existing = await db.participant.findUnique({
+            where: { editionId_email: { editionId: edition4.id, email } },
+            select: { ambassadorId: true },
+          });
+          const shouldBackfillAmbassador = existing?.ambassadorId == null && ambassador !== null;
+
           await db.participant.update({
             where: { editionId_email: { editionId: edition4.id, email } },
-            data: { fullName: name, phone, consent: true },
+            data: {
+              fullName: name,
+              phone,
+              consent: true,
+              ...(shouldBackfillAmbassador ? { ambassadorId: ambassador?.id } : {}),
+            },
           });
+
+          shouldNotifyAmbassador = shouldBackfillAmbassador;
         } else {
           throw createErr;
         }
@@ -230,10 +257,12 @@ export async function POST(request: NextRequest) {
   // Notifie l'ambassadeur référent ET l'administration qu'une nouvelle
   // inscription vient d'être attribuée à ce lien de parrainage. Best-effort
   // comme le reste des blocs ci-dessus : ne doit jamais faire échouer
-  // l'inscription elle-même. isNewParticipant exclut les resoumissions.
-  // Les deux envois sont indépendants (try/catch séparés) : l'échec de
-  // l'un ne doit jamais empêcher l'autre.
-  if (isNewParticipant && ambassador) {
+  // l'inscription elle-même. shouldNotifyAmbassador couvre à la fois une
+  // vraie première inscription et une rétro-attribution (cf. plus haut),
+  // mais jamais une resoumission déjà attribuée. Les deux envois sont
+  // indépendants (try/catch séparés) : l'échec de l'un ne doit jamais
+  // empêcher l'autre.
+  if (shouldNotifyAmbassador && ambassador) {
     try {
       const totalReferrals = await db.participant.count({ where: { ambassadorId: ambassador.id } });
 

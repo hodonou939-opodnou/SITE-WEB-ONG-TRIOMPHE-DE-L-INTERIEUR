@@ -220,6 +220,57 @@ describe("POST /api/cigibm-register", () => {
     await db.ambassador.deleteMany({ where: { id: { in: [ambassadorA.id, ambassadorB.id] } } });
   });
 
+  it("backfills the ambassador attribution on resubmission when the first registration had none, and notifies", async () => {
+    // Régression réelle constatée en production : quelqu'un s'inscrit une
+    // première fois sans lien de parrainage (ambassadorId reste null), puis
+    // resoumet plus tard via un lien d'ambassadeur valide. Avant ce
+    // correctif, la branche P2002 n'incluait jamais ambassadorId dans son
+    // update() — l'attribution était silencieusement perdue pour toujours,
+    // sans qu'aucun compteur ni notification ne le révèle.
+    const sentEmails: Array<{ to: string }> = [];
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      const body = JSON.parse(init?.body as string);
+      sentEmails.push({ to: body.to[0].email });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-backfill`,
+        fullName: "Ambassadeur Backfill",
+        phone: "+2290100000098",
+        email: `ambassador-backfill${TEST_EMAIL_DOMAIN}`,
+      },
+    });
+
+    const { POST } = await import("./route");
+    const email = `backfill-participant${TEST_EMAIL_DOMAIN}`;
+
+    // Première inscription : aucun cookie de parrainage.
+    const firstRequest = buildRequest({ name: "Backfill Participant", phone: "0100000099", email, consent: "1" });
+    await POST(firstRequest);
+
+    const afterFirst = await db.participant.findFirst({ where: { email } });
+    expect(afterFirst?.ambassadorId).toBeNull();
+
+    // Resoumission plus tard, cette fois via le lien de l'ambassadeur.
+    const secondRequest = buildRequest({ name: "Backfill Participant", phone: "0100000099", email, consent: "1" });
+    secondRequest.cookies.set("cigibm_ref", ambassador.slug);
+    await POST(secondRequest);
+
+    const afterSecond = await db.participant.findFirst({ where: { email } });
+    expect(afterSecond?.ambassadorId).toBe(ambassador.id);
+
+    const notification = sentEmails.find((e) => e.to === ambassador.email);
+    expect(notification).toBeDefined();
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
   it("still redirects to /merci even when the ambassador lookup itself fails", async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 })) as typeof fetch;
     // resolveAmbassadorFromCookie runs before the Brevo block (right after
