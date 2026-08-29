@@ -2,20 +2,22 @@ import { brevo, cigibm, siteConfig } from "./content";
 import { logMessage } from "./messaging/log";
 
 const SITE_URL = "https://ongtriomphedelinterieur.com";
-// logo.png porte le blason complet (papillon + nom de l'ONG gravé dans
-// l'image elle-même, typographie serif) — contrairement à logo-mark.png
-// (le blason seul, utilisé sur le site où le nom est déjà composé en HTML à
-// côté), c'est un bloc de marque autonome, pensé pour remplacer à la fois
-// l'icône et le nom qu'affichait l'ancien bandeau vert foncé de l'email.
-const FULL_LOGO_URL = `${SITE_URL}/images/logo.png`;
+// logo-mark.png (le blason seul, fond réellement transparent — vérifié
+// pixel par pixel) est le seul des deux logos utilisable sur un fond
+// coloré : logo.png (le blason + nom complet) a un fond blanc opaque gravé
+// dans le PNG lui-même, qui laisserait un rectangle blanc disgracieux sur
+// le bandeau vert du hero. Le nom de l'ONG est donc recomposé ici en HTML
+// à côté de l'icône plutôt qu'inclus dans l'image, comme le fait déjà le
+// reste du site avec ce même logo-mark.
+const LOGO_MARK_URL = `${SITE_URL}/images/logo-mark.png`;
 
-// Fond et carte blancs du premier au dernier pixel, blason en pleine
-// couleur en tête (le vert/bleu du papillon ressort davantage sur blanc
-// que sur l'ancien bandeau vert foncé où il se fondait), et un simple
-// filet or (#c9a227) en séparateur plutôt qu'un bandeau plein — ce même
-// gabarit alimente tous les emails transactionnels, pour que la marque
-// reste cohérente d'un email à l'autre sans jamais revenir à un fond
-// sombre qui écrasait la sensation "premium" recherchée.
+// Hero en bandeau vert profond (la couleur de marque du site, cf. les
+// sections leaf-950 de la homepage) pour un premier contact plus
+// "premium" — remplace le hero blanc trop plat — pendant que le corps et
+// le pied de page restent blancs/clairs comme demandé : la carte de
+// contenu et le footer ne changent pas, seul le bandeau d'en-tête devient
+// coloré. Ce même gabarit alimente tous les emails transactionnels, pour
+// que la marque reste cohérente d'un email à l'autre.
 function emailShell(content: string) {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -29,9 +31,12 @@ function emailShell(content: string) {
         <td align="center">
           <table role="presentation" width="100%" style="max-width:580px; border-radius:20px; overflow:hidden; background:#ffffff; box-shadow:0 16px 40px rgba(14,33,24,0.08);">
             <tr>
-              <td style="background:#ffffff; padding:44px 40px 26px; text-align:center;">
-                <img src="${FULL_LOGO_URL}" alt="${siteConfig.name}" width="160" style="display:block; width:160px; max-width:55%; height:auto; margin:0 auto;" />
-                <p style="margin:16px 0 0; font-family:Georgia, 'Times New Roman', serif; font-style:italic; font-size:13px; color:#307335;">
+              <td style="background:#0e2118; padding:40px 40px 32px; text-align:center;">
+                <img src="${LOGO_MARK_URL}" alt="${siteConfig.name}" width="56" height="56" style="display:block; margin:0 auto 14px;" />
+                <p style="margin:0 0 6px; color:#fcfdfd; font-family:Georgia, 'Times New Roman', serif; font-size:18px; font-weight:bold;">
+                  ${siteConfig.name}
+                </p>
+                <p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-style:italic; font-size:13px; color:#c9a227;">
                   ${siteConfig.tagline}
                 </p>
               </td>
