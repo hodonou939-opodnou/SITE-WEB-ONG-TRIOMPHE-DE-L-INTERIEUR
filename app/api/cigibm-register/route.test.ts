@@ -419,6 +419,157 @@ describe("POST /api/cigibm-register", () => {
     await db.ambassador.delete({ where: { id: ambassador.id } });
   });
 
+  it("blocks an identical resubmission: no second Brevo contact, no second confirmation email, redirected to ?deja=1", async () => {
+    let contactCalls = 0;
+    let confirmationEmails = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        contactCalls += 1;
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      confirmationEmails += 1;
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const fields = { name: "Exact Dup Person", phone: "0100000110", email: `exactdup${TEST_EMAIL_DOMAIN}`, consent: "1" };
+
+    const first = await POST(buildRequest(fields));
+    expect(first.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    const second = await POST(buildRequest(fields));
+    expect(second.headers.get("location")).toContain("deja=1");
+
+    // Le second envoi ne doit refaire ni contact Brevo ni email de confirmation.
+    expect(contactCalls).toBe(1);
+    expect(confirmationEmails).toBe(1);
+
+    const rows = await db.participant.findMany({ where: { email: fields.email } });
+    expect(rows).toHaveLength(1);
+  });
+
+  it("blocks on phone+name even when the email is different — the case that would create a real duplicate row", async () => {
+    // La contrainte @@unique([editionId, email]) empêche déjà deux lignes de
+    // partager un email : c'est donc précisément cette paire (téléphone+nom,
+    // second email) qui protège réellement la base d'une ligne en double.
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const phone = "0100000120";
+
+    await POST(buildRequest({ name: "Second Email Person", phone, email: `secondmail-a${TEST_EMAIL_DOMAIN}`, consent: "1" }));
+    const second = await POST(
+      buildRequest({ name: "Second Email Person", phone, email: `secondmail-b${TEST_EMAIL_DOMAIN}`, consent: "1" })
+    );
+
+    expect(second.headers.get("location")).toContain("deja=1");
+
+    const rows = await db.participant.findMany({ where: { phone: "+2290100000120" } });
+    expect(rows).toHaveLength(1);
+  });
+
+  it("blocks on email+name even when the phone is different", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `emailname${TEST_EMAIL_DOMAIN}`;
+
+    await POST(buildRequest({ name: "Email Name Person", phone: "0100000121", email, consent: "1" }));
+    const second = await POST(buildRequest({ name: "Email Name Person", phone: "0100000122", email, consent: "1" }));
+
+    expect(second.headers.get("location")).toContain("deja=1");
+  });
+
+  it("matches the duplicate regardless of name casing", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const phone = "0100000113";
+    const email = `casedup${TEST_EMAIL_DOMAIN}`;
+
+    await POST(buildRequest({ name: "Jean Kossou", phone, email, consent: "1" }));
+    const second = await POST(buildRequest({ name: "JEAN KOSSOU", phone, email, consent: "1" }));
+
+    expect(second.headers.get("location")).toContain("deja=1");
+  });
+
+  it("lets a different person on a SHARED phone register normally (no false positive)", async () => {
+    // Cas réel et courant au Bénin : plusieurs membres d'un même foyer
+    // partagent un téléphone. Une seule coïncidence (le téléphone) ne doit
+    // jamais suffire à refuser sa place à la deuxième personne du foyer.
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const phone = "0100000114";
+
+    await POST(buildRequest({ name: "Epoux Partage", phone, email: `shared-a${TEST_EMAIL_DOMAIN}`, consent: "1" }));
+    const second = await POST(buildRequest({ name: "Epouse Partage", phone, email: `shared-b${TEST_EMAIL_DOMAIN}`, consent: "1" }));
+
+    expect(second.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    const rows = await db.participant.findMany({ where: { phone: "+2290100000114" } });
+    expect(rows).toHaveLength(2);
+  });
+
+  it("still updates the existing row when the same email comes back with both a corrected phone and name", async () => {
+    // Une seule coïncidence (l'email) : ce n'est pas un doublon bloquant. La
+    // ligne doit être mise à jour (l'ONG doit pouvoir joindre la personne),
+    // et l'inscription se termine normalement sur /merci.
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const email = `corrected${TEST_EMAIL_DOMAIN}`;
+
+    await POST(buildRequest({ name: "Corrected Person", phone: "0100000115", email, consent: "1" }));
+    const second = await POST(buildRequest({ name: "Corrected Persona", phone: "0100000116", email, consent: "1" }));
+
+    expect(second.headers.get("location")).toContain("/cigibm-2026/merci");
+
+    const rows = await db.participant.findMany({ where: { email } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].phone).toBe("+2290100000116");
+  });
+
+  it("still backfills ambassador attribution on an exact duplicate resubmission via a referral link", async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ messageId: "x" }), { status: 201 })) as typeof fetch;
+
+    const ambassador = await db.ambassador.create({
+      data: {
+        slug: `${TEST_AMBASSADOR_SLUG_PREFIX}-exactdup`,
+        fullName: "Ambassadeur Exactdup",
+        phone: "+2290100000117",
+        email: `ambassador-exactdup${TEST_EMAIL_DOMAIN}`,
+      },
+    });
+
+    const { POST } = await import("./route");
+    const fields = {
+      name: "Exact Dup Backfill",
+      phone: "0100000118",
+      email: `exactdup-backfill${TEST_EMAIL_DOMAIN}`,
+      consent: "1",
+    };
+
+    // Première inscription : aucun cookie de parrainage.
+    await POST(buildRequest(fields));
+
+    // Resoumission identique, cette fois via le lien de l'ambassadeur : la
+    // place n'est pas recréée, mais l'attribution doit quand même être
+    // rattrapée (régression production corrigée plus tôt).
+    const secondRequest = buildRequest(fields);
+    secondRequest.cookies.set("cigibm_ref", ambassador.slug);
+    const second = await POST(secondRequest);
+
+    expect(second.headers.get("location")).toContain("deja=1");
+
+    const rows = await db.participant.findMany({ where: { email: fields.email } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].ambassadorId).toBe(ambassador.id);
+
+    await db.ambassador.delete({ where: { id: ambassador.id } });
+  });
+
   it("does not notify the ambassador when the Participant write itself fails", async () => {
     const emailCalls: Array<{ to: string }> = [];
     global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {

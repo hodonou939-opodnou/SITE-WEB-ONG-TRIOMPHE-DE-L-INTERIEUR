@@ -7,6 +7,7 @@ import QuoteBlock from "@/components/QuoteBlock";
 import StatCounter from "@/components/StatCounter";
 import RegistrationForm from "@/components/RegistrationForm";
 import ReferralCapture from "@/components/ReferralCapture";
+import AlreadyRegisteredNotice from "@/components/AlreadyRegisteredNotice";
 import { cigibm, impactStats, presidentQuote } from "@/lib/content";
 import { getNamedImage } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
@@ -87,9 +88,9 @@ const faqs = [
 export default async function Cigibm2026Page({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string }>;
+  searchParams: Promise<{ erreur?: string; deja?: string }>;
 }) {
-  const { erreur } = await searchParams;
+  const { erreur, deja } = await searchParams;
   const poster = getNamedImage("cigibm-poster");
   const featuredSpeaker = cigibm.nextEdition.speakers.find((s) => s.featured);
   const otherSpeakers = cigibm.nextEdition.speakers.filter((s) => !s.featured);
@@ -172,6 +173,7 @@ export default async function Cigibm2026Page({
               )}
             </Reveal>
             <Reveal delay={0.16} scale className="order-1 lg:order-2">
+              {deja && <AlreadyRegisteredNotice />}
               {erreur && (
                 <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                   Une erreur est survenue, votre inscription n&apos;a pas pu être
