@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# generated at build/dev time by scripts/generate-media-manifest.mjs
+/lib/media-manifest.generated.json
+
 # production
 /build
 
@@ -39,3 +42,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Superpowers brainstorming scratch files
+.superpowers/
+
+# Superpowers isolated worktrees
+.worktrees/
+
+# Photos originales non compressées (archivées hors de public/ pour ne pas
+# alourdir les déploiements) — les versions web optimisées vivent dans
+# public/images/cigibm-edition-*/
+/raw-photos/

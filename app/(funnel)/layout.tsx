@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/content";
 import { getLogoSrc } from "@/lib/media";
+import RegistrationPopup from "@/components/RegistrationPopup";
 
 // Layout "tunnel" : volontairement dépouillé de la navigation complète du
 // site. Une seule sortie discrète vers l'accueil, aucun menu qui détourne
@@ -12,7 +13,7 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-mist-50/10 bg-azure-900/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-mist-50/10 bg-leaf-950/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5">
             {logoSrc ? (
@@ -23,16 +24,20 @@ export default function FunnelLayout({ children }: { children: ReactNode }) {
             <span className="font-display text-sm text-mist-50">{siteConfig.shortName}</span>
           </Link>
           <Link href="/" className="text-xs text-mist-100/50 transition-colors hover:text-mist-100/80">
-            ← Retour au site
+            Retour au site
           </Link>
         </div>
       </header>
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-mist-50/10 bg-azure-900 py-6 text-center text-xs text-mist-100/40">
-        © {new Date().getFullYear()} {siteConfig.name} — {siteConfig.location}
+      <footer className="border-t border-mist-50/10 bg-leaf-950 py-6 text-center text-xs text-mist-100/40">
+        © {new Date().getFullYear()} {siteConfig.name}, {siteConfig.location}
       </footer>
+
+      <Suspense fallback={null}>
+        <RegistrationPopup />
+      </Suspense>
     </>
   );
 }

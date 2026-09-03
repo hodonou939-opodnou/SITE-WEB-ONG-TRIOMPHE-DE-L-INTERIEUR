@@ -1,26 +1,75 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { siteConfig } from "@/lib/content";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+// Polices auto-hébergées (variable fonts) plutôt que next/font/google : évite
+// toute dépendance au CDN Google Fonts au moment du build, Next.js a déjà
+// renvoyé des URLs de fichiers obsolètes (404) pour Lora à un moment donné.
+const displayFont = localFont({
+  src: "./fonts/playfair-variable.woff2",
+  variable: "--font-display-serif",
+  weight: "500 800",
+  display: "swap",
 });
 
-const manrope = Manrope({
+const manrope = localFont({
+  src: "./fonts/manrope-variable.woff2",
   variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "400 700",
+  display: "swap",
 });
+
+const siteUrl = "https://ongtriomphedelinterieur.com";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
-    template: `%s — ${siteConfig.name}`,
+    default: `${siteConfig.name}, ${siteConfig.tagline}`,
+    template: `%s, ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: [
+    "santé mentale Bénin",
+    "guérison intérieure",
+    "CIGIBM",
+    "bien-être mental",
+    "ONG Bénin",
+    "Christelle Eugénie Gnimassou",
+    "développement personnel Bénin",
+  ],
+  authors: [{ name: siteConfig.name }],
+  icons: {
+    icon: [
+      { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: siteConfig.name,
+    url: siteUrl,
+    title: `${siteConfig.name}, ${siteConfig.tagline}`,
+    description: siteConfig.description,
+    images: [
+      {
+        url: "/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteConfig.name}, ${siteConfig.tagline}`,
+    description: siteConfig.description,
+    images: ["/images/og-default.jpg"],
+  },
 };
 
 // Layout racine minimal : coquille HTML/polices uniquement. Le header et le
@@ -31,7 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-mist-100 text-ink">
         {children}

@@ -4,7 +4,7 @@
   --background: #f5f9f7;
   --foreground: #16211d;
 
-  /* Leaf — vert extrait du logo (#49af50), croissance, transformation, espoir */
+  /* Leaf, vert extrait du logo (#49af50), croissance, transformation, espoir */
   --color-leaf-50: #f2f7f3;
   --color-leaf-100: #e2eee3;
   --color-leaf-200: #c5ddc7;
@@ -15,8 +15,9 @@
   --color-leaf-700: #307335;
   --color-leaf-800: #245627;
   --color-leaf-900: #183a1a;
+  --color-leaf-950: #0e2118;
 
-  /* Azure — bleu extrait du logo (#418dcb), confiance, calme, profondeur */
+  /* Azure, bleu extrait du logo (#418dcb), confiance, calme, profondeur */
   --color-azure-50: #f1f5f9;
   --color-azure-100: #dee9f2;
   --color-azure-200: #bed3e4;
@@ -28,11 +29,14 @@
   --color-azure-800: #1a4160;
   --color-azure-900: #122b40;
 
-  /* Mist — neutre froid discret, écho du fond blanc du logo */
+  /* Mist, neutre froid discret, écho du fond blanc du logo */
   --color-mist-50: #fcfdfd;
   --color-mist-100: #f5f9f7;
   --color-mist-200: #e9f1ec;
   --color-mist-300: #d8e6de;
+
+  /* Mist warm, variante ivoire chaude, pour les sections éditoriales */
+  --color-mist-warm: #fbf8f1;
 
   --color-ink: #16211d;
 }
@@ -51,6 +55,7 @@
   --color-leaf-700: var(--color-leaf-700);
   --color-leaf-800: var(--color-leaf-800);
   --color-leaf-900: var(--color-leaf-900);
+  --color-leaf-950: var(--color-leaf-950);
 
   --color-azure-50: var(--color-azure-50);
   --color-azure-100: var(--color-azure-100);
@@ -67,10 +72,11 @@
   --color-mist-100: var(--color-mist-100);
   --color-mist-200: var(--color-mist-200);
   --color-mist-300: var(--color-mist-300);
+  --color-mist-warm: var(--color-mist-warm);
 
   --color-ink: var(--color-ink);
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-display-serif);
   --font-sans: var(--font-manrope);
 }
 
@@ -87,4 +93,38 @@ body {
 ::selection {
   background: var(--color-leaf-200);
   color: var(--color-leaf-900);
+}
+
+/* Balayage lumineux (bandeau CIGIBM), profondeur type rendu 3D/Adobe,
+   sobre et ponctuel plutôt qu'en boucle serrée. */
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-160%) skewX(-20deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+  }
+  55% {
+    transform: translateX(360%) skewX(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(360%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-shine {
+  animation: shine-sweep 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shine {
+    animation: none;
+    opacity: 0;
+  }
 }

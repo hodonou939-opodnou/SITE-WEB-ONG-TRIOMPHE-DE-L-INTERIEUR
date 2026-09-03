@@ -1,0 +1,12 @@
+-- Backs the new upsert-based dedup in app/api/cigibm-register/route.ts:
+-- a resubmission for the same (edition, email) must update the existing
+-- Participant row instead of creating a second one.
+--
+-- No partial WHERE clause is needed for the nullable `email` column: in
+-- PostgreSQL, a plain unique index never treats two NULLs as equal (NULL
+-- is never considered equal to NULL for uniqueness purposes), so two
+-- different phone-only registrants (both with email = NULL) for the same
+-- édition already coexist correctly under this constraint, without
+-- collapsing into one row. Verified empirically against the real database
+-- before this migration was applied — see task-8 fix report.
+CREATE UNIQUE INDEX "Participant_editionId_email_key" ON "Participant"("editionId", "email");

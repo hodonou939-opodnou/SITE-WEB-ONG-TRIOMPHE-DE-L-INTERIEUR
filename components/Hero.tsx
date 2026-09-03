@@ -16,14 +16,14 @@ export default function Hero({
   compact?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden bg-azure-900">
+    <section className="relative overflow-hidden bg-leaf-950">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/30 blur-3xl"
+        className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/25 blur-3xl"
+        className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-azure-400/20 blur-3xl"
       />
       <Container
         className={`relative ${compact ? "py-24 sm:py-28" : "py-32 sm:py-40"}`}

@@ -20,7 +20,7 @@ export default function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2 className="font-display text-3xl leading-tight text-azure-900 sm:text-4xl">
+      <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
         {title}
       </h2>
       {description && (

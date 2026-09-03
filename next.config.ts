@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Export statique : le site est 100% statique (aucune route dynamique,
-  // aucune API), donc pas besoin d'un serveur Next.js ni d'un adaptateur de
-  // plateforme pour le déployer. `out/` peut être servi par n'importe quel
-  // hébergeur statique.
-  output: "export",
+  // Rendu serveur (Vercel) : nécessaire depuis l'ajout de /api/cigibm-register,
+  // une route serveur qui appelle l'API Brevo sans jamais exposer la clé au
+  // navigateur. Le reste du site reste des pages statiques classiques.
   images: {
     unoptimized: true,
   },

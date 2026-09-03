@@ -30,10 +30,10 @@ export default function Header({ logoSrc }: { logoSrc: string | null }) {
             </span>
           ) : (
             <>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-azure-800 font-display text-lg text-mist-50">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-800 font-display text-lg text-mist-50">
                 TI
               </span>
-              <span className="font-display text-lg leading-tight text-azure-900">
+              <span className="font-display text-lg leading-tight text-leaf-900">
                 {siteConfig.shortName}
               </span>
             </>

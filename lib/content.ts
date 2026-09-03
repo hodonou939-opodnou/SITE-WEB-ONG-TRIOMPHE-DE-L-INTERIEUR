@@ -9,22 +9,34 @@ export const siteConfig = {
   tagline: "Guérir de l'intérieur pour triompher à l'extérieur",
   description:
     "ONG béninoise dédiée au bien-être mental, à la guérison intérieure et au développement personnel.",
-  // Accroche émotionnelle du hero d'accueil — distincte de la description
+  // Accroche émotionnelle du hero d'accueil, distincte de la description
   // factuelle ci-dessus, utilisée pour les meta-tags.
   homeHeroLede:
-    "Vous n'êtes pas seul·e face à vos blessures invisibles. Sous la présidence de Christelle Eugénie Gnimassou, nous ouvrons des espaces où la parole libère, où l'épreuve trouve du sens, et où l'équilibre redevient possible.",
+    "Certaines blessures ne se voient pas. On les porte en silence, on fait bonne figure, et on finit par croire que c'est normal. Depuis six ans, nous ouvrons des espaces où la parole se libère enfin, et où l'équilibre redevient possible.",
   founder: "Christelle Eugénie Gnimassou",
   founderTitle: "Présidente-fondatrice & coach",
   location: "Godomey, Abomey-Calavi, Bénin", // [PLACEHOLDER] adresse précise à confirmer
-  email: "ongtriomphedelinterieur@gmail.com",
+  email: "contact@ongtriomphedelinterieur.com",
   phone: "01 68 28 06 75",
   phoneHref: "tel:+2290168280675",
   social: {
     facebook: "https://www.facebook.com/share/1D4sEtaPUN/?mibextid=wwXIfr",
-    instagram: "#", // [PLACEHOLDER]
-    tiktok: "#", // [PLACEHOLDER]
-    linkedin: "#", // [PLACEHOLDER]
+    tiktok: "https://www.tiktok.com/@ongtdi1?_r=1&_t=ZP-99Gb2T2M7LT",
+    linkedin: "https://www.linkedin.com/in/ong-triomphedelinterieur-a52635365/",
   },
+};
+
+// Brevo : le formulaire d'inscription poste vers /api/cigibm-register (route
+// serveur Next.js), qui crée le contact via l'API Brevo avec une clé stockée
+// côté serveur (variable d'environnement BREVO_API_KEY sur Vercel, jamais
+// exposée au navigateur), puis redirige vers /cigibm-2026/merci.
+// Dossier Brevo « Triomphe de l'Intérieur » (id 6) > listes « CIGIBM 2026 »
+// (participants) et « CIGIBM4 - Ambassadeurs » (ambassadeurs, créée pour
+// donner une visibilité CRM sur ce groupe — les emails ambassadeur passent
+// par l'API transactionnelle, qui ne crée jamais de Contact de son côté).
+export const brevo = {
+  cigibm2026ListId: 7,
+  cigibm4AmbassadorsListId: 10,
 };
 
 export const navigation = [
@@ -32,6 +44,7 @@ export const navigation = [
   { label: "Notre histoire", href: "/a-propos" },
   { label: "Méthode R.A.C.I.N.E.S.", href: "/methode-racines" },
   { label: "CIGIBM", href: "/cigibm" },
+  { label: "Blog & Activités", href: "/blog" },
   { label: "Nous soutenir", href: "/nous-soutenir" },
   { label: "Contact", href: "/contact" },
 ];
@@ -43,21 +56,64 @@ export const presidentQuote = {
   role: "Présidente-fondatrice, Triomphe de l'Intérieur",
 };
 
+// Mentions presse, chaque lien a été vérifié individuellement (contenu +
+// URL) avant d'être ajouté ici. Ne pas ajouter d'URL non vérifiée.
+export const pressMentions = [
+  {
+    outlet: "Matin Libre",
+    title:
+      "Congrès international de guérison intérieure et du bien-être mental : la 3ème édition s'annonce sous le sceau de l'équilibre",
+    date: "13 novembre 2025",
+    excerpt:
+      "Annonce de la 3ème édition du CIGIBM au Palais des Congrès de Cotonou, réunissant experts internationaux, professionnels de la santé mentale et chercheurs autour de la guérison et du bien-être mental.",
+    url: "https://matinlibre.com/2025/11/13/congres-international-de-guerison-interieure-et-du-bien-etre-mental-la-3eme-edition-sannonce-sous-le-sceau-de-lequilibre/",
+    image: "/images/cigibm-edition-3/02.jpg",
+  },
+  {
+    outlet: "L'Économiste du Bénin",
+    title: "L'ONG Triomphe de l'Intérieur sensibilise sur l'équilibre",
+    date: "2 décembre 2025",
+    excerpt:
+      "Retour sur la 3ème édition du CIGIBM, les 29 et 30 novembre 2025, consacrée à aider les participants à retrouver leur équilibre émotionnel.",
+    url: "https://leconomistebenin.bj/long-triomphe-de-linterieur-sensibilise-sur-lequilibre/",
+    image: "/images/cigibm-edition-3/04.jpg",
+  },
+  {
+    outlet: "Economia24",
+    title: "CIGIBM 2025 : Christelle Gnimassou pour le bien-être mental de tous",
+    date: "30 novembre 2025",
+    excerpt:
+      "Compte-rendu de l'édition 2025, qui a réuni des centaines de participants autour d'outils concrets pour sortir de la « prison émotionnelle et sentimentale ».",
+    url: "https://economia24.bj/2025/11/30/cigibm-2025-christelle-gnimassou-pour-le-bien-etre-mental-de-tous/",
+    image: "/images/author-christelle-gnimassou.jpg",
+  },
+  {
+    outlet: "Chaire UNESCO Éducation & Santé",
+    title:
+      "Christelle Eugénie Gnimassou, intervenante au 6ème Global Community Health Workshop",
+    date: "juin 2026",
+    excerpt:
+      "La présidente-fondatrice de Triomphe de l'Intérieur intervient aux côtés d'experts internationaux lors de ce workshop consacré à la santé communautaire mondiale.",
+    image: "/images/presidente.jpg",
+    url: "https://didier-jourdan.com/fr/2026/06/",
+  },
+];
+
 export const missionPillars = [
   {
     title: "Actions humanitaires",
     description:
-      "Derrière chaque geste, un visage : celui d'un orphelin, d'une veuve, d'un enfant en difficulté. Nous agissons là où l'urgence est la plus vive.",
+      "Derrière chaque geste, un visage : celui d'un orphelin, d'une veuve, d'un enfant en difficulté. Nous agissons là où l'urgence ne peut pas attendre.",
   },
   {
     title: "Guérison intérieure & bien-être mental",
     description:
-      "Personne ne devrait porter seul·e le poids d'une blessure émotionnelle. Nous accompagnons les femmes et les jeunes vers un équilibre retrouvé.",
+      "Une blessure qu'on ne nomme pas ne guérit pas. Nous créons les espaces, écoute, ateliers, accompagnement, où elle peut enfin se dire, puis se traverser.",
   },
   {
     title: "Autonomisation",
     description:
-      "Nous ne donnons pas de solutions toutes faites : nous donnons les moyens de devenir l'actrice, l'acteur de sa propre transformation.",
+      "Nous ne distribuons pas de solutions toutes faites. Nous transmettons des outils, pour que chacun·e reparte capable de tenir debout sans nous.",
   },
 ];
 
@@ -65,6 +121,43 @@ export const impactStats = [
   { value: 3, suffix: "", label: "éditions du CIGIBM organisées" },
   { value: 58000, suffix: "+", label: "personnes touchées (présentiel + en ligne)" },
   { value: 6, suffix: "+", label: "années d'accompagnement de terrain" },
+];
+
+// Histoire fondatrice du CIGIBM, telle que fournie par l'ONG. Sujet sensible
+// (tentatives de suicide de la fondatrice) : formulé avec dignité, sans
+// détails cliniques, centré sur la décision et la transformation qui a suivi.
+export const foundingStory = {
+  eyebrow: "Notre histoire",
+  title: "Pourquoi le CIGIBM existe",
+  paragraphs: [
+    "En 2023, cette conviction n'était pas une théorie pour Christelle Eugénie Gnimassou, c'était un vécu. Après avoir survécu à deux tentatives de suicide, elle a fait un choix : plus jamais quelqu'un d'autre ne devrait porter seul·e le silence qui avait failli la lui coûter la vie.",
+    "Elle a commencé petit : une conférence, un thème dit sans détour, « La dépression, parlons-en ». 203 personnes sont venues, le 29 mars 2023. Ce qui devait être un événement ponctuel est devenu un rendez-vous annuel, puis un congrès national, puis international, réunissant aujourd'hui des dizaines de milliers de personnes, en présentiel et en ligne, autour de la même urgence : que plus personne n'ait à traverser ça seul·e.",
+  ],
+};
+
+// Statistiques vérifiées individuellement avant ajout (études citées,
+// rapports OMS). Ne pas ajouter de chiffre sans source.
+export const mentalHealthStats = [
+  {
+    value: "30 %",
+    label: "de prévalence de la dépression estimée à Cotonou",
+    source: "Étude menée à Cotonou, 2009",
+  },
+  {
+    value: "1 psychiatre",
+    label: "pour 1 million d'habitants en Afrique subsaharienne",
+    source: "OMS / UNICEF",
+  },
+  {
+    value: "75 %+",
+    label: "des personnes souffrant de troubles mentaux ne reçoivent aucun traitement en Afrique",
+    source: "OMS",
+  },
+  {
+    value: "1 000 Mds $",
+    label: "perdus chaque année par l'économie mondiale à cause de la dépression et de l'anxiété non traitées",
+    source: "OMS, estimation mondiale",
+  },
 ];
 
 export const cigibm = {
@@ -76,8 +169,8 @@ export const cigibm = {
   dates: "29 et 30 novembre 2025",
   sponsor: "Steeve Facia",
   venues: [
-    "Centre Culturel Le Centre — Godomey, Abomey-Calavi (29 nov., visite guidée)",
-    "Palais des Congrès — Cotonou (30 nov.)",
+    "Centre Culturel Le Centre, Godomey, Abomey-Calavi (29 nov., visite guidée)",
+    "Palais des Congrès, Cotonou (30 nov.)",
   ],
   objective:
     "Aider les participants à se sentir compris et soutenus, en leur donnant les outils nécessaires pour sortir de leur prison émotionnelle et sentimentale.",
@@ -105,6 +198,8 @@ export const cigibm = {
   ],
   pastEditions: [
     {
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-1/
+      id: "edition-1",
       edition: "1ère édition",
       year: "29 mars 2023",
       theme: "La dépression, parlons-en",
@@ -114,6 +209,8 @@ export const cigibm = {
         "Première édition du congrès, consacrée à libérer la parole autour de la dépression.",
     },
     {
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-2/
+      id: "edition-2",
       edition: "2ème édition",
       year: "27 avril 2024",
       theme: "Réinvente-toi",
@@ -123,6 +220,8 @@ export const cigibm = {
         "Participants venus du Bénin et de la sous-région (entrepreneurs, femmes, enfants). Approches proposées sur la spiritualité, le bien-être mental des entrepreneurs, et la guérison des blessures intérieures et de la dépression.",
     },
     {
+      // Photos dédiées (une ou plusieurs) : public/images/cigibm-edition-3/
+      id: "edition-3",
       edition: "3ème édition",
       year: "29-30 novembre 2025",
       theme: "Équilibre",
@@ -132,31 +231,38 @@ export const cigibm = {
         "Parrainage de Steeve Facia. Ateliers, conférences, témoignages, moments de prière et de méditation sensibilisant sur le bien-être mental, la gestion du stress et le développement personnel.",
     },
   ],
-  // Prochaine édition annoncée — dates à confirmer avec l'ONG (affiche reçue
+  // Prochaine édition annoncée, dates à confirmer avec l'ONG (affiche reçue
   // avec une plage de dates incohérente : "17 au 13 octobre 2026").
   nextEdition: {
+    // Photos de préparation / à venir : public/images/cigibm-edition-4/
+    id: "edition-4",
     edition: "4ème édition",
     theme: "Le vaccin de la dépression",
-    dates: "17 et 18 octobre 2026",
+    dates: "17 octobre 2026, dès 9h00",
     venue: "Palais des Congrès de Cotonou",
     note: "Participation gratuite sur inscription.",
     registrationPhones: ["+229 01 68 28 06 75", "+229 01 57 30 43 29"],
+    // Chaque intervenant a un slug d'image (public/images/speaker-{slug}.jpg)
+    // affiché en avatar ; si le fichier n'existe pas encore, un avatar avec
+    // les initiales s'affiche à la place.
     speakers: [
       {
+        slug: "christelle-gnimassou",
         name: "Christelle Eugénie Gnimassou",
         role: "Promotrice",
       },
       {
+        slug: "rudy-chapsal-aboua",
         name: "Rudy Chapsal Aboua",
-        role: "Intervenante — Entrepreneure & stratège de marque",
-        bio: "Entrepreneure, stratège de marque et figure du leadership féminin en Afrique, Rudy Chapsal construit depuis plus de treize ans un écosystème d'entreprises entre le Bénin et le continent. Elle dirige L'Épicurienne et Bloom, et a fondé SOUV'REINES, une organisation dédiée à l'autonomisation et au leadership des femmes africaines. Elle est l'auteure de « SE TENIR — Lettres à la femme africaine qui n'abandonnera pas ».",
+        role: "Intervenante, Entrepreneure & stratège de marque",
+        bio: "Entrepreneure, stratège de marque et figure du leadership féminin en Afrique, Rudy Chapsal construit depuis plus de treize ans un écosystème d'entreprises entre le Bénin et le continent. Elle dirige L'Épicurienne et Bloom, et a fondé SOUV'REINES, une organisation dédiée à l'autonomisation et au leadership des femmes africaines. Elle est l'auteure de « SE TENIR, Lettres à la femme africaine qui n'abandonnera pas ».",
         featured: true,
       },
-      { name: "Ahouignan Astéris A.", role: "Intervenant" },
-      { name: "Narcisse Avocé", role: "Intervenant" },
-      { name: "Espoir Tchehoun", role: "Intervenant" },
-      { name: "Annick Mireille Azandjeme", role: "Intervenante" },
-      { name: "Valdye Gbaguidi", role: "Intervenante" },
+      { slug: "ahouignan-asteris", name: "Ahouignan Astéris A.", role: "Intervenant" },
+      { slug: "narcisse-avoce", name: "Narcisse Avocé", role: "Intervenant" },
+      { slug: "espoir-tchehoun", name: "Espoir Tchehoun", role: "Intervenant" },
+      { slug: "annick-mireille-azandjeme", name: "Annick Mireille Azandjeme", role: "Intervenante" },
+      { slug: "valdye-gbaguidi", name: "Valdye Gbaguidi", role: "Intervenante" },
     ],
   },
 };
@@ -261,7 +367,7 @@ export const values = [
   {
     title: "Transformation",
     description:
-      "Nous croyons, sans réserve, que la guérison intérieure est possible — à tout âge, après toute épreuve.",
+      "Nous croyons, sans réserve, que la guérison intérieure est possible, à tout âge, après toute épreuve.",
   },
   {
     title: "Communauté",
@@ -274,22 +380,22 @@ export const supportWays = [
   {
     title: "Faire un don",
     description:
-      "Chaque don devient un atelier animé, une écoute offerte, un congrès organisé. Votre générosité finance directement notre mission de terrain.",
+      "Un don ne disparaît pas dans une structure : il devient un atelier animé, une écoute offerte, une place gratuite au congrès pour quelqu'un qui n'aurait pas pu venir.",
     details: [
-      "Virement bancaire — RIB communiqué sur demande", // [PLACEHOLDER]
-      "Mobile Money — MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
+      "Virement bancaire, RIB communiqué sur demande", // [PLACEHOLDER]
+      "Mobile Money, MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
     ],
   },
   {
     title: "Devenir bénévole",
     description:
-      "Votre temps a plus de valeur que vous ne l'imaginez. Rejoignez une équipe engagée, sur le terrain, à chaque édition du CIGIBM.",
+      "Accueillir, orienter, écouter, porter des chaises : le congrès tient debout grâce à des gens ordinaires qui donnent un week-end. Vous n'avez besoin d'aucune qualification particulière.",
     details: ["Écrivez-nous via le formulaire de contact"],
   },
   {
     title: "Devenir partenaire",
     description:
-      "Associez votre marque à une cause qui change des vies, et donnez à la santé mentale la visibilité qu'elle mérite.",
+      "La santé mentale reste un angle mort du débat public béninois. Y associer votre organisation, c'est aider à le combler, et rendre visible un engagement qui compte réellement.",
     details: ["Contactez-nous pour discuter d'un partenariat sur mesure"],
   },
 ];
