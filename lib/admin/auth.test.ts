@@ -12,7 +12,28 @@ vi.mock("@/lib/db", () => ({
   db: { adminProfile: { findUnique: (...args: unknown[]) => mockFindUnique(...args) } },
 }));
 
-import { getAdminSession } from "./auth";
+import { getAdminSession, resolveAccessRedirect } from "./auth";
+
+describe("resolveAccessRedirect", () => {
+  it("sends an unauthenticated visitor to login", () => {
+    expect(resolveAccessRedirect(null, ["admin"])).toBe("/admin/login");
+  });
+
+  it("allows a session whose role is in the allowed list", () => {
+    const session = { id: "1", fullName: "Test", role: "admin" as const };
+    expect(resolveAccessRedirect(session, ["admin"])).toBeNull();
+  });
+
+  it("sends a session with a disallowed role to the access-refused page", () => {
+    const session = { id: "1", fullName: "Test", role: "scanner" as const };
+    expect(resolveAccessRedirect(session, ["admin"])).toBe("/admin/login?acces=refuse");
+  });
+
+  it("allows a scanner session when scanner is in the allowed list", () => {
+    const session = { id: "1", fullName: "Test", role: "scanner" as const };
+    expect(resolveAccessRedirect(session, ["admin", "scanner"])).toBeNull();
+  });
+});
 
 describe("getAdminSession", () => {
   beforeEach(() => {
