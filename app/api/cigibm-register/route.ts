@@ -137,6 +137,7 @@ export async function POST(request: NextRequest) {
   let isDuplicate = false;
   let shouldNotifyAmbassador = false;
   let edition4: { id: number } | null = null;
+  let attendanceToken: string | null = null;
 
   try {
     edition4 = await db.edition.findUnique({ where: { number: 4 } });
@@ -238,7 +239,7 @@ export async function POST(request: NextRequest) {
     // autre téléphone/nom) et course entre deux requêtes simultanées.
     if (edition4) {
       try {
-        await db.participant.create({
+        const created = await db.participant.create({
           data: {
             editionId: edition4.id,
             fullName: name,
@@ -249,6 +250,7 @@ export async function POST(request: NextRequest) {
             ambassadorId: ambassador?.id,
           },
         });
+        attendanceToken = created.attendanceToken;
         shouldNotifyAmbassador = ambassador !== null;
       } catch (createErr) {
         if (createErr instanceof Prisma.PrismaClientKnownRequestError && createErr.code === "P2002") {
@@ -277,7 +279,7 @@ export async function POST(request: NextRequest) {
           });
           const shouldBackfillAmbassador = existing?.ambassadorId == null && ambassador !== null;
 
-          await db.participant.update({
+          const updatedParticipant = await db.participant.update({
             where: { editionId_email: { editionId: edition4.id, email } },
             data: {
               fullName: name,
@@ -286,6 +288,7 @@ export async function POST(request: NextRequest) {
               ...(shouldBackfillAmbassador ? { ambassadorId: ambassador?.id } : {}),
             },
           });
+          attendanceToken = updatedParticipant.attendanceToken;
 
           shouldNotifyAmbassador = shouldBackfillAmbassador;
         } else {
@@ -355,5 +358,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(`${origin}/cigibm-2026?deja=1#inscription`, 303);
   }
 
-  return NextResponse.redirect(`${origin}/cigibm-2026/merci`, 303);
+  return NextResponse.redirect(
+    attendanceToken ? `${origin}/cigibm-2026/merci?badge=${attendanceToken}` : `${origin}/cigibm-2026/merci`,
+    303
+  );
 }
