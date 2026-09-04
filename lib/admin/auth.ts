@@ -20,9 +20,29 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   return { id: profile.id, fullName: profile.fullName, role: profile.role };
 }
 
+export function resolveAccessRedirect(
+  session: AdminSession | null,
+  allowedRoles: Array<"admin" | "scanner">
+): string | null {
+  if (!session) return "/admin/login";
+  if (!allowedRoles.includes(session.role)) return "/admin/login?acces=refuse";
+  return null;
+}
+
 export async function requireAdmin(): Promise<AdminSession> {
   const session = await getAdminSession();
-  if (!session) redirect("/admin/login");
-  if (session.role !== "admin") redirect("/admin/login?acces=refuse");
-  return session;
+  const redirectTo = resolveAccessRedirect(session, ["admin"]);
+  if (redirectTo) redirect(redirectTo);
+  return session!;
+}
+
+// Distinct from requireAdmin(): the door-scanning flow must work for a
+// scanner-role account too, not just full admins. requireAdmin() itself
+// stays admin-only unchanged — other callers (ambassador/message Server
+// Actions) depend on that.
+export async function requireScanAccess(): Promise<AdminSession> {
+  const session = await getAdminSession();
+  const redirectTo = resolveAccessRedirect(session, ["admin", "scanner"]);
+  if (redirectTo) redirect(redirectTo);
+  return session!;
 }

@@ -1,10 +1,16 @@
 import type { ReactNode } from "react";
-import { requireAdmin } from "@/lib/admin/auth";
+import { redirect } from "next/navigation";
+import { getAdminSession } from "@/lib/admin/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AdminBottomNav, AdminSidebarNav } from "./AdminNav";
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
-  const session = await requireAdmin();
+  const session = await getAdminSession();
+  if (!session) redirect("/admin/login");
+  // A scanner-role account has no business inside the full CRM — send it to
+  // the one page it's actually meant to use instead of the generic
+  // "acces=refuse" dead end this used to hit via requireAdmin().
+  if (session.role !== "admin") redirect("/admin/scan");
 
   async function signOut() {
     "use server";

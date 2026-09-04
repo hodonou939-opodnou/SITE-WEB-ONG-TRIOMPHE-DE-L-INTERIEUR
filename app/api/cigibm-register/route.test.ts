@@ -58,7 +58,7 @@ describe("POST /api/cigibm-register", () => {
 
     const { POST } = await import("./route");
     const email = `newparticipant${TEST_EMAIL_DOMAIN}`;
-    await POST(buildRequest({ name: "New Participant", phone: "0100000010", email, consent: "1" }));
+    const response = await POST(buildRequest({ name: "New Participant", phone: "0100000010", email, consent: "1" }));
 
     const edition4 = await db.edition.findUniqueOrThrow({ where: { number: 4 } });
     const participant = await db.participant.findFirst({ where: { email } });
@@ -67,6 +67,7 @@ describe("POST /api/cigibm-register", () => {
     expect(participant?.editionId).toBe(edition4.id);
     expect(participant?.registrationSource).toBe("form");
     expect(participant?.phone).toBe("+2290100000010");
+    expect(response.headers.get("location")).toContain(`/cigibm-2026/merci?badge=${participant?.attendanceToken}`);
   });
 
   it("still redirects to /merci even when the Participant write fails", async () => {

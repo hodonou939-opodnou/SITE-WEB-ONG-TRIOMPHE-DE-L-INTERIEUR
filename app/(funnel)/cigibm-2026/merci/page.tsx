@@ -30,7 +30,8 @@ const nextSteps = [
   },
 ];
 
-export default function MerciPage() {
+export default async function MerciPage({ searchParams }: { searchParams: Promise<{ badge?: string }> }) {
+  const { badge } = await searchParams;
   return (
     <section className="relative overflow-hidden bg-leaf-950">
       <div aria-hidden className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-leaf-500/20 blur-3xl" />
@@ -51,6 +52,14 @@ export default function MerciPage() {
             Merci de nous faire confiance. C&apos;est souvent le pas le plus
             difficile, et vous venez de le franchir.
           </p>
+          {badge && (
+            <a
+              href={`/cigibm-2026/badge/${badge}`}
+              className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-leaf-500 px-7 py-3.5 text-sm font-semibold text-leaf-950 transition-colors hover:bg-leaf-400"
+            >
+              Créer mon badge « J&apos;y serai »
+            </a>
+          )}
         </Reveal>
 
         <div className="mt-12 space-y-4">
