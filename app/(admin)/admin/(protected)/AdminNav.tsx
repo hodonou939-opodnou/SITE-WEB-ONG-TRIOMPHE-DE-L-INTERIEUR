@@ -40,11 +40,21 @@ function MailIcon({ className }: { className?: string }) {
   );
 }
 
+function ScanIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="9" y="9" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
+
 const navItems = [
   { href: "/admin", label: "Tableau de bord", shortLabel: "Accueil", Icon: HomeIcon, exact: true },
   { href: "/admin/participants", label: "Participants", shortLabel: "Participants", Icon: PeopleIcon },
   { href: "/admin/ambassadors", label: "Ambassadeurs", shortLabel: "Ambassad.", Icon: StarIcon },
   { href: "/admin/messages", label: "Messages", shortLabel: "Messages", Icon: MailIcon },
+  { href: "/admin/scan", label: "Scanner", shortLabel: "Scanner", Icon: ScanIcon },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
