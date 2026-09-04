@@ -20,6 +20,13 @@ const manrope = localFont({
   display: "swap",
 });
 
+const dancingScript = localFont({
+  src: "./fonts/dancing-script-variable.woff2",
+  variable: "--font-script",
+  weight: "700",
+  display: "swap",
+});
+
 const siteUrl = "https://ongtriomphedelinterieur.com";
 
 export const metadata: Metadata = {
@@ -80,7 +87,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${displayFont.variable} ${manrope.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${manrope.variable} ${dancingScript.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-mist-100 text-ink">
         {children}
