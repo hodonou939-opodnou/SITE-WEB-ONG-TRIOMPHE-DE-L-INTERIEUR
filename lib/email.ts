@@ -120,7 +120,7 @@ function shareButtons(shareMessage: string) {
   </table>`;
 }
 
-export function buildConfirmationEmail(firstName: string) {
+export function buildConfirmationEmail(firstName: string, badgeUrl: string) {
   const first = firstName.split(/\s+/)[0];
   const html = emailShell(`
     <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
@@ -150,6 +150,7 @@ export function buildConfirmationEmail(firstName: string) {
     <p style="margin:0; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
       Ajoutez déjà la date à votre calendrier, on se retrouve bientôt.
     </p>
+    ${ctaButton("Créer mon badge « J'y serai »", badgeUrl)}
     ${ctaButton("Voir les détails du congrès", `${SITE_URL}/cigibm-2026`)}
   `);
 

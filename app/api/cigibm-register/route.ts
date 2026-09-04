@@ -300,10 +300,14 @@ export async function POST(request: NextRequest) {
     // L'envoi de l'email de confirmation ne doit jamais faire échouer
     // l'inscription elle-même : le contact est déjà enregistré à ce stade.
     try {
-      const message = buildConfirmationEmail(name);
-      const emailRes = await sendTransactionalEmail(apiKey, { email, name }, message);
-      if (!emailRes.ok) {
-        console.error("Confirmation email failed", emailRes.status, await emailRes.text().catch(() => ""));
+      if (!attendanceToken) {
+        console.error("Skipping confirmation email: no attendanceToken available", { email, name });
+      } else {
+        const message = buildConfirmationEmail(name, `${origin}/cigibm-2026/badge/${attendanceToken}`);
+        const emailRes = await sendTransactionalEmail(apiKey, { email, name }, message);
+        if (!emailRes.ok) {
+          console.error("Confirmation email failed", emailRes.status, await emailRes.text().catch(() => ""));
+        }
       }
     } catch (err) {
       console.error("Confirmation email request failed", err);
