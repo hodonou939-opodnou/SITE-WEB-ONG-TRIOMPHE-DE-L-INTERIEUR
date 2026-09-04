@@ -1,0 +1,229 @@
+.badge {
+  width: 320px;
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(24, 58, 26, 0.15), 0 22px 46px -8px rgba(24, 58, 26, 0.4);
+  font-family: var(--font-display), Georgia, serif;
+  border: 1px solid rgba(201, 165, 54, 0.4);
+  color: #fcfdfd;
+  display: flex;
+  flex-direction: column;
+  background: #0e2118;
+}
+.badge p {
+  margin: 0;
+}
+
+.watermarkFull {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/images/christelle-avec-le-vaccin.jpg");
+  background-repeat: no-repeat;
+  background-size: 505px 674px;
+  background-position: -92px -274px;
+  filter: grayscale(0.35) sepia(0.3) hue-rotate(50deg) saturate(1.5) brightness(1.05);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(14, 33, 24, 0.85) 0%, rgba(14, 33, 24, 0.6) 32%, rgba(20, 45, 24, 0.6) 68%, rgba(14, 33, 24, 0.85) 100%);
+}
+.sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.07) 50%, transparent 60%);
+}
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 15px 1px;
+  border-bottom: 1px solid rgba(232, 200, 74, 0.35);
+}
+.masthead {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.cigibm {
+  color: #f3dd8a;
+}
+.seal {
+  flex-shrink: 0;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f9e9ae, #e8c84a 55%, #c9a536);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #1a2f16;
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+.sealNum {
+  font-size: 11px;
+  line-height: 1;
+}
+.sealOrd {
+  font-size: 6.5px;
+  vertical-align: super;
+}
+.sealLbl {
+  font-size: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.motto {
+  font-family: var(--font-script), cursive;
+  font-style: italic;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 3px;
+  color: #f3dd8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.motto::before,
+.motto::after {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: rgba(232, 200, 74, 0.5);
+}
+
+.photoGlow {
+  margin: 10px auto 0;
+  width: 182px;
+  height: 182px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photoGlow::before {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(243, 221, 138, 0.35), transparent 70%);
+}
+.photoFrame {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 5px;
+  background: linear-gradient(135deg, #f9e9ae, #e8c84a 45%, #8a6f22);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 28px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+}
+.photoBox {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #87b7de, #3684c4);
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 -28px 36px -8px rgba(0, 0, 0, 0.4);
+}
+.photoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.panelBottom {
+  margin-top: 2px;
+  padding: 2px 15px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.script {
+  font-family: var(--font-script), cursive;
+  font-size: 52px;
+  color: #f9e9ae;
+  text-align: center;
+  line-height: 1;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), 0 0 26px rgba(232, 200, 74, 0.45);
+}
+.name {
+  text-align: center;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+}
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.date {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.venue {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 7.5px;
+  opacity: 0.85;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.qrCard {
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px;
+  border: 1px solid #e8c84a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(0, 0, 0, 0.35);
+  line-height: 0;
+  overflow: hidden;
+}
+.qrImg {
+  width: 50px;
+  height: 50px;
+  display: block;
+}
