@@ -33,19 +33,39 @@ export default function ScannerClient() {
   // d'ignorer la réponse d'une requête devenue obsolète (une frappe plus
   // récente a déjà déclenché une nouvelle recherche).
   const searchRequestId = useRef(0);
+  // Miroir de `state.kind`, lu par `submitToken`. `submitToken` doit rester
+  // sans dépendances (voir l'effet caméra, `[submitToken]` : le faire
+  // dépendre de `state` relancerait getUserMedia() à chaque check-in et
+  // ferait clignoter le flux vidéo) mais doit quand même savoir si un scan
+  // est déjà en cours ou un panneau affiché, pour ne pas écraser un résultat
+  // encore non acquitté par l'agent avec celui d'un badge suivant.
+  const stateKindRef = useRef<ScanState["kind"]>("idle");
 
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [state, setState] = useState<ScanState>({ kind: "idle" });
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOutcome, setSearchOutcome] = useState<SearchOutcome | null>(null);
 
+  // Seul point d'écriture de `state` : garde `stateKindRef` synchronisé sans
+  // effet séparé (donc sans décalage d'une frame entre le rendu et le ref).
+  const applyState = useCallback((next: ScanState) => {
+    stateKindRef.current = next.kind;
+    setState(next);
+  }, []);
+
   const submitToken = useCallback(async (token: string) => {
-    if (!token || lastSubmittedToken.current === token) return;
+    if (!token) return;
+    // Un résultat, une erreur ou une vérification en cours occupe déjà
+    // l'écran : un badge qui dérive dans le cadre ne doit ni relancer un
+    // check-in concurrent, ni écraser silencieusement ce qui est affiché
+    // avant que l'agent n'ait acquitté ("Scanner suivant"/"Réessayer").
+    if (stateKindRef.current !== "idle") return;
+    if (lastSubmittedToken.current === token) return;
     lastSubmittedToken.current = token;
-    setState({ kind: "checking" });
+    applyState({ kind: "checking" });
     try {
       const result = await checkInAction(token);
-      setState({ kind: "result", result });
+      applyState({ kind: "result", result });
     } catch (err) {
       // Une redirection interne à Next.js (ex. session admin expirée pendant
       // l'événement -> /admin/login) doit continuer sa route normale : elle
@@ -54,29 +74,32 @@ export default function ScannerClient() {
       console.error("Échec du check-in par jeton", err);
       // On relâche le verrou anti-doublon : sans ça, un badge dont la
       // vérification a échoué une fois ne pourrait plus jamais être
-      // re-scanné sans recharger la page.
+      // re-scanné sans recharger la page. Le badge ne sera cependant
+      // re-décodé qu'après "Réessayer" (retour à idle), pas pendant que
+      // l'erreur est affichée — voir le garde-fou stateKindRef ci-dessus.
       lastSubmittedToken.current = null;
-      setState({ kind: "error", message: CHECKIN_FAILURE_MESSAGE });
+      applyState({ kind: "error", message: CHECKIN_FAILURE_MESSAGE });
     }
-  }, []);
+  }, [applyState]);
 
   // Check-in déclenché par un résultat de recherche (secours manuel) plutôt
-  // que par le scan caméra — même logique de résultat/erreur, sans verrou de
-  // jeton puisqu'il n'y a pas de boucle de décodage continue à débrayer ici.
+  // que par le scan caméra — même logique de résultat/erreur. Gardé sur
+  // `state.kind` (pas seulement "checking") : tant qu'un résultat ou une
+  // erreur est affiché, un second tap ne doit pas relancer de check-in.
   const submitParticipant = useCallback(
     async (participant: ParticipantMatch) => {
-      if (state.kind === "checking") return;
-      setState({ kind: "checking" });
+      if (state.kind !== "idle") return;
+      applyState({ kind: "checking" });
       try {
         const result = await checkInByIdAction(participant.id);
-        setState({ kind: "result", result });
+        applyState({ kind: "result", result });
       } catch (err) {
         unstable_rethrow(err);
         console.error("Échec du check-in par recherche", err);
-        setState({ kind: "error", message: CHECKIN_FAILURE_MESSAGE });
+        applyState({ kind: "error", message: CHECKIN_FAILURE_MESSAGE });
       }
     },
-    [state.kind],
+    [state.kind, applyState],
   );
 
   // Après un résultat affiché, on autorise à nouveau le même jeton (au cas
@@ -86,18 +109,18 @@ export default function ScannerClient() {
   // d'une recherche vierge.
   const resetForNextScan = useCallback(() => {
     lastSubmittedToken.current = null;
-    setState({ kind: "idle" });
+    applyState({ kind: "idle" });
     setSearchQuery("");
     setSearchOutcome(null);
-  }, []);
+  }, [applyState]);
 
   // Dismiss d'un échec de vérification : relâche le verrou de jeton (pour
   // permettre un nouveau scan du même badge) sans toucher à la recherche en
   // cours, pour pouvoir retaper immédiatement sur le même résultat.
   const dismissError = useCallback(() => {
     lastSubmittedToken.current = null;
-    setState({ kind: "idle" });
-  }, []);
+    applyState({ kind: "idle" });
+  }, [applyState]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -232,7 +255,7 @@ export default function ScannerClient() {
                 <button
                   key={match.id}
                   type="button"
-                  disabled={state.kind === "checking"}
+                  disabled={state.kind !== "idle"}
                   onClick={() => void submitParticipant(match)}
                   className="flex flex-col items-start gap-1 rounded-xl border border-mist-50/15 bg-mist-50/5 px-3 py-2 text-left text-sm text-mist-50 disabled:opacity-50"
                 >
