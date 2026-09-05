@@ -13,14 +13,21 @@ export default async function BadgePage({ params }: { params: Promise<{ token: s
 
   if (!participant) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-leaf-950 px-6 text-center">
-        <p className="text-mist-50">
-          Lien invalide. Vérifiez le lien reçu par email, ou{" "}
-          <a href="/cigibm-2026" className="underline">
-            inscrivez-vous
-          </a>{" "}
-          si ce n&apos;est pas déjà fait.
-        </p>
+      <section className="flex min-h-screen items-center justify-center bg-leaf-950 px-6 py-16">
+        <div className="mx-auto max-w-md rounded-2xl border border-leaf-400/30 bg-leaf-500/10 p-5 text-center">
+          <p className="font-display text-lg leading-snug text-mist-50">
+            Oups ! Vous n&apos;avez pas encore réservé votre place.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-mist-100/80">
+            Inscrivez-vous, c&apos;est gratuit — et créez votre badge « J&apos;y serai » juste après.
+          </p>
+          <a
+            href="/cigibm-2026"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-leaf-500 px-6 py-3 text-sm font-semibold text-leaf-950 transition-opacity hover:opacity-90"
+          >
+            Cliquez ici pour vous inscrire
+          </a>
+        </div>
       </section>
     );
   }

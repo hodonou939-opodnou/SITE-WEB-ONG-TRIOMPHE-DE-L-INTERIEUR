@@ -25,13 +25,16 @@ describe("BadgePage", () => {
     const jsx = await BadgePage({ params: Promise.resolve({ token: participant.attendanceToken }) });
     render(jsx);
 
-    expect(screen.getByText(/Ajouter ma photo/)).toBeInTheDocument();
+    expect(screen.getByText(/Ajoutez votre photo/)).toBeInTheDocument();
+    expect(screen.getByText("Certificat")).toBeInTheDocument();
+    expect(screen.getByText("Affiche TV")).toBeInTheDocument();
+    expect(screen.getByText("Poster")).toBeInTheDocument();
   });
 
-  it("shows an invalid-link message for an unknown token", async () => {
+  it("shows a not-registered-yet message for an unknown token", async () => {
     const jsx = await BadgePage({ params: Promise.resolve({ token: "does-not-exist" }) });
     render(jsx);
 
-    expect(screen.getByText(/lien invalide/i)).toBeInTheDocument();
+    expect(screen.getByText(/vous n.avez pas encore réservé votre place/i)).toBeInTheDocument();
   });
 });
