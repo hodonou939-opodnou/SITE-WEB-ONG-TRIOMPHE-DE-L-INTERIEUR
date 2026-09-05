@@ -88,6 +88,39 @@ describe("POST /api/cigibm-register", () => {
     expect(response.headers.get("location")).toContain("/cigibm-2026/merci");
   });
 
+  it("still sends the confirmation email (without a badge link) when the Participant write fails", async () => {
+    // Régression : avant ce correctif, un attendanceToken absent (ici parce
+    // que l'écriture Participant échoue pour une raison autre que P2002)
+    // faisait sauter tout l'envoi de l'email de confirmation — la personne
+    // ne recevait alors ni dates, ni lieu, ni numéros d'inscription. Même
+    // repli que le test ci-dessus pour forcer cet échec ; celui-ci inspecte
+    // en plus les appels à fetch pour prouver qu'un email est bien parti.
+    const emailCalls: Array<{ to: string; subject: string; html: string }> = [];
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/v3/contacts")) {
+        return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+      }
+      const body = JSON.parse(init?.body as string);
+      emailCalls.push({ to: body.to[0].email, subject: body.subject, html: body.htmlContent });
+      return new Response(JSON.stringify({ messageId: "x" }), { status: 201 });
+    }) as typeof fetch;
+    vi.spyOn(db.participant, "create").mockRejectedValueOnce(new Error("DB is down"));
+
+    const { POST } = await import("./route");
+    const email = `resilient-email${TEST_EMAIL_DOMAIN}`;
+    const response = await POST(
+      buildRequest({ name: "Resilience Email Test", phone: "0100000012", email, consent: "1" })
+    );
+
+    expect(response.status).toBe(303);
+
+    const confirmation = emailCalls.find((c) => c.to === email);
+    expect(confirmation).toBeDefined();
+    expect(confirmation?.html).toContain("Voir les détails du congrès");
+    expect(confirmation?.html).not.toContain("Créer mon badge");
+  });
+
   it("does not create a second Participant row when the same person resubmits", async () => {
     // Simule une vraie resoumission : premier appel de création de contact
     // Brevo accepté (201), second rejeté en double (email ET SMS déjà
