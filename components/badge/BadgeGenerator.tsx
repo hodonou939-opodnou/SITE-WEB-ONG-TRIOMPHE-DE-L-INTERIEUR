@@ -7,27 +7,50 @@ import { generateQrDataUrl } from "@/lib/qr";
 import Badge1 from "./Badge1";
 import Badge2 from "./Badge2";
 import Badge3 from "./Badge3";
+import styles from "./BadgeGenerator.module.css";
 
 const TEMPLATES = [
-  { id: 1, label: "Certificat", Component: Badge1 },
-  { id: 2, label: "Affiche TV", Component: Badge2 },
-  { id: 3, label: "Poster", Component: Badge3 },
+  { id: 1, label: "Certificat", file: "certificat", Component: Badge1 },
+  { id: 2, label: "Affiche TV", file: "affiche-tv", Component: Badge2 },
+  { id: 3, label: "Poster", file: "poster", Component: Badge3 },
 ] as const;
 
+type TemplateId = (typeof TEMPLATES)[number]["id"];
+
+// Le fond des trois gabarits (voir `.badge` dans Badge1/2/3.module.css) —
+// filet de sécurité passé à toPng pour les pixels d'anticrénelage en bord de
+// coin, une fois le rayon aplati par la classe .exporting ci-dessous.
+const EXPORT_BACKGROUND = "#0e2118";
+
 export default function BadgeGenerator({ fullName, attendanceToken }: { fullName: string; attendanceToken: string }) {
-  const [templateId, setTemplateId] = useState<(typeof TEMPLATES)[number]["id"]>(1);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [qrError, setQrError] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<TemplateId | null>(null);
+  const [errorId, setErrorId] = useState<TemplateId | null>(null);
+  const cardRefs = useRef<Partial<Record<TemplateId, HTMLDivElement | null>>>({});
 
   useEffect(() => {
-    generateQrDataUrl(attendanceToken).then(setQrDataUrl);
+    let cancelled = false;
+    generateQrDataUrl(attendanceToken)
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch((err) => {
+        // Un badge sans QR a l'air normal mais est inscannable à l'entrée :
+        // on bloque le téléchargement plutôt que de laisser passer un badge
+        // muet (voir le rendu conditionnel plus bas).
+        console.error("QR code generation failed", err);
+        if (!cancelled) setQrError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [attendanceToken]);
 
-  // Revoke the previous object URL whenever the photo changes or the
-  // component unmounts, so we don't leak blob: URLs as visitors try
-  // multiple photos before downloading.
+  // Révoque l'URL objet précédente à chaque changement de photo et au
+  // démontage, pour ne pas fuiter des blob: URLs si le visiteur essaie
+  // plusieurs photos avant de télécharger.
   useEffect(() => {
     return () => {
       if (photoUrl) URL.revokeObjectURL(photoUrl);
@@ -44,56 +67,96 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     });
   }
 
-  async function handleDownload() {
-    if (!cardRef.current) return;
-    setDownloading(true);
+  async function handleDownload(id: TemplateId, filenameSlug: string) {
+    const node = cardRefs.current[id];
+    if (!node) return;
+
+    setErrorId(null);
+    setDownloadingId(id);
+    // Aplatit les coins arrondis le temps de la capture : les quatre coins de
+    // `.badge` (border-radius: 18px) tombent hors de la zone peinte et
+    // s'exportent transparents, que les viewers compositent ensuite sur du
+    // blanc. Retiré dans le `finally`, même si toPng lève une exception.
+    node.classList.add(styles.exporting);
     try {
-      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+      const dataUrl = await toPng(node, { pixelRatio: 3, backgroundColor: EXPORT_BACKGROUND });
+      const filename = `jy-serai-cigibm-2026-${filenameSlug}.png`;
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], filename, { type: "image/png" });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file] });
+        } catch (err) {
+          // L'utilisateur a fermé la feuille de partage : ce n'est pas une
+          // erreur, on ne remonte rien à l'écran.
+          if ((err as { name?: string })?.name !== "AbortError") throw err;
+        }
+        return;
+      }
+
+      // Repli desktop : <a download> ne fonctionne pas sur iOS Safari, mais
+      // reste la voie la plus simple là où le partage de fichiers n'existe
+      // pas (Web Share API absente ou sans support des fichiers).
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = "jy-serai-cigibm-2026.png";
+      link.href = objectUrl;
+      link.download = filename;
       link.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Badge export failed", err);
+      setErrorId(id);
     } finally {
-      setDownloading(false);
+      node.classList.remove(styles.exporting);
+      setDownloadingId(null);
     }
   }
 
-  const ActiveTemplate = TEMPLATES.find((t) => t.id === templateId)!.Component;
+  const downloadHint = !qrDataUrl
+    ? qrError
+      ? "Le code QR n'a pas pu être généré. Rechargez la page pour réessayer."
+      : "Préparation du code QR…"
+    : !photoUrl
+      ? "Ajoutez votre photo pour activer le téléchargement."
+      : null;
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="flex gap-2">
-        {TEMPLATES.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTemplateId(t.id)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              t.id === templateId ? "bg-leaf-500 text-leaf-950" : "bg-mist-50/10 text-mist-50/70 hover:bg-mist-50/20"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div ref={cardRef}>
-        <ActiveTemplate photoUrl={photoUrl} name={fullName} qrDataUrl={qrDataUrl} />
-      </div>
-
-      <label className="cursor-pointer rounded-full border border-mist-50/25 px-6 py-3 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10">
-        {photoUrl ? "Changer la photo" : "Ajouter ma photo"}
+    <div className="flex flex-col items-center gap-10">
+      <label className={styles.uploadCta}>
+        <span className={styles.ctaScript}>J&apos;y serai</span>
+        <span className={styles.ctaLabel}>{photoUrl ? "Changer ma photo" : "Ajoutez votre photo"}</span>
         <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
       </label>
 
-      <button
-        type="button"
-        onClick={handleDownload}
-        disabled={!photoUrl || downloading}
-        className="rounded-full bg-leaf-500 px-8 py-3.5 text-sm font-semibold text-leaf-950 transition-opacity disabled:opacity-40"
-      >
-        {downloading ? "Préparation…" : "Télécharger mon badge"}
-      </button>
+      <div className="flex w-full flex-col items-center gap-12">
+        {TEMPLATES.map(({ id, label, file, Component }) => (
+          <div key={id} className="flex w-full flex-col items-center gap-3">
+            <p className="text-sm text-mist-100/70">{label}</p>
+            <div
+              ref={(node) => {
+                cardRefs.current[id] = node;
+              }}
+            >
+              <Component photoUrl={photoUrl} name={fullName} qrDataUrl={qrDataUrl} />
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDownload(id, file)}
+              disabled={!photoUrl || !qrDataUrl || downloadingId === id}
+              className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10 disabled:pointer-events-none disabled:opacity-40"
+            >
+              {downloadingId === id ? "Préparation…" : "Télécharger"}
+            </button>
+            {downloadHint && <p className="max-w-[260px] text-center text-xs text-mist-100/60">{downloadHint}</p>}
+            {errorId === id && (
+              <p className="max-w-[260px] text-center text-xs text-red-300">
+                Le téléchargement a échoué. Réessayez.
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

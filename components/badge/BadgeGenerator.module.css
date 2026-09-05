@@ -1,0 +1,60 @@
+/* Le seul geste de tout l'écran : la photo est l'unique action qui compte,
+   tout le reste (labels, boutons Télécharger) reste sobre pour ne pas lui
+   faire concurrence. Glow construit avec la même recette text-shadow /
+   box-shadow que .brand (Badge2.module.css) et .neon (Badge3.module.css). */
+.uploadCta {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 18px 44px 20px;
+  border-radius: 9999px;
+  border: 1px solid rgba(232, 200, 74, 0.5);
+  background: radial-gradient(circle at 50% 20%, #183a1a 0%, #0e2118 70%);
+  animation: cta-pulse 2.6s ease-in-out infinite;
+}
+
+.ctaScript {
+  font-family: var(--font-script), cursive;
+  font-size: 30px;
+  line-height: 1;
+  color: #f9e9ae;
+  text-shadow: 0 0 4px #fff, 0 0 12px #f3dd8a, 0 0 22px #e8c84a, 0 0 38px #c9a536;
+}
+
+.ctaLabel {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fcfdfd;
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 18px 6px rgba(232, 200, 74, 0.45),
+      0 0 46px 16px rgba(201, 165, 54, 0.25),
+      0 8px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uploadCta {
+    animation: none;
+    box-shadow:
+      0 0 18px 6px rgba(232, 200, 74, 0.3),
+      0 8px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Aplatit le rayon du gabarit pendant la capture toPng : sinon les quatre
+   coins de `.badge` (border-radius: 18px) tombent hors de la zone peinte et
+   s'exportent transparents, ce que les viewers compositent sur du blanc. */
+.exporting > * {
+  border-radius: 0 !important;
+}
