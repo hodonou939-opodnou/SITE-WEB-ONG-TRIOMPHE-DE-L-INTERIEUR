@@ -173,15 +173,26 @@ export default async function Cigibm2026Page({
               )}
             </Reveal>
             <Reveal delay={0.16} scale className="order-1 lg:order-2">
-              {deja && <AlreadyRegisteredNotice />}
-              {erreur && (
-                <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                  Une erreur est survenue, votre inscription n&apos;a pas pu être
-                  enregistrée. Réessayez, ou appelez directement le{" "}
-                  {cigibm.nextEdition.registrationPhones[0]}.
-                </p>
+              {deja ? (
+                // Un visiteur déjà inscrit n'a plus rien à faire dans ce
+                // formulaire : lui laisser voir un formulaire actif juste en
+                // dessous du message invite à le remplir une seconde fois, ce
+                // qui le renverrait simplement ici via ?deja=1 au prochain
+                // envoi. Le message remplace le formulaire tant que ce
+                // paramètre est présent, plutôt que de s'ajouter au-dessus.
+                <AlreadyRegisteredNotice />
+              ) : (
+                <>
+                  {erreur && (
+                    <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      Une erreur est survenue, votre inscription n&apos;a pas pu être
+                      enregistrée. Réessayez, ou appelez directement le{" "}
+                      {cigibm.nextEdition.registrationPhones[0]}.
+                    </p>
+                  )}
+                  <RegistrationForm />
+                </>
               )}
-              <RegistrationForm />
             </Reveal>
           </div>
         </div>
