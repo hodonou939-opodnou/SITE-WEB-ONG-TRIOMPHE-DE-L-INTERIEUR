@@ -52,6 +52,15 @@
   }
 }
 
+/* Le focus clavier retombe sur le champ de fichier (sr-only) à l'intérieur
+   du label : :focus-within le rend visible ici. Un outline plutôt qu'un
+   box-shadow, pour ne pas entrer en conflit avec celui animé par
+   cta-pulse — la couleur reste dans la même famille or que le glow. */
+.uploadCta:focus-within {
+  outline: 3px solid #e8c84a;
+  outline-offset: 4px;
+}
+
 /* Aplatit le rayon du gabarit pendant la capture toPng : sinon les quatre
    coins de `.badge` (border-radius: 18px) tombent hors de la zone peinte et
    s'exportent transparents, ce que les viewers compositent sur du blanc. */

@@ -103,7 +103,10 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       link.href = objectUrl;
       link.download = filename;
       link.click();
-      URL.revokeObjectURL(objectUrl);
+      // Révoquer tout de suite après click() coupe l'URL avant que certains
+      // navigateurs n'aient commencé à lire le blob : le téléchargement
+      // échoue silencieusement. On laisse le click() être consommé d'abord.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
     } catch (err) {
       console.error("Badge export failed", err);
       setErrorId(id);
@@ -126,8 +129,9 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       <label className={styles.uploadCta}>
         <span className={styles.ctaScript}>J&apos;y serai</span>
         <span className={styles.ctaLabel}>{photoUrl ? "Changer ma photo" : "Ajoutez votre photo"}</span>
-        <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+        <input type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
       </label>
+      {downloadHint && <p className="max-w-[260px] text-center text-xs text-mist-100/60">{downloadHint}</p>}
 
       <div className="flex w-full flex-col items-center gap-12">
         {TEMPLATES.map(({ id, label, file, Component }) => (
@@ -148,7 +152,6 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
             >
               {downloadingId === id ? "Préparation…" : "Télécharger"}
             </button>
-            {downloadHint && <p className="max-w-[260px] text-center text-xs text-mist-100/60">{downloadHint}</p>}
             {errorId === id && (
               <p className="max-w-[260px] text-center text-xs text-red-300">
                 Le téléchargement a échoué. Réessayez.
