@@ -70,6 +70,12 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   async function handleDownload(id: TemplateId, filenameSlug: string) {
     const node = cardRefs.current[id];
     if (!node) return;
+    // Exclusif : un seul export à la fois. Le navigateur refuse de toute
+    // façon un second navigator.share() concurrent (InvalidStateError), donc
+    // on empêche l'état plutôt que d'essayer de s'en remettre après coup —
+    // voir le disabled des boutons plus bas, qui bloque les deux autres tant
+    // que celui-ci tourne.
+    if (downloadingId !== null) return;
 
     setErrorId(null);
     setDownloadingId(id);
@@ -131,7 +137,11 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
         <span className={styles.ctaLabel}>{photoUrl ? "Changer ma photo" : "Ajoutez votre photo"}</span>
         <input type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
       </label>
-      {downloadHint && <p className="max-w-[260px] text-center text-xs text-mist-100/60">{downloadHint}</p>}
+      {downloadHint && (
+        <p aria-live="polite" className="max-w-[260px] text-center text-xs text-mist-100/60">
+          {downloadHint}
+        </p>
+      )}
 
       <div className="flex w-full flex-col items-center gap-12">
         {TEMPLATES.map(({ id, label, file, Component }) => (
@@ -147,13 +157,13 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
             <button
               type="button"
               onClick={() => handleDownload(id, file)}
-              disabled={!photoUrl || !qrDataUrl || downloadingId === id}
+              disabled={!photoUrl || !qrDataUrl || downloadingId !== null}
               className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10 disabled:pointer-events-none disabled:opacity-40"
             >
               {downloadingId === id ? "Préparation…" : "Télécharger"}
             </button>
             {errorId === id && (
-              <p className="max-w-[260px] text-center text-xs text-red-300">
+              <p aria-live="assertive" className="max-w-[260px] text-center text-xs text-red-300">
                 Le téléchargement a échoué. Réessayez.
               </p>
             )}
