@@ -63,7 +63,9 @@
 
 /* Aplatit le rayon du gabarit pendant la capture toPng : sinon les quatre
    coins de `.badge` (border-radius: 18px) tombent hors de la zone peinte et
-   s'exportent transparents, ce que les viewers compositent sur du blanc. */
-.exporting > * {
+   s'exportent transparents, ce que les viewers compositent sur du blanc.
+   Appliquée directement sur `.badge` — la cible de capture elle-même, pas un
+   wrapper qui l'englobe — via classList.add côté BadgeGenerator.tsx. */
+.exporting {
   border-radius: 0 !important;
 }

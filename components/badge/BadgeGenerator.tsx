@@ -68,8 +68,15 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   }
 
   async function handleDownload(id: TemplateId, filenameSlug: string) {
-    const node = cardRefs.current[id];
-    if (!node) return;
+    const wrapper = cardRefs.current[id];
+    if (!wrapper) return;
+    // On capture `.badge` lui-même — premier et unique enfant du wrapper —
+    // plutôt que le wrapper : ce dernier n'a ni bordure ni fond propres, donc
+    // le capturer directement écarte toute possibilité qu'un espace introduit
+    // par le wrapper (arrondi de flex, futur changement de mise en page…)
+    // agrandisse la boîte capturée au-delà de ce que `.badge` peint réellement.
+    const badgeNode = wrapper.firstElementChild as HTMLElement | null;
+    if (!badgeNode) return;
     // Exclusif : un seul export à la fois. Le navigateur refuse de toute
     // façon un second navigator.share() concurrent (InvalidStateError), donc
     // on empêche l'état plutôt que d'essayer de s'en remettre après coup —
@@ -82,10 +89,25 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     // Aplatit les coins arrondis le temps de la capture : les quatre coins de
     // `.badge` (border-radius: 18px) tombent hors de la zone peinte et
     // s'exportent transparents, que les viewers compositent ensuite sur du
-    // blanc. Retiré dans le `finally`, même si toPng lève une exception.
-    node.classList.add(styles.exporting);
+    // blanc. Retiré dans le `finally`, même si toPng lève une exception. La
+    // classe s'applique ici directement sur `.badge` (la cible de capture),
+    // pas sur le wrapper : voir `.exporting` dans BadgeGenerator.module.css.
+    badgeNode.classList.add(styles.exporting);
     try {
-      const dataUrl = await toPng(node, { pixelRatio: 3, backgroundColor: EXPORT_BACKGROUND });
+      // Mesure la boîte réellement peinte de `.badge` (border-box ; le
+      // box-shadow n'entre jamais dans getBoundingClientRect) et la passe
+      // explicitement à toPng : le canvas exporté ne peut alors pas dépasser
+      // ce que `.badge` peint, quelle que soit la mesure que toPng aurait
+      // faite par défaut.
+      const rect = badgeNode.getBoundingClientRect();
+      const width = Math.round(rect.width);
+      const height = Math.round(rect.height);
+      const dataUrl = await toPng(badgeNode, {
+        width,
+        height,
+        pixelRatio: 3,
+        backgroundColor: EXPORT_BACKGROUND,
+      });
       const filename = `jy-serai-cigibm-2026-${filenameSlug}.png`;
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], filename, { type: "image/png" });
@@ -117,7 +139,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       console.error("Badge export failed", err);
       setErrorId(id);
     } finally {
-      node.classList.remove(styles.exporting);
+      badgeNode.classList.remove(styles.exporting);
       setDownloadingId(null);
     }
   }
