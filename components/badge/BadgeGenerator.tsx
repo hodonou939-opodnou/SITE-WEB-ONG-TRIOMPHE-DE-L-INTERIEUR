@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { toPng } from "html-to-image";
+// html2canvas plutôt que html-to-image : ce dernier clone le DOM dans un
+// <foreignObject> SVG, une approche avec des lacunes documentées sur
+// Safari/WebKit précisément pour ce que plusieurs retours réels ont signalé
+// ici — text-shadow (glow "CIGIBM") et box-shadow (halo du cadre édition)
+// absents du fichier téléchargé, photo parfois manquante. html2canvas
+// dessine chaque élément directement sur un <canvas> via les primitives
+// Canvas 2D natives (dont shadowBlur/shadowColor pour les deux types
+// d'ombre), qui ne dépendent pas du rendu SVG du navigateur.
+import html2canvas from "html2canvas";
 import { compressPhoto } from "@/lib/client/compressImage";
 import { generateQrDataUrl } from "@/lib/qr";
 import Badge1 from "./Badge1";
@@ -123,38 +131,22 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     // classe s'applique ici directement sur `.badge` (la cible de capture),
     // pas sur le wrapper : voir `.exporting` dans BadgeGenerator.module.css.
     badgeNode.classList.add(styles.exporting);
-    // Neutralise le temps de la capture les box-shadow du cadre photo et de
-    // l'encart QR (communs aux trois gabarits, sous des noms de classe
-    // différents selon le fichier) : purement verticaux, ils se fondent
-    // normalement à l'écran, mais se rastérisent en bande sombre dure sur
-    // certains moteurs de rendu mobiles — constaté sur un export réel,
-    // visible spécifiquement à droite du cadre et du QR. Neutraliser plutôt
-    // que réajuster le flou élimine le risque quel que soit l'appareil du
-    // visiteur ; restauré dans le `finally`, même si toPng lève une
-    // exception.
-    const shadowedNodes = badgeNode.querySelectorAll<HTMLElement>(
-      '[class*="photoFrame"], [class*="photoFull"], [class*="qrCard"]'
-    );
-    const previousShadows = new Map<HTMLElement, string>();
-    shadowedNodes.forEach((el) => {
-      previousShadows.set(el, el.style.boxShadow);
-      el.style.boxShadow = "none";
-    });
     try {
-      // Mesure la boîte réellement peinte de `.badge` (border-box ; le
-      // box-shadow n'entre jamais dans getBoundingClientRect) et la passe
-      // explicitement à toPng : le canvas exporté ne peut alors pas dépasser
-      // ce que `.badge` peint, quelle que soit la mesure que toPng aurait
-      // faite par défaut.
+      // Mesure la boîte réellement peinte de `.badge` (border-box) et la
+      // passe explicitement : le canvas exporté ne peut alors pas dépasser
+      // ce que `.badge` peint, quelle que soit la mesure que html2canvas
+      // aurait faite par défaut.
       const rect = badgeNode.getBoundingClientRect();
       const width = Math.round(rect.width);
       const height = Math.round(rect.height);
-      const dataUrl = await toPng(badgeNode, {
+      const canvas = await html2canvas(badgeNode, {
         width,
         height,
-        pixelRatio: 3,
+        scale: 3,
         backgroundColor: EXPORT_BACKGROUND,
+        useCORS: true,
       });
+      const dataUrl = canvas.toDataURL("image/png");
       const filename = `jy-serai-cigibm-2026-${filenameSlug}.png`;
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], filename, { type: "image/png" });
@@ -187,9 +179,6 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       setErrorId(id);
     } finally {
       badgeNode.classList.remove(styles.exporting);
-      previousShadows.forEach((prevShadow, el) => {
-        el.style.boxShadow = prevShadow;
-      });
       setDownloadingId(null);
     }
   }

@@ -13,10 +13,14 @@ const displayFont = localFont({
   display: "swap",
 });
 
+// Axe de graisse réel de ce fichier variable : 200-800 (vérifié via sa table
+// fvar), pas 400-700 comme précédemment déclaré ici — ce plafond trop bas
+// faisait silencieusement retomber à 700 tout font-weight:900 déjà présent
+// dans le CSS (ex. Badge3 .neon, antérieur à cette session).
 const manrope = localFont({
   src: "./fonts/manrope-variable.woff2",
   variable: "--font-manrope",
-  weight: "400 700",
+  weight: "200 800",
   display: "swap",
 });
 
