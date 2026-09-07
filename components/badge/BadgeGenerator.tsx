@@ -44,6 +44,11 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   const [qrError, setQrError] = useState(false);
   const [downloadingId, setDownloadingId] = useState<TemplateId | null>(null);
   const [errorId, setErrorId] = useState<TemplateId | null>(null);
+  // Affiché tel quel sous le message d'échec : la seule fenêtre qu'on ait
+  // sur une erreur réelle d'un visiteur est ce qu'il peut nous relire ou
+  // capturer à l'écran — la console du navigateur ne nous est jamais
+  // accessible à distance.
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const cardRefs = useRef<Partial<Record<TemplateId, HTMLDivElement | null>>>({});
 
   useEffect(() => {
@@ -64,31 +69,34 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     };
   }, [attendanceToken]);
 
-  // Révoque l'URL objet précédente à chaque changement de photo et au
-  // démontage, pour ne pas fuiter des blob: URLs si le visiteur essaie
-  // plusieurs photos avant de télécharger.
-  useEffect(() => {
-    return () => {
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
-    };
-  }, [photoUrl]);
-
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoReady(false);
     setPhotoError(false);
     const compressed = await compressPhoto(file);
-    const nextUrl = URL.createObjectURL(compressed);
 
-    // toPng() rastérise ce que le navigateur a déjà peint : si le <img> n'a
-    // pas fini de décoder son blob au moment du clic sur Télécharger, cette
-    // zone du badge s'exporte vide. Constaté en conditions réelles (photo
-    // manquante dans un export, pas systématique — course avec le décodage
-    // asynchrone, pas un problème de format). On attend ici le décodage
-    // réel avant d'activer le téléchargement ; le navigateur réutilise le
-    // même décodage pour les <img> visibles qui partagent cette URL, donc
-    // ça ne rajoute pas d'attente supplémentaire une fois "prêt" affiché.
+    // data: plutôt que URL.createObjectURL() : un canvas qui dessine une
+    // image issue d'une blob: URL peut se retrouver "tainted" sur iOS
+    // Safari (particulièrement en navigation privée), ce qui fait échouer
+    // canvas.toDataURL() avec SecurityError — constaté en conditions
+    // réelles (téléchargement en échec, message générique, reproductible
+    // sur trois gabarits différents partageant tous la même photo). Une
+    // data: URI ne peut jamais tainter un canvas, quel que soit le
+    // navigateur.
+    const nextUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(compressed);
+    });
+
+    // toPng()/html2canvas rastérisent ce que le navigateur a déjà peint :
+    // si le <img> n'a pas fini de décoder au moment du clic sur
+    // Télécharger, cette zone du badge s'exporte vide. Constaté en
+    // conditions réelles (photo manquante, pas systématique — course avec
+    // le décodage asynchrone). On attend ici le décodage réel avant
+    // d'activer le téléchargement.
     const preload = new Image();
     preload.src = nextUrl;
     try {
@@ -98,10 +106,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       setPhotoError(true);
     }
 
-    setPhotoUrl((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return nextUrl;
-    });
+    setPhotoUrl(nextUrl);
     setPhotoReady(true);
   }
 
@@ -177,6 +182,9 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     } catch (err) {
       console.error("Badge export failed", err);
       setErrorId(id);
+      const name = err instanceof Error ? err.name : typeof err;
+      const message = err instanceof Error ? err.message : String(err);
+      setErrorDetail(`${name}: ${message}`);
     } finally {
       badgeNode.classList.remove(styles.exporting);
       setDownloadingId(null);
@@ -228,9 +236,10 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
               {downloadingId === id ? "Préparation…" : "Télécharger"}
             </button>
             {errorId === id && (
-              <p aria-live="assertive" className="max-w-[260px] text-center text-xs text-red-300">
-                Le téléchargement a échoué. Réessayez.
-              </p>
+              <div aria-live="assertive" className="max-w-[260px] text-center text-xs text-red-300">
+                <p>Le téléchargement a échoué. Réessayez.</p>
+                {errorDetail && <p className="mt-1 break-words text-red-300/70">{errorDetail}</p>}
+              </div>
             )}
           </div>
         ))}
