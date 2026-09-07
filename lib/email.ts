@@ -69,12 +69,21 @@ function emailShell(content: string) {
 </html>`;
 }
 
-function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" | "tiktok" = "primary") {
-  const background = variant === "whatsapp" ? "#25d366" : variant === "tiktok" ? "#000000" : "#3684c4";
+// "gold" en couleur pleine plutôt qu'un dégradé : Outlook desktop et
+// plusieurs clients email ignorent les dégradés CSS dans un style en ligne,
+// ce qui laisserait le bouton sans fond du tout sur ces clients — le même
+// risque que ce fichier évite déjà partout ailleurs (aucun autre bouton
+// n'utilise de dégradé). Texte sombre plutôt que blanc, pour le contraste
+// sur fond doré — même logique que .seal (gabarit du badge, fond gold/texte
+// sombre) plutôt que le blanc utilisé sur les autres variantes ici.
+function ctaButton(label: string, href: string, variant: "primary" | "whatsapp" | "tiktok" | "gold" = "primary") {
+  const background =
+    variant === "whatsapp" ? "#25d366" : variant === "tiktok" ? "#000000" : variant === "gold" ? "#e8c84a" : "#3684c4";
+  const color = variant === "gold" ? "#1a2f16" : "#fcfdfd";
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px auto 0;">
     <tr>
       <td style="background:${background}; border-radius:999px;">
-        <a href="${href}" style="display:inline-block; padding:14px 32px; color:#fcfdfd; font-family:Arial, sans-serif; font-size:15px; font-weight:bold; text-decoration:none; border-radius:999px;">
+        <a href="${href}" style="display:inline-block; padding:14px 32px; color:${color}; font-family:Arial, sans-serif; font-size:15px; font-weight:bold; text-decoration:none; border-radius:999px;">
           ${label}
         </a>
       </td>
@@ -157,6 +166,51 @@ export function buildConfirmationEmail(firstName: string, badgeToken?: string | 
 
   return {
     subject: `${first}, votre place au CIGIBM ${cigibm.nextEdition.edition} est confirmée`,
+    html,
+  };
+}
+
+// Modèle dédié au renvoi manuel du lien de badge depuis /admin/participants
+// (sendBadgeLinkAction) — distinct de buildConfirmationEmail : "Inscription
+// confirmée" n'a pas de sens ici, la personne est déjà inscrite, parfois
+// depuis des semaines. Celui-ci se concentre uniquement sur le badge.
+//
+// Sujet daté à la minute près plutôt que statique : Gmail (et la plupart
+// des clients) regroupe des emails de sujet identique dans une seule
+// conversation. Un·e admin qui clique "Envoyer" plusieurs fois de suite
+// pour la même personne (nouvel essai après un échec, test) verrait sinon
+// un seul message dans la boîte du destinataire au lieu d'autant d'envois
+// réellement distincts — même problème déjà documenté pour
+// buildAmbassadorReferralEmail, qui le résout avec un compteur ; ici, sans
+// compteur naturel, l'heure d'envoi joue ce rôle et reste une information
+// pertinente pour le destinataire.
+export function buildBadgeReminderEmail(firstName: string, badgeToken: string) {
+  const first = firstName.split(/\s+/)[0];
+  const badgeUrl = `${SITE_URL}/cigibm-2026/badge/${badgeToken}`;
+  const sentAt = new Intl.DateTimeFormat("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Africa/Porto-Novo",
+  }).format(new Date());
+
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Votre badge « J'y serai »
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, montrez que vous y serez.
+    </h1>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Votre place au CIGIBM ${cigibm.nextEdition.edition} est réservée. Créez votre badge personnel — votre photo, votre nom, et un code d&apos;entrée pour le jour J — et partagez-le avec vos proches.
+    </p>
+    <p style="margin:0; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Rendez-vous les <strong>${cigibm.nextEdition.dates}</strong> au ${cigibm.nextEdition.venue}.
+    </p>
+    ${ctaButton("Créer mon badge « J'y serai »", badgeUrl, "gold")}
+  `);
+
+  return {
+    subject: `${first}, votre badge « J'y serai » vous attend (${sentAt})`,
     html,
   };
 }

@@ -49,6 +49,17 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   // capturer à l'écran — la console du navigateur ne nous est jamais
   // accessible à distance.
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  // Repli de dernier recours quand navigator.share() échoue pour une raison
+  // qui n'est pas une annulation (ex. NotAllowedError constaté en conditions
+  // réelles sur iPhone/Chrome iOS : l'« activation utilisateur » du clic
+  // d'origine peut expirer pendant que html2canvas rend le canvas, avant
+  // même l'appel à share()). <a download> n'est pas un filet de sécurité
+  // fiable ici : WebKit (Safari ET Chrome iOS, même moteur) le fait parfois
+  // échouer en silence, sans la moindre erreur mais sans rien enregistrer
+  // non plus — pire qu'un échec visible. Afficher l'image directement sur
+  // la page pour un enregistrement manuel (appui long) ne dépend d'aucune
+  // API fragile : juste une image affichée et le geste natif de l'OS.
+  const [manualSaveDataUrl, setManualSaveDataUrl] = useState<string | null>(null);
   const cardRefs = useRef<Partial<Record<TemplateId, HTMLDivElement | null>>>({});
 
   useEffect(() => {
@@ -159,12 +170,19 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       if (navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file] });
+          return;
         } catch (err) {
           // L'utilisateur a fermé la feuille de partage : ce n'est pas une
-          // erreur, on ne remonte rien à l'écran.
-          if ((err as { name?: string })?.name !== "AbortError") throw err;
+          // erreur, on ne remonte rien à l'écran et on ne tente rien d'autre.
+          if ((err as { name?: string })?.name === "AbortError") return;
+          // Tout autre échec (NotAllowedError constaté en conditions
+          // réelles, activation utilisateur expirée…) bascule vers
+          // l'enregistrement manuel plutôt que de remonter une erreur —
+          // voir le commentaire sur manualSaveDataUrl plus haut.
+          console.error("Web Share failed, falling back to manual save", err);
+          setManualSaveDataUrl(dataUrl);
+          return;
         }
-        return;
       }
 
       // Repli desktop : <a download> ne fonctionne pas sur iOS Safari, mais
@@ -205,6 +223,31 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
 
   return (
     <div className="flex flex-col items-center gap-10">
+      {manualSaveDataUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Enregistrer votre badge"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-leaf-950/95 p-6"
+        >
+          <img
+            src={manualSaveDataUrl}
+            alt="Votre badge « J'y serai », prêt à enregistrer"
+            className="max-h-[65vh] w-auto max-w-full rounded-2xl shadow-2xl"
+          />
+          <p className="max-w-xs text-center text-sm font-semibold text-mist-50">
+            Le partage automatique n&apos;a pas fonctionné. Appuyez et maintenez sur l&apos;image ci-dessus, puis choisissez « Ajouter aux photos ».
+          </p>
+          <button
+            type="button"
+            onClick={() => setManualSaveDataUrl(null)}
+            className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
+
       <label className={styles.uploadCta}>
         <span className={styles.ctaScript}>J&apos;y serai</span>
         <span className={styles.ctaLabel}>{photoUrl ? "Changer ma photo" : "Ajoutez votre photo"}</span>

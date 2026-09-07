@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { buildConfirmationEmail } from "./email";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildBadgeReminderEmail, buildConfirmationEmail } from "./email";
 
 describe("buildConfirmationEmail", () => {
   it("includes a link to the badge page built from SITE_URL when a token is given", () => {
@@ -20,5 +20,36 @@ describe("buildConfirmationEmail", () => {
     expect(message.html).not.toContain("Créer mon badge");
     expect(message.html).toContain("Palais des Congrès de Cotonou");
     expect(message.html).toContain("+229 01 68 28 06 75");
+  });
+});
+
+describe("buildBadgeReminderEmail", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("includes the badge link but not the registration-confirmation framing", () => {
+    const message = buildBadgeReminderEmail("Aïcha Traoré", "xyz789");
+
+    expect(message.html).toContain("https://ongtriomphedelinterieur.com/cigibm-2026/badge/xyz789");
+    expect(message.html).toContain("Aïcha");
+    // Un renvoi n'est pas une nouvelle inscription — ce cadrage-là appartient
+    // à buildConfirmationEmail, pas à ce modèle.
+    expect(message.html).not.toContain("Inscription confirmée");
+  });
+
+  // Gmail (et la plupart des clients) regroupe des emails de sujet
+  // identique dans une seule conversation : deux renvois à la même personne
+  // doivent avoir des sujets différents pour apparaître comme deux emails
+  // distincts, pas un seul message écrasé/fusionné.
+  it("varies the subject by send time, so repeated resends don't collapse into one Gmail thread", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-10T10:15:00Z"));
+    const first = buildBadgeReminderEmail("Aïcha", "xyz789").subject;
+
+    vi.setSystemTime(new Date("2026-10-10T10:16:00Z"));
+    const second = buildBadgeReminderEmail("Aïcha", "xyz789").subject;
+
+    expect(first).not.toBe(second);
   });
 });
