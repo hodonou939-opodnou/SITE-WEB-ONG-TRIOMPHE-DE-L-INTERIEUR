@@ -5,7 +5,9 @@
   overflow: hidden;
   position: relative;
   box-shadow: 0 4px 10px rgba(24, 58, 26, 0.15), 0 22px 46px -8px rgba(24, 58, 26, 0.4);
-  background: #0e2118;
+  /* Vert dominant échantillonné sur l'affiche officielle de référence
+     (public/jyseraiexemple/jyseraiexemple.jpeg), aligné sur Badge1/Badge3. */
+  background: #176813;
   display: flex;
   flex-direction: column;
   color: #fcfdfd;
@@ -29,11 +31,13 @@
   object-fit: cover;
   display: block;
 }
+/* Même structure (mêmes arrêts/opacités) qu'avant, recolorée pour
+   raccorder la photo au panneau inférieur désormais vert dominant. */
 .photoFull::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(14, 33, 24, 0.6) 0%, transparent 24%, transparent 58%, rgba(14, 33, 24, 1) 100%);
+  background: linear-gradient(180deg, rgba(23, 104, 19, 0.6) 0%, transparent 24%, transparent 58%, rgba(23, 104, 19, 1) 100%);
 }
 
 .topRow {
@@ -52,13 +56,15 @@
   color: #fff;
   text-shadow: 0 0 4px #fff, 0 0 12px #f3dd8a, 0 0 22px #e8c84a, 0 0 38px #c9a536;
 }
+/* Marque d'édition en rouge (repère de l'affiche de référence) au lieu de
+   l'or utilisé partout ailleurs sur le badge. */
 .seal {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f9e9ae, #e8c84a 55%, #c9a536);
-  color: #1a2f16;
+  background: linear-gradient(135deg, #f2453f, #e41a16 55%, #a3120f);
+  color: #fcfdfd;
   display: flex;
   flex-direction: column;
   align-items: center;

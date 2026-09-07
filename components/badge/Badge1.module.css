@@ -10,7 +10,9 @@
   color: #fcfdfd;
   display: flex;
   flex-direction: column;
-  background: #0e2118;
+  /* Vert dominant échantillonné sur l'affiche officielle de référence
+     (public/jyseraiexemple/jyseraiexemple.jpeg) plutôt qu'estimé à l'œil. */
+  background: #176813;
 }
 .badge p {
   margin: 0;
@@ -26,11 +28,14 @@
   background-position: -92px -274px;
   filter: grayscale(0.35) sepia(0.3) hue-rotate(50deg) saturate(1.5) brightness(1.05);
 }
+/* Même structure de dégradé qu'avant (mêmes arrêts/opacités), seule la
+   teinte change : du vert quasi noir vers le vert dominant de l'affiche
+   de référence. */
 .overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, rgba(14, 33, 24, 0.85) 0%, rgba(14, 33, 24, 0.6) 32%, rgba(20, 45, 24, 0.6) 68%, rgba(14, 33, 24, 0.85) 100%);
+  background: linear-gradient(180deg, rgba(23, 104, 19, 0.85) 0%, rgba(23, 104, 19, 0.6) 32%, rgba(30, 120, 25, 0.6) 68%, rgba(23, 104, 19, 0.85) 100%);
 }
 .sheen {
   position: absolute;
@@ -66,18 +71,20 @@
 .cigibm {
   color: #f3dd8a;
 }
+/* Marque d'édition en rouge (repère de l'affiche de référence) au lieu de
+   l'or utilisé partout ailleurs sur le badge (script, QR, cadre photo). */
 .seal {
   flex-shrink: 0;
   min-width: 34px;
   height: 26px;
   padding: 0 6px;
   border-radius: 13px;
-  background: linear-gradient(135deg, #f9e9ae, #e8c84a 55%, #c9a536);
+  background: linear-gradient(135deg, #f2453f, #e41a16 55%, #a3120f);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  color: #1a2f16;
+  color: #fcfdfd;
   font-family: var(--font-sans), sans-serif;
   font-weight: 800;
   text-align: center;

@@ -7,10 +7,13 @@
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35);
   font-family: var(--font-display), Georgia, serif;
   border: 1px solid rgba(232, 200, 74, 0.35);
+  /* Même structure (mêmes arrêts, mêmes pourcentages) qu'avant, recolorée
+     vers le vert dominant échantillonné sur l'affiche de référence
+     (public/jyseraiexemple/jyseraiexemple.jpeg) au lieu du vert quasi noir. */
   background:
     radial-gradient(circle at 88% 6%, rgba(232, 200, 74, 0.1) 0 1.5px, transparent 1.5px) 0 0/24px 24px,
     radial-gradient(circle at 60% 100%, rgba(255, 255, 255, 0.05), transparent 60%),
-    linear-gradient(165deg, #0e2118 0%, #183a1a 42%, #245627 75%, #307335 100%);
+    linear-gradient(165deg, #0a4008 0%, #176813 42%, #268a1f 75%, #34a62b 100%);
   color: #fcfdfd;
   display: flex;
   flex-direction: column;
@@ -20,13 +23,15 @@
   margin: 0;
 }
 
+/* Marque d'édition en rouge (repère de l'affiche de référence) au lieu de
+   l'or utilisé partout ailleurs sur le badge. */
 .ribbon {
   position: absolute;
   top: 16px;
   right: -34px;
   width: 130px;
-  background: linear-gradient(135deg, #f3dd8a, #e8c84a 55%, #c9a536);
-  color: #1a2f16;
+  background: linear-gradient(135deg, #f2453f, #e41a16 55%, #a3120f);
+  color: #fcfdfd;
   font-family: var(--font-sans), sans-serif;
   font-weight: 700;
   font-size: 10px;
