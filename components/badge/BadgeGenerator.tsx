@@ -236,7 +236,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
             className="max-h-[65vh] w-auto max-w-full rounded-2xl shadow-2xl"
           />
           <p className="max-w-xs text-center text-sm font-semibold text-mist-50">
-            Le partage automatique n&apos;a pas fonctionné. Appuyez et maintenez sur l&apos;image ci-dessus, puis choisissez « Ajouter aux photos ».
+            Le partage automatique n&apos;a pas fonctionné. Appuyez et maintenez sur l&apos;image ci-dessus, choisissez « Ajouter aux photos », puis partagez-la depuis votre galerie.
           </p>
           <button
             type="button"

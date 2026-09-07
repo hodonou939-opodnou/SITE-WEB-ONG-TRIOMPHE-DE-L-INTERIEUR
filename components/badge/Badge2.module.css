@@ -42,12 +42,18 @@
 }
 /* object-position biaisé vers le haut : un visage se situe généralement
    dans le tiers supérieur d'une photo verticale, et le centrage par défaut
-   le rognait plus qu'il n'aurait fallu dans ce cadre large et court. */
+   le rognait plus qu'il n'aurait fallu dans ce cadre large et court.
+   Resserré de 20% à 8% : une photo cadrée large (buste, contexte de bureau
+   visible) laissait encore trop de plafond/arrière-plan au-dessus de la
+   tête. Reste néanmoins un simple recadrage par position fixe — sans
+   détection de visage réelle, une photo déjà très large en son sein ne
+   peut pas se transformer en gros plan serré rien qu'en déplaçant le
+   point d'ancrage. */
 .photoImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 8%;
   display: block;
 }
 /* Même structure (mêmes arrêts/opacités) qu'avant, recolorée pour
