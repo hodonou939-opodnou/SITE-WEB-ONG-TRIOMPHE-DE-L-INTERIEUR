@@ -19,11 +19,19 @@ type TemplateId = (typeof TEMPLATES)[number]["id"];
 
 // Le fond des trois gabarits (voir `.badge` dans Badge1/2/3.module.css) —
 // filet de sécurité passé à toPng pour les pixels d'anticrénelage en bord de
-// coin, une fois le rayon aplati par la classe .exporting ci-dessous.
-const EXPORT_BACKGROUND = "#0e2118";
+// coin, une fois le rayon aplati par la classe .exporting ci-dessous. Cette
+// constante avait été oubliée lors du rebranding vers le vert : elle servait
+// alors de repli SILENCIEUX partout où le fond propre de `.badge` ne se
+// rastérisait pas correctement (ex. le panneau .lower du Badge2, une zone
+// plate sans rien au-dessus) — pas seulement aux quatre coins comme prévu à
+// l'origine, ce qui masquait le fond vert par l'ancien vert quasi noir dans
+// tout export réel.
+const EXPORT_BACKGROUND = "#176813";
 
 export default function BadgeGenerator({ fullName, attendanceToken }: { fullName: string; attendanceToken: string }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoReady, setPhotoReady] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState(false);
   const [downloadingId, setDownloadingId] = useState<TemplateId | null>(null);
@@ -60,11 +68,33 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPhotoReady(false);
+    setPhotoError(false);
     const compressed = await compressPhoto(file);
+    const nextUrl = URL.createObjectURL(compressed);
+
+    // toPng() rastérise ce que le navigateur a déjà peint : si le <img> n'a
+    // pas fini de décoder son blob au moment du clic sur Télécharger, cette
+    // zone du badge s'exporte vide. Constaté en conditions réelles (photo
+    // manquante dans un export, pas systématique — course avec le décodage
+    // asynchrone, pas un problème de format). On attend ici le décodage
+    // réel avant d'activer le téléchargement ; le navigateur réutilise le
+    // même décodage pour les <img> visibles qui partagent cette URL, donc
+    // ça ne rajoute pas d'attente supplémentaire une fois "prêt" affiché.
+    const preload = new Image();
+    preload.src = nextUrl;
+    try {
+      await preload.decode();
+    } catch (err) {
+      console.error("Photo decode failed", err);
+      setPhotoError(true);
+    }
+
     setPhotoUrl((previous) => {
       if (previous) URL.revokeObjectURL(previous);
-      return URL.createObjectURL(compressed);
+      return nextUrl;
     });
+    setPhotoReady(true);
   }
 
   async function handleDownload(id: TemplateId, filenameSlug: string) {
@@ -170,7 +200,11 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       : "Préparation du code QR…"
     : !photoUrl
       ? "Ajoutez votre photo pour activer le téléchargement."
-      : null;
+      : photoError
+        ? "Cette photo n'a pas pu être chargée. Essayez-en une autre."
+        : !photoReady
+          ? "Préparation de votre photo…"
+          : null;
 
   return (
     <div className="flex flex-col items-center gap-10">
@@ -199,7 +233,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
             <button
               type="button"
               onClick={() => handleDownload(id, file)}
-              disabled={!photoUrl || !qrDataUrl || downloadingId !== null}
+              disabled={!photoUrl || !photoReady || photoError || !qrDataUrl || downloadingId !== null}
               className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10 disabled:pointer-events-none disabled:opacity-40"
             >
               {downloadingId === id ? "Préparation…" : "Télécharger"}

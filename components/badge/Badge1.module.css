@@ -150,12 +150,21 @@
   background: radial-gradient(circle, rgba(215, 245, 218, 0.85) 0%, rgba(125, 224, 138, 0.65) 40%, rgba(74, 176, 81, 0.4) 65%, transparent 85%);
   filter: blur(3px);
 }
+/* Anneau vert néon (même famille que le halo cristallin) au lieu de l'or —
+   couleur vive plutôt qu'un glow en box-shadow : ce dernier est neutralisé
+   à l'export (voir handleDownload dans BadgeGenerator.tsx, qui corrige un
+   bug où ce même box-shadow se rastérisait en bande sombre visible sur
+   certains appareils), donc un glow ajouté ici disparaîtrait du fichier
+   téléchargé. Le box-shadow existant (ombre de profondeur neutre, pas une
+   couleur) reste inchangé : il continue d'apporter du relief à l'écran et
+   son absence dans le fichier exporté ne se remarque pas.
+*/
 .photoFrame {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   padding: 5px;
-  background: linear-gradient(135deg, #f9e9ae, #e8c84a 45%, #8a6f22);
+  background: linear-gradient(135deg, #d7f5da, #7de08a 45%, #307335);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 28px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 1;
@@ -186,24 +195,28 @@
 /* Le nom vit désormais dans .details, juste au-dessus de la date (footerRow
    ci-dessous) — cette place libérée sous la photo revient entièrement au
    script, agrandi de 52px à 68px pour un rendu plus imposant. */
-/* Or vif échantillonné sur "J'y serai" dans l'affiche de référence
-   (public/jyseraiexemple/jyseraiexemple.jpeg, #fad606) — plus saturé que
-   l'ancien crème pâle, qui se fondait davantage sur le nouveau fond vert
-   lumineux qu'il ne le faisait sur l'ancien fond quasi noir. */
+/* Police condensée épaisse (Bebas Neue, unicase — les minuscules
+   s'affichent déjà en capitales) au lieu du script cursif, pour un rendu
+   plus impactant. Aucune coupe italique n'existe pour cette famille : le
+   transform ci-dessous simule l'inclinaison demandée. Or vif échantillonné
+   sur l'affiche de référence (public/jyseraiexemple/jyseraiexemple.jpeg,
+   #fad606). */
 .script {
-  font-family: var(--font-script), cursive;
-  font-size: 68px;
+  font-family: var(--font-impact), sans-serif;
+  font-size: 58px;
   color: #fad600;
   text-align: center;
-  line-height: 1;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  transform: skewX(-10deg);
   text-shadow: 0 4px 14px rgba(0, 0, 0, 0.75), 0 0 18px rgba(232, 200, 74, 0.5), 0 0 40px rgba(201, 165, 54, 0.35);
 }
 /* Rendu dans .details (footerRow), pas plus sous le script : l'espacement
    avec la date vient du gap:2px de .details, pas d'une marge propre ici. */
 .name {
   font-family: var(--font-sans), sans-serif;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -225,14 +238,15 @@
 }
 .date {
   font-family: var(--font-sans), sans-serif;
-  font-size: 9.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .venue {
   font-family: var(--font-sans), sans-serif;
-  font-size: 7.5px;
-  opacity: 0.85;
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.9;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .qrCard {

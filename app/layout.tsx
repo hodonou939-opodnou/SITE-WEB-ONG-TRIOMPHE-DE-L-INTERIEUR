@@ -27,6 +27,16 @@ const dancingScript = localFont({
   display: "swap",
 });
 
+// Un seul poids existe pour cette famille (déjà épaisse par construction) et
+// aucune coupe italique n'existe non plus — l'inclinaison "slanted" demandée
+// s'obtient via un transform CSS côté badge, pas une variante de police.
+const bebasNeue = localFont({
+  src: "./fonts/bebas-neue.woff2",
+  variable: "--font-impact",
+  weight: "400",
+  display: "swap",
+});
+
 const siteUrl = "https://ongtriomphedelinterieur.com";
 
 export const metadata: Metadata = {
@@ -87,7 +97,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${displayFont.variable} ${manrope.variable} ${dancingScript.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${manrope.variable} ${dancingScript.variable} ${bebasNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-mist-100 text-ink">
         {children}

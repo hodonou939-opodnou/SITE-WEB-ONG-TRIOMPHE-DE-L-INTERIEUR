@@ -63,7 +63,9 @@
   text-align: center;
   margin-top: 3px;
   color: #fff;
-  text-shadow: 0 0 4px #fff, 0 0 12px #f3dd8a, 0 0 22px #e8c84a, 0 0 38px #c9a536;
+  /* Voir Badge2.module.css .brand : rayons resserrés, mitigation de bon
+     sens pour un glow signalé absent à l'export sur un appareil précis. */
+  text-shadow: 0 0 3px #fff, 0 0 8px #f3dd8a, 0 0 16px #e8c84a;
 }
 .motto {
   font-family: var(--font-script), cursive;
@@ -92,22 +94,19 @@
   display: flex;
   justify-content: center;
 }
-/* Même halo cristallin vert que le Badge1 (mêmes arrêts que le glow
-   "CIGIBM" du Badge2, .themeBlock) — les trois gabarits partagent ce vert. */
-.photoGlow::before {
-  content: "";
-  position: absolute;
-  inset: -20px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(215, 245, 218, 0.65) 0%, rgba(125, 224, 138, 0.4) 40%, rgba(74, 176, 81, 0.25) 65%, transparent 85%);
-  filter: blur(2px);
-}
+/* Retiré sur ce gabarit : le fond du Poster est déjà vert dominant, le halo
+   ajoutait une seconde couche de vert derrière le cadre qui n'apportait
+   plus rien (contrairement au Certificat, dont le filigrane sombre en a
+   toujours besoin pour faire ressortir la photo). */
+/* Anneau vert néon au lieu de l'or — voir Badge1.module.css .photoFrame
+   pour le détail (couleur vive plutôt qu'un glow en box-shadow, neutralisé
+   à l'export). Box-shadow existant inchangé. */
 .photoFrame {
   width: 168px;
   height: 168px;
   border-radius: 14px;
   padding: 4px;
-  background: linear-gradient(135deg, #e8c84a, #8a6f22);
+  background: linear-gradient(135deg, #d7f5da, #7de08a 45%, #307335);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
   position: relative;
   z-index: 1;
@@ -131,22 +130,26 @@
 /* Le nom vit désormais dans .details (footerRow), juste au-dessus de la
    date — la place libérée sous la photo revient au script, agrandi de
    48px à 64px pour un rendu plus imposant. */
-/* Or vif échantillonné sur l'affiche de référence — voir Badge1.module.css. */
+/* Police condensée épaisse (Bebas Neue) au lieu du script cursif, inclinée
+   par transform (aucune coupe italique n'existe pour cette famille) — voir
+   Badge1.module.css pour le détail. */
 .script {
-  font-family: var(--font-script), cursive;
-  font-size: 64px;
+  font-family: var(--font-impact), sans-serif;
+  font-size: 56px;
   color: #fad600;
   text-align: center;
   margin-top: 3px;
-  line-height: 1;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  transform: skewX(-10deg);
   text-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), 0 0 18px rgba(232, 200, 74, 0.5), 0 0 40px rgba(201, 165, 54, 0.35);
 }
 /* Rendu dans .details, pas plus sous le script : l'espacement avec la date
    vient du gap:2px de .details, pas d'une marge propre ici. */
 .nameTag {
   font-family: var(--font-sans), sans-serif;
-  font-weight: 700;
-  font-size: 10.5px;
+  font-weight: 800;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
@@ -168,14 +171,15 @@
 }
 .date {
   font-family: var(--font-sans), sans-serif;
-  font-size: 9.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .venue {
   font-family: var(--font-sans), sans-serif;
-  font-size: 7.5px;
-  opacity: 0.85;
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.9;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .qrCard {
