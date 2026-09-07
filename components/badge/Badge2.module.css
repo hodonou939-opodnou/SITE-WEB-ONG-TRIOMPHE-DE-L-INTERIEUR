@@ -6,8 +6,14 @@
   position: relative;
   box-shadow: 0 4px 10px rgba(24, 58, 26, 0.15), 0 22px 46px -8px rgba(24, 58, 26, 0.4);
   /* Vert dominant échantillonné sur l'affiche officielle de référence
-     (public/jyseraiexemple/jyseraiexemple.jpeg), aligné sur Badge1/Badge3. */
-  background: #176813;
+     (public/jyseraiexemple/jyseraiexemple.jpeg), aligné sur Badge1/Badge3.
+     Même grille de points en tuile SVG que Badge3 (.badge) — voir son
+     commentaire pour le détail (une vraie image, pas un radial-gradient
+     répété, ce dernier ne survivant pas à l'export réel). .photoFull la
+     recouvre en haut, elle ne se voit que dans .lower. */
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%223%22%20r%3D%221.5%22%20fill%3D%22rgba%28232%2C200%2C74%2C0.35%29%22/%3E%3C/svg%3E") 0 0/24px 24px repeat,
+    #176813;
   display: flex;
   flex-direction: column;
   color: #fcfdfd;
@@ -18,22 +24,30 @@
   margin: 0;
 }
 
-/* bottom: 38% -> 58% (donc .photoFull couvre 42% au lieu de 62% du badge) :
-   la zone .lower en dessous (nom/date/lieu agrandis, J'y serai en Bebas
-   Neue plus grand, sur deux lignes) a besoin de bien plus de hauteur que
-   l'ancien texte plus petit ne le demandait — sans cet ajustement, son
-   contenu déborde visuellement par-dessus la photo. */
+/* bottom: 38% -> 40% : le débordement du texte que ce chiffre corrigeait
+   à l'origine venait en réalité des marges trop serrées entre .jyserai /
+   .themeBlock / .footerRow (corrigées séparément ci-dessous), pas d'un
+   manque de hauteur globale — un passage à 58% avait donné à .lower bien
+   plus de place que son contenu n'en utilise (~80px de vert vide constatés
+   en bas du badge exporté), au prix d'une photo rognée bien plus courte
+   que nécessaire. Un ajustement plus modeste (40%) restitue cette hauteur
+   à la photo tout en gardant assez de marge pour que le contenu de .lower
+   tienne sans déborder. */
 .photoFull {
   position: absolute;
   inset: 0;
-  bottom: 58%;
+  bottom: 40%;
   overflow: hidden;
   background: linear-gradient(155deg, #87b7de, #3684c4 55%, #307335);
 }
+/* object-position biaisé vers le haut : un visage se situe généralement
+   dans le tiers supérieur d'une photo verticale, et le centrage par défaut
+   le rognait plus qu'il n'aurait fallu dans ce cadre large et court. */
 .photoImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 20%;
   display: block;
 }
 /* Même structure (mêmes arrêts/opacités) qu'avant, recolorée pour
