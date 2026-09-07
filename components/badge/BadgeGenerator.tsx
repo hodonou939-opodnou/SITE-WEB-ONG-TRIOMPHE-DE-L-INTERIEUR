@@ -60,6 +60,16 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
   // la page pour un enregistrement manuel (appui long) ne dépend d'aucune
   // API fragile : juste une image affichée et le geste natif de l'OS.
   const [manualSaveDataUrl, setManualSaveDataUrl] = useState<string | null>(null);
+  // Fichier déjà rendu, en attente d'un second appui pour le partager.
+  // navigator.share() a échoué de façon répétée en conditions réelles
+  // (NotAllowedError) même après le correctif crossOrigin — cause la plus
+  // probable : l'« activation utilisateur » du clic d'origine ne survit pas
+  // aux passages de tâche internes à html2canvas pendant le rendu (pas
+  // vraiment une question de lenteur absolue, WebKit peut la perdre même
+  // sur un rendu rapide). Le seul contournement fiable : appeler share()
+  // depuis un tap frais, sans le moindre await entre le clic et l'appel —
+  // d'où ce second bouton, qui ne fait QUE ça.
+  const [preparedShare, setPreparedShare] = useState<{ id: TemplateId; file: File } | null>(null);
   const cardRefs = useRef<Partial<Record<TemplateId, HTMLDivElement | null>>>({});
 
   useEffect(() => {
@@ -85,6 +95,11 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     if (!file) return;
     setPhotoReady(false);
     setPhotoError(false);
+    // Un export déjà préparé (en attente de partage) ou l'aperçu de secours
+    // affiché correspondent à l'ancienne photo — les garder périmerait ce
+    // que l'utilisateur partagerait/enregistrerait ensuite sans le savoir.
+    setPreparedShare(null);
+    setManualSaveDataUrl(null);
     const compressed = await compressPhoto(file);
 
     // data: plutôt que URL.createObjectURL() : un canvas qui dessine une
@@ -168,21 +183,13 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       const file = new File([blob], filename, { type: "image/png" });
 
       if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file] });
-          return;
-        } catch (err) {
-          // L'utilisateur a fermé la feuille de partage : ce n'est pas une
-          // erreur, on ne remonte rien à l'écran et on ne tente rien d'autre.
-          if ((err as { name?: string })?.name === "AbortError") return;
-          // Tout autre échec (NotAllowedError constaté en conditions
-          // réelles, activation utilisateur expirée…) bascule vers
-          // l'enregistrement manuel plutôt que de remonter une erreur —
-          // voir le commentaire sur manualSaveDataUrl plus haut.
-          console.error("Web Share failed, falling back to manual save", err);
-          setManualSaveDataUrl(dataUrl);
-          return;
-        }
+        // Ne PAS appeler share() ici : on vient de traverser plusieurs
+        // await (html2canvas, fetch/blob), largement assez pour perdre
+        // l'activation utilisateur sur WebKit. On prépare le fichier et on
+        // attend un second tap dédié (confirmShare ci-dessous), qui
+        // n'aura, lui, aucun await avant l'appel à share().
+        setPreparedShare({ id, file });
+        return;
       }
 
       // Repli desktop : <a download> ne fonctionne pas sur iOS Safari, mais
@@ -206,6 +213,31 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     } finally {
       badgeNode.classList.remove(styles.exporting);
       setDownloadingId(null);
+    }
+  }
+
+  // Déclenché par un second tap dédié (bouton "Partager"), sans le moindre
+  // await avant l'appel à share() lui-même — voir le commentaire sur
+  // preparedShare plus haut pour pourquoi ce découpage existe.
+  async function confirmShare() {
+    if (!preparedShare) return;
+    const { file } = preparedShare;
+    try {
+      await navigator.share({ files: [file] });
+    } catch (err) {
+      // L'utilisateur a fermé la feuille de partage : ce n'est pas une
+      // erreur, on ne remonte rien à l'écran et on ne tente rien d'autre.
+      if ((err as { name?: string })?.name !== "AbortError") {
+        console.error("Web Share failed, falling back to manual save", err);
+        // Relit le fichier déjà rendu en data: URL pour l'aperçu de secours
+        // — rapide (juste de la mémoire, pas un nouveau rendu) et sans
+        // enjeu de timing, l'échec de share() a déjà eu lieu à ce stade.
+        const reader = new FileReader();
+        reader.onload = () => setManualSaveDataUrl(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    } finally {
+      setPreparedShare(null);
     }
   }
 
@@ -270,14 +302,28 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
             >
               <Component photoUrl={photoUrl} name={fullName} qrDataUrl={qrDataUrl} />
             </div>
-            <button
-              type="button"
-              onClick={() => handleDownload(id, file)}
-              disabled={!photoUrl || !photoReady || photoError || !qrDataUrl || downloadingId !== null}
-              className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10 disabled:pointer-events-none disabled:opacity-40"
-            >
-              {downloadingId === id ? "Préparation…" : "Télécharger"}
-            </button>
+            {preparedShare?.id === id ? (
+              // Bouton distinct (rempli, pas juste contouré) : un second tap
+              // qu'on ne demanderait pas si le premier avait suffi — voir
+              // confirmShare plus haut. Se déclenche ici, sans le moindre
+              // await avant l'appel à share() dans confirmShare lui-même.
+              <button
+                type="button"
+                onClick={confirmShare}
+                className="animate-pulse rounded-full bg-leaf-500 px-6 py-2.5 text-sm font-semibold text-leaf-950 transition-colors hover:bg-leaf-400"
+              >
+                Partager / Enregistrer
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleDownload(id, file)}
+                disabled={!photoUrl || !photoReady || photoError || !qrDataUrl || downloadingId !== null}
+                className="rounded-full border border-mist-50/25 px-6 py-2.5 text-sm font-semibold text-mist-50 transition-colors hover:bg-mist-50/10 disabled:pointer-events-none disabled:opacity-40"
+              >
+                {downloadingId === id ? "Préparation…" : "Télécharger"}
+              </button>
+            )}
             {errorId === id && (
               <div aria-live="assertive" className="max-w-[260px] text-center text-xs text-red-300">
                 <p>Le téléchargement a échoué. Réessayez.</p>
