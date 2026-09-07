@@ -8,6 +8,7 @@ export type ParticipantRow = {
   registeredAt: Date;
   attendedAt: Date | null;
   ambassadorName: string | null;
+  attendanceToken: string;
 };
 
 export async function getParticipantsForEdition(
@@ -36,6 +37,7 @@ export async function getParticipantsForEdition(
       registeredAt: p.registeredAt,
       attendedAt: p.attendedAt,
       ambassadorName: p.ambassador?.fullName ?? null,
+      attendanceToken: p.attendanceToken,
     })),
   };
 }

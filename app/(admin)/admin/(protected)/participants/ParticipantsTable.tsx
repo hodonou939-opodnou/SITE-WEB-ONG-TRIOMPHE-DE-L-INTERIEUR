@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ParticipantRow } from "@/lib/admin/participants";
+import ParticipantActions from "./ParticipantActions";
 
 function matchesQuery(p: ParticipantRow, query: string) {
   const q = query.trim().toLowerCase();
@@ -71,6 +72,9 @@ export default function ParticipantsTable({ participants }: { participants: Part
             {p.ambassadorName && (
               <p className="mt-2 text-xs text-leaf-700">Parrainé·e par {p.ambassadorName}</p>
             )}
+            <div className="mt-3 border-t border-ink/8 pt-3">
+              <ParticipantActions participantId={p.id} attendanceToken={p.attendanceToken} hasEmail={!!p.email} />
+            </div>
           </div>
         ))}
         {filtered.length === 0 && (
@@ -89,6 +93,7 @@ export default function ParticipantsTable({ participants }: { participants: Part
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Ambassadeur</th>
               <th className="px-4 py-3">Présence</th>
+              <th className="px-4 py-3">Badge « J'y serai »</th>
             </tr>
           </thead>
           <tbody>
@@ -101,11 +106,14 @@ export default function ParticipantsTable({ participants }: { participants: Part
                 <td className="px-4 py-3">
                   <AttendancePill attended={!!p.attendedAt} />
                 </td>
+                <td className="px-4 py-3">
+                  <ParticipantActions participantId={p.id} attendanceToken={p.attendanceToken} hasEmail={!!p.email} />
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-ink/50">
+                <td colSpan={6} className="px-4 py-6 text-center text-ink/50">
                   {participants.length === 0 ? "Aucun participant pour l'instant." : "Aucun résultat pour cette recherche."}
                 </td>
               </tr>
