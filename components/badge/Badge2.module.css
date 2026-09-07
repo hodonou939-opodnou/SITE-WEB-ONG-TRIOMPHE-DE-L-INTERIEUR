@@ -89,11 +89,12 @@
   margin-top: auto;
   padding: 0 16px 14px;
 }
+/* Or vif échantillonné sur l'affiche de référence — voir Badge1.module.css. */
 .jyserai {
   font-weight: 900;
   font-size: 38px;
   line-height: 0.84;
-  color: #f9e9ae;
+  color: #fad600;
   text-transform: uppercase;
   letter-spacing: -0.01em;
   text-shadow: 3px 4px 0 rgba(14, 33, 24, 0.8), 0 0 24px rgba(232, 200, 74, 0.35);

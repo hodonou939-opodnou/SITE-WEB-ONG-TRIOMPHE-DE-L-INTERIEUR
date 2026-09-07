@@ -186,10 +186,14 @@
 /* Le nom vit désormais dans .details, juste au-dessus de la date (footerRow
    ci-dessous) — cette place libérée sous la photo revient entièrement au
    script, agrandi de 52px à 68px pour un rendu plus imposant. */
+/* Or vif échantillonné sur "J'y serai" dans l'affiche de référence
+   (public/jyseraiexemple/jyseraiexemple.jpeg, #fad606) — plus saturé que
+   l'ancien crème pâle, qui se fondait davantage sur le nouveau fond vert
+   lumineux qu'il ne le faisait sur l'ancien fond quasi noir. */
 .script {
   font-family: var(--font-script), cursive;
   font-size: 68px;
-  color: #f9e9ae;
+  color: #fad600;
   text-align: center;
   line-height: 1;
   text-shadow: 0 4px 14px rgba(0, 0, 0, 0.75), 0 0 18px rgba(232, 200, 74, 0.5), 0 0 40px rgba(201, 165, 54, 0.35);

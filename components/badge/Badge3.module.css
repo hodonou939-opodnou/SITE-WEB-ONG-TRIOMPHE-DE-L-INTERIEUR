@@ -131,10 +131,11 @@
 /* Le nom vit désormais dans .details (footerRow), juste au-dessus de la
    date — la place libérée sous la photo revient au script, agrandi de
    48px à 64px pour un rendu plus imposant. */
+/* Or vif échantillonné sur l'affiche de référence — voir Badge1.module.css. */
 .script {
   font-family: var(--font-script), cursive;
   font-size: 64px;
-  color: #f9e9ae;
+  color: #fad600;
   text-align: center;
   margin-top: 3px;
   line-height: 1;

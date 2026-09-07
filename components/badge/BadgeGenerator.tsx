@@ -93,6 +93,23 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     // classe s'applique ici directement sur `.badge` (la cible de capture),
     // pas sur le wrapper : voir `.exporting` dans BadgeGenerator.module.css.
     badgeNode.classList.add(styles.exporting);
+    // Neutralise le temps de la capture les box-shadow du cadre photo et de
+    // l'encart QR (communs aux trois gabarits, sous des noms de classe
+    // différents selon le fichier) : purement verticaux, ils se fondent
+    // normalement à l'écran, mais se rastérisent en bande sombre dure sur
+    // certains moteurs de rendu mobiles — constaté sur un export réel,
+    // visible spécifiquement à droite du cadre et du QR. Neutraliser plutôt
+    // que réajuster le flou élimine le risque quel que soit l'appareil du
+    // visiteur ; restauré dans le `finally`, même si toPng lève une
+    // exception.
+    const shadowedNodes = badgeNode.querySelectorAll<HTMLElement>(
+      '[class*="photoFrame"], [class*="photoFull"], [class*="qrCard"]'
+    );
+    const previousShadows = new Map<HTMLElement, string>();
+    shadowedNodes.forEach((el) => {
+      previousShadows.set(el, el.style.boxShadow);
+      el.style.boxShadow = "none";
+    });
     try {
       // Mesure la boîte réellement peinte de `.badge` (border-box ; le
       // box-shadow n'entre jamais dans getBoundingClientRect) et la passe
@@ -140,6 +157,9 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       setErrorId(id);
     } finally {
       badgeNode.classList.remove(styles.exporting);
+      previousShadows.forEach((prevShadow, el) => {
+        el.style.boxShadow = prevShadow;
+      });
       setDownloadingId(null);
     }
   }
