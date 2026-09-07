@@ -17,12 +17,12 @@ export default function Badge3({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         </div>
       </div>
       <p className={styles.script}>J&apos;y serai</p>
-      <p className={styles.nameTag}>{name.toUpperCase()}</p>
       <div className={styles.footerRow}>
         <div className={styles.qrCard}>
           {qrDataUrl && <img src={qrDataUrl} alt="Code QR" className={styles.qrImg} />}
         </div>
         <div className={styles.details}>
+          <span className={styles.nameTag}>{name.toUpperCase()}</span>
           <span className={styles.date}>{cigibm.nextEdition.dates}</span>
           <span className={styles.venue}>{cigibm.nextEdition.venue}</span>
         </div>

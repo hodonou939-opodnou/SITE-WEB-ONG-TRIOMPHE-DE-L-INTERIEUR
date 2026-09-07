@@ -87,12 +87,14 @@
   display: flex;
   justify-content: center;
 }
+/* Même halo cristallin vert que le Badge1 (mêmes arrêts que le glow
+   "CIGIBM" du Badge2, .themeBlock) — les trois gabarits partagent ce vert. */
 .photoGlow::before {
   content: "";
   position: absolute;
   inset: -20px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(87, 154, 209, 0.55), rgba(232, 200, 74, 0.25) 55%, transparent 75%);
+  background: radial-gradient(circle, rgba(215, 245, 218, 0.65) 0%, rgba(125, 224, 138, 0.4) 40%, rgba(74, 176, 81, 0.25) 65%, transparent 85%);
   filter: blur(2px);
 }
 .photoFrame {
@@ -121,18 +123,21 @@
   display: block;
 }
 
+/* Le nom vit désormais dans .details (footerRow), juste au-dessus de la
+   date — la place libérée sous la photo revient au script, agrandi de
+   48px à 64px pour un rendu plus imposant. */
 .script {
   font-family: var(--font-script), cursive;
-  font-size: 48px;
+  font-size: 64px;
   color: #f9e9ae;
   text-align: center;
   margin-top: 3px;
   line-height: 1;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 26px rgba(232, 200, 74, 0.45);
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), 0 0 18px rgba(232, 200, 74, 0.5), 0 0 40px rgba(201, 165, 54, 0.35);
 }
+/* Rendu dans .details, pas plus sous le script : l'espacement avec la date
+   vient du gap:2px de .details, pas d'une marge propre ici. */
 .nameTag {
-  margin-top: 5px;
-  text-align: center;
   font-family: var(--font-sans), sans-serif;
   font-weight: 700;
   font-size: 10.5px;

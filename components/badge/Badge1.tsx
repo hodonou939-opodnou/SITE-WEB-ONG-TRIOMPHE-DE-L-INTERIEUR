@@ -35,9 +35,9 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         </div>
         <div className={styles.panelBottom}>
           <p className={styles.script}>J&apos;y serai</p>
-          <p className={styles.name}>{name}</p>
           <div className={styles.footerRow}>
             <div className={styles.details}>
+              <span className={styles.name}>{name}</span>
               <span className={styles.date}>{cigibm.nextEdition.dates}</span>
               <span className={styles.venue}>{cigibm.nextEdition.venue}</span>
             </div>
