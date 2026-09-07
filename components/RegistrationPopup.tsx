@@ -10,6 +10,13 @@ const TRIGGER_DELAY_MS = 8000;
 // La page dédiée à l'inscription EST déjà l'action qu'on voudrait pousser
 // via ce popup — l'y afficher serait redondant, voire agaçant.
 const SUPPRESSED_PATHS = ["/cigibm-2026/inscription"];
+// Un visiteur sur sa page de badge a par définition déjà réservé sa place
+// (la page fait un lookup par attendanceToken, cf.
+// app/(funnel)/cigibm-2026/badge/[token]/page.tsx) — lui proposer de
+// s'inscrire serait non seulement redondant mais incohérent. Préfixe plutôt
+// qu'entrée exacte dans SUPPRESSED_PATHS : le jeton dans l'URL rend ce
+// chemin dynamique, une correspondance exacte ne l'aurait jamais capturé.
+const SUPPRESSED_PATH_PREFIXES = ["/cigibm-2026/badge/"];
 
 export default function RegistrationPopup() {
   const pathname = usePathname();
@@ -19,7 +26,10 @@ export default function RegistrationPopup() {
   // propre porte d'entrée dédiée vers l'inscription (le formulaire est
   // désormais la première chose visible dans le hero de /cigibm-2026) —
   // lui superposer ce popup générique serait redondant.
-  const suppressed = SUPPRESSED_PATHS.includes(pathname) || Boolean(searchParams.get("ref"));
+  const suppressed =
+    SUPPRESSED_PATHS.includes(pathname) ||
+    SUPPRESSED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    Boolean(searchParams.get("ref"));
 
   useEffect(() => {
     if (suppressed) return;
