@@ -12,14 +12,17 @@ export default function Badge3({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
       <div className={styles.photoGlow}>
         <div className={styles.photoFrame}>
           <div className={styles.photoBox}>
-            {photoUrl && <img src={photoUrl} alt="" className={styles.photoImg} />}
+            {/* crossOrigin="anonymous" : voir Badge1.tsx — évite le
+                SecurityError au canvas.toDataURL() constaté en conditions
+                réelles sur iOS Safari, même pour une image data: URI locale. */}
+            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
           </div>
         </div>
       </div>
       <p className={styles.script}>J&apos;y serai</p>
       <div className={styles.footerRow}>
         <div className={styles.qrCard}>
-          {qrDataUrl && <img src={qrDataUrl} alt="Code QR" className={styles.qrImg} />}
+          {qrDataUrl && <img src={qrDataUrl} alt="Code QR" crossOrigin="anonymous" className={styles.qrImg} />}
         </div>
         <div className={styles.details}>
           <span className={styles.nameTag}>{name.toUpperCase()}</span>

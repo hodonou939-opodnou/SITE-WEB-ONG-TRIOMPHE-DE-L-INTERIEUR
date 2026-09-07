@@ -29,7 +29,17 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         <div className={styles.photoGlow}>
           <div className={styles.photoFrame}>
             <div className={styles.photoBox}>
-              {photoUrl && <img src={photoUrl} alt="" className={styles.photoImg} />}
+              {/* crossOrigin="anonymous" : iOS Safari peut tainter le canvas
+                  d'export même pour une image data: URI locale, sauf si le
+                  <img> porte cet attribut — comportement documenté dans
+                  html2canvas lui-même (image.ts, commentaire "ios safari
+                  10.3 taints canvas with data urls unless crossOrigin is set
+                  to anonymous"), constaté en conditions réelles
+                  (SecurityError au téléchargement). Poser l'attribut ici,
+                  sur l'élément réellement affiché, plutôt que compter sur le
+                  correctif interne de html2canvas appliqué à un clone créé
+                  après coup. */}
+              {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
             </div>
           </div>
         </div>
@@ -42,7 +52,7 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
               <span className={styles.venue}>{cigibm.nextEdition.venue}</span>
             </div>
             <div className={styles.qrCard}>
-              {qrDataUrl && <img src={qrDataUrl} alt="Code QR" className={styles.qrImg} />}
+              {qrDataUrl && <img src={qrDataUrl} alt="Code QR" crossOrigin="anonymous" className={styles.qrImg} />}
             </div>
           </div>
         </div>

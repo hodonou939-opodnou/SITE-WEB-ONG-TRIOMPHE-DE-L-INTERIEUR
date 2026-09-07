@@ -10,13 +10,13 @@
   /* Même structure (mêmes arrêts, mêmes pourcentages) qu'avant, recolorée
      vers le vert dominant échantillonné sur l'affiche de référence
      (public/jyseraiexemple/jyseraiexemple.jpeg) au lieu du vert quasi noir.
-     Le point était auparavant un radial-gradient répété via background-size
-     — confirmé absent de tout export réel (html2canvas ne réplique pas
-     cette technique, y compris sur ce point déjà présent avant cette
-     session) ; une vraie image SVG en tuile est le mécanisme testé qui
-     survit à l'export (comme la photo et le QR, déjà des images). */
+     Motif en vaguelettes + points (plus proche de la texture de l'affiche
+     de référence qu'un simple quadrillage de points) : une vraie image SVG
+     en tuile, pas un gradient répété — ce dernier ne survit pas à l'export
+     réel (constaté sur le quadrillage de points qui existait avant cette
+     session), alors qu'une image, comme la photo et le QR, si. */
   background:
-    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%223%22%20r%3D%221.5%22%20fill%3D%22rgba%28232%2C200%2C74%2C0.35%29%22/%3E%3C/svg%3E") 0 0/24px 24px repeat,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22160%22%20height%3D%22100%22%3E%20%3Cpath%20d%3D%22M0%2C20%20Q40%2C10%2080%2C20%20Q120%2C30%20160%2C20%22%20stroke%3D%22rgba%28125%2C224%2C138%2C0.18%29%22%20stroke-width%3D%221.6%22%20fill%3D%22none%22/%3E%20%3Cpath%20d%3D%22M0%2C50%20Q40%2C40%2080%2C50%20Q120%2C60%20160%2C50%22%20stroke%3D%22rgba%28215%2C245%2C218%2C0.14%29%22%20stroke-width%3D%221.6%22%20fill%3D%22none%22/%3E%20%3Cpath%20d%3D%22M0%2C80%20Q40%2C70%2080%2C80%20Q120%2C90%20160%2C80%22%20stroke%3D%22rgba%28125%2C224%2C138%2C0.16%29%22%20stroke-width%3D%221.6%22%20fill%3D%22none%22/%3E%20%3Ccircle%20cx%3D%22140%22%20cy%3D%2212%22%20r%3D%221.4%22%20fill%3D%22rgba%28232%2C200%2C74%2C0.4%29%22/%3E%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2265%22%20r%3D%221.4%22%20fill%3D%22rgba%28232%2C200%2C74%2C0.4%29%22/%3E%20%3C/svg%3E") 0 0/160px 100px repeat,
     radial-gradient(circle at 60% 100%, rgba(255, 255, 255, 0.05), transparent 60%),
     linear-gradient(165deg, #0a4008 0%, #176813 42%, #268a1f 75%, #34a62b 100%);
   color: #fcfdfd;
