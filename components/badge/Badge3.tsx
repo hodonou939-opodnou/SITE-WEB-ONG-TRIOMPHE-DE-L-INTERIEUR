@@ -5,6 +5,9 @@ import styles from "./Badge3.module.css";
 
 // Cadre carré (1:1) : voir .photoFrame dans Badge3.module.css (168px x 168px).
 const FRAME_ASPECT = 1;
+// Biais vers le haut (8%, pas 50%) : même valeur que Badge2 (voir son
+// commentaire) — un centrage neutre rognait le haut de la tête.
+const BIAS_Y = 8;
 
 export default function Badge3({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
@@ -25,7 +28,7 @@ export default function Badge3({ photoUrl, name, qrDataUrl, photoAspect }: Badge
         <div className={styles.photoFrame}>
           <div className={styles.photoBox}>
             {/* Voir coverImageStyle.ts pour le détail complet. */}
-            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT)} />}
+            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT, BIAS_Y)} />}
           </div>
         </div>
       </div>

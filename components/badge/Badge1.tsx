@@ -16,6 +16,11 @@ export type BadgeTemplateProps = {
 
 // Cadre carré (1:1) : voir .photoGlow dans Badge1.module.css (182px x 182px).
 const FRAME_ASPECT = 1;
+// Biais vers le haut (8%, pas 50%) : un centrage neutre rognait le haut de
+// la tête sur un cadre plus large que la photo n'est haute — même valeur
+// que Badge2 (voir son commentaire), dont ce biais donne un cadrage jugé
+// bon en conditions réelles.
+const BIAS_Y = 8;
 
 export default function Badge1({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
@@ -47,7 +52,7 @@ export default function Badge1({ photoUrl, name, qrDataUrl, photoAspect }: Badge
                   object-fit ni background-image ne survivent
                   correctement à l'export réel). */}
               {photoUrl && (
-                <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT)} />
+                <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT, BIAS_Y)} />
               )}
             </div>
           </div>

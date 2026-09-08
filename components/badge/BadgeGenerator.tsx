@@ -268,14 +268,18 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       const canvas = await html2canvas(badgeNode, {
         width,
         height,
-        // 3 -> 4 : un cran plus net (ex. 1280x1600 pour Certificat/Poster,
-        // contre 960x1200), sans viser un multiplicateur bien plus élevé
-        // (un vrai "4K", ~9.6x ici) qui alourdirait le canvas au point de
-        // risquer un crash sur un appareil bas de gamme — un échec de
-        // rendu serait pire qu'une image un peu moins définie, et c'est
-        // précisément la fiabilité du téléchargement qui a posé problème
-        // jusqu'ici.
-        scale: 4,
+        // 4 -> 6 : nettement plus net (ex. 1920x2400 pour Certificat/
+        // Poster, contre 1280x1600), suite à un retour signalant la photo
+        // pas assez définie. Vérifié directement (canvas.toDataURL) qu'un
+        // canvas réel de cette taille, et même bien au-delà (3840x4800),
+        // s'exporte sans erreur sous un vrai moteur WebKit — donc pas une
+        // histoire de plafond de l'API canvas. Reste un multiplicateur
+        // bien plus élevé (un vrai "4K", ~9.6x ici) délibérément écarté :
+        // la mémoire réellement disponible sur un appareil bas de gamme au
+        // moment du rendu ne se laisse pas vérifier depuis ce poste, et un
+        // échec de rendu serait pire qu'une image un peu moins définie —
+        // précisément la fiabilité qui a posé problème jusqu'ici.
+        scale: 6,
         backgroundColor: EXPORT_BACKGROUND,
         useCORS: true,
         onclone: fixBaselineDrift,
