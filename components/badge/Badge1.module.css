@@ -178,11 +178,16 @@
   border: 3px solid rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 -28px 36px -8px rgba(0, 0, 0, 0.4);
 }
+/* background-size: cover plutôt que object-fit: cover — voir Badge1.tsx :
+   html2canvas ne gère pas object-fit/object-position sur un <img>, mais
+   implémente correctement background-size/position (même mécanisme que
+   .watermarkFull plus haut, déjà vérifié à l'export). */
 .photoImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .panelBottom {

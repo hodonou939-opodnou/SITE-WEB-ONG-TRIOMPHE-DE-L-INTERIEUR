@@ -137,11 +137,15 @@
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: inset 0 -30px 40px -10px rgba(0, 0, 0, 0.35);
 }
+/* background-size: cover plutôt que object-fit: cover — voir Badge3.tsx :
+   html2canvas ne gère pas object-fit/object-position sur un <img>, mais
+   implémente correctement background-size/position. */
 .photoImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Le nom vit désormais dans .details (footerRow), juste au-dessus de la

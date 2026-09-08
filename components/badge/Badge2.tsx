@@ -6,10 +6,16 @@ export default function Badge2({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
   return (
     <div className={styles.badge}>
       <div className={styles.photoFull}>
-        {/* crossOrigin="anonymous" : voir Badge1.tsx — évite le SecurityError
-            au canvas.toDataURL() constaté en conditions réelles sur iOS
-            Safari, même pour une image data: URI locale. */}
-        {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+        {/* background-image plutôt que <img object-fit:cover> : html2canvas
+            n'implémente object-fit/object-position pour aucun <img> (aucune
+            trace dans son bundle, confirmé) — il dessine toujours l'image
+            source entière étirée dans la boîte de destination, quel que
+            soit son ratio, ce qui déformait toute photo dont le ratio ne
+            correspondait pas exactement au cadre (constaté en conditions
+            réelles : « la photo semble étirée »). background-size: cover
+            recadre correctement, y compris à l'export — même mécanisme
+            que le filigrane de Badge1.module.css, déjà vérifié. */}
+        {photoUrl && <div className={styles.photoImg} style={{ backgroundImage: `url(${photoUrl})` }} />}
       </div>
       <div className={styles.topRow}>
         <span className={styles.brand}>CIGIBM</span>

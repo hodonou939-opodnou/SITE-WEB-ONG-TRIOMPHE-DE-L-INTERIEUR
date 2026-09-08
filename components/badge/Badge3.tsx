@@ -12,10 +12,10 @@ export default function Badge3({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
       <div className={styles.photoGlow}>
         <div className={styles.photoFrame}>
           <div className={styles.photoBox}>
-            {/* crossOrigin="anonymous" : voir Badge1.tsx — évite le
-                SecurityError au canvas.toDataURL() constaté en conditions
-                réelles sur iOS Safari, même pour une image data: URI locale. */}
-            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+            {/* background-image plutôt que <img object-fit:cover> : voir
+                Badge2.tsx — html2canvas étire toujours l'image source
+                entière dans la boîte, ignorant object-fit/object-position. */}
+            {photoUrl && <div className={styles.photoImg} style={{ backgroundImage: `url(${photoUrl})` }} />}
           </div>
         </div>
       </div>

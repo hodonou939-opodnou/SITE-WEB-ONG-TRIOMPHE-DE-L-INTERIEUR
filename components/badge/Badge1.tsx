@@ -29,17 +29,14 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         <div className={styles.photoGlow}>
           <div className={styles.photoFrame}>
             <div className={styles.photoBox}>
-              {/* crossOrigin="anonymous" : iOS Safari peut tainter le canvas
-                  d'export même pour une image data: URI locale, sauf si le
-                  <img> porte cet attribut — comportement documenté dans
-                  html2canvas lui-même (image.ts, commentaire "ios safari
-                  10.3 taints canvas with data urls unless crossOrigin is set
-                  to anonymous"), constaté en conditions réelles
-                  (SecurityError au téléchargement). Poser l'attribut ici,
-                  sur l'élément réellement affiché, plutôt que compter sur le
-                  correctif interne de html2canvas appliqué à un clone créé
-                  après coup. */}
-              {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+              {/* background-image plutôt que <img object-fit:cover> : voir
+                  Badge2.tsx — html2canvas étire toujours l'image source
+                  entière dans la boîte de destination, ignorant
+                  object-fit/object-position (aucune trace de leur gestion
+                  dans son bundle), déformant toute photo dont le ratio ne
+                  correspond pas exactement au cadre. background-size: cover
+                  recadre correctement, y compris à l'export. */}
+              {photoUrl && <div className={styles.photoImg} style={{ backgroundImage: `url(${photoUrl})` }} />}
             </div>
           </div>
         </div>
