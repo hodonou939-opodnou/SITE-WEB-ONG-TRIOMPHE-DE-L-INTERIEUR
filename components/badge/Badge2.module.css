@@ -48,33 +48,14 @@
   overflow: hidden;
   background: linear-gradient(155deg, #87b7de, #3684c4 55%, #307335);
 }
-/* object-position biaisé vers le haut : un visage se situe généralement
-   dans le tiers supérieur d'une photo verticale, et le centrage par défaut
-   le rognait plus qu'il n'aurait fallu dans ce cadre large et court.
-   Resserré de 20% à 8% : une photo cadrée large (buste, contexte de bureau
-   visible) laissait encore trop de plafond/arrière-plan au-dessus de la
-   tête. Reste néanmoins un simple recadrage par position fixe — sans
-   détection de visage réelle, une photo déjà très large en son sein ne
-   peut pas se transformer en gros plan serré rien qu'en déplaçant le
-   point d'ancrage. */
-/* Repro manuelle d'object-fit: cover + object-position: center 8% — voir
-   Badge1.module.css pour le détail complet (ni object-fit ni
-   background-image ne survivent correctement à l'export réel : l'un
-   étire la photo, l'autre la rastérise en basse résolution avant le
-   scale:3 de html2canvas). Généralisation du centrage top/left 50%/50% :
-   pour object-position: X Y, ancrer le point (X,Y) de l'image sur le
-   point (X,Y) de la boîte -> top:Y; left:X; transform:translate(-X,-Y). */
-.photoImg {
-  position: absolute;
-  top: 8%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  max-width: none;
-  transform: translate(-50%, -8%);
-}
+/* Biais vers le haut (8%, pas 50%) : un visage se situe généralement dans
+   le tiers supérieur d'une photo verticale, et un centrage neutre le
+   rognait plus qu'il n'aurait fallu dans ce cadre large et court. Voir
+   FRAME_ASPECT/BIAS_Y dans Badge2.tsx et coverImageStyle.ts pour le calcul
+   (posé en inline style, rien à déclarer ici). Reste un simple recadrage
+   par position fixe — sans détection de visage réelle, une photo déjà très
+   large en son sein ne peut pas se transformer en gros plan serré rien
+   qu'en déplaçant le point d'ancrage. */
 /* Même structure (mêmes arrêts/opacités) qu'avant, recolorée pour
    raccorder la photo au panneau inférieur désormais vert dominant. */
 .photoFull::after {

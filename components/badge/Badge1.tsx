@@ -1,13 +1,23 @@
 import { cigibm } from "@/lib/content";
+import { coverImageStyle } from "./coverImageStyle";
 import styles from "./Badge1.module.css";
 
 export type BadgeTemplateProps = {
   photoUrl: string | null;
   name: string;
   qrDataUrl: string | null;
+  // Ratio largeur/hauteur intrinsèque de la photo, connu dès son décodage
+  // (voir handlePhotoChange dans BadgeGenerator.tsx) — permet à chaque
+  // gabarit de reproduire object-fit: cover sans jamais s'en remettre à
+  // object-fit lui-même (ignoré par html2canvas) ni à background-image
+  // (rastérisé en basse résolution par html2canvas). Voir coverImageStyle.ts.
+  photoAspect: number | null;
 };
 
-export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps) {
+// Cadre carré (1:1) : voir .photoGlow dans Badge1.module.css (182px x 182px).
+const FRAME_ASPECT = 1;
+
+export default function Badge1({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
     <div className={styles.badge}>
       <div className={styles.watermarkFull} />
@@ -31,13 +41,12 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         <div className={styles.photoGlow}>
           <div className={styles.photoFrame}>
             <div className={styles.photoBox}>
-              {/* <img> + repro manuelle d'object-fit: cover en CSS (voir
-                  .photoImg dans Badge1.module.css), ni object-fit (ignoré
-                  par html2canvas, photo étirée) ni background-image (passe
-                  par createPattern, rastérisé à la taille CSS avant le
-                  scale:3 de l'export, photo visiblement floue) — les deux
-                  constatés en conditions réelles. */}
-              {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+              {/* Voir coverImageStyle.ts pour le détail complet (ni
+                  object-fit ni background-image ne survivent
+                  correctement à l'export réel). */}
+              {photoUrl && (
+                <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT)} />
+              )}
             </div>
           </div>
         </div>

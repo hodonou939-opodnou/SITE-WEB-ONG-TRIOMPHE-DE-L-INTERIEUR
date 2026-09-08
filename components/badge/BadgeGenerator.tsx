@@ -111,6 +111,10 @@ function fixBaselineDrift(clonedDoc: Document) {
 
 export default function BadgeGenerator({ fullName, attendanceToken }: { fullName: string; attendanceToken: string }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  // Ratio largeur/hauteur intrinsèque de la photo — voir coverImageStyle.ts,
+  // chaque gabarit en a besoin pour reproduire object-fit: cover lui-même
+  // (ignoré par html2canvas à l'export).
+  const [photoAspect, setPhotoAspect] = useState<number | null>(null);
   const [photoReady, setPhotoReady] = useState(false);
   const [photoError, setPhotoError] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -200,6 +204,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     preload.src = nextUrl;
     try {
       await preload.decode();
+      setPhotoAspect(preload.naturalWidth / preload.naturalHeight);
     } catch (err) {
       console.error("Photo decode failed", err);
       setPhotoError(true);
@@ -374,7 +379,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
                 cardRefs.current[id] = node;
               }}
             >
-              <Component photoUrl={photoUrl} name={fullName} qrDataUrl={qrDataUrl} />
+              <Component photoUrl={photoUrl} name={fullName} qrDataUrl={qrDataUrl} photoAspect={photoAspect} />
             </div>
             {preparedShare?.id === id ? (
               // Bouton distinct (rempli, pas juste contouré) : un second tap

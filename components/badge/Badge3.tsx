@@ -1,8 +1,12 @@
 import { cigibm } from "@/lib/content";
 import type { BadgeTemplateProps } from "./Badge1";
+import { coverImageStyle } from "./coverImageStyle";
 import styles from "./Badge3.module.css";
 
-export default function Badge3({ photoUrl, name, qrDataUrl }: BadgeTemplateProps) {
+// Cadre carré (1:1) : voir .photoFrame dans Badge3.module.css (168px x 168px).
+const FRAME_ASPECT = 1;
+
+export default function Badge3({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
     <div className={styles.badge}>
       <div className={styles.ribbon}>ÉDITION 4</div>
@@ -14,9 +18,8 @@ export default function Badge3({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
       <div className={styles.photoGlow}>
         <div className={styles.photoFrame}>
           <div className={styles.photoBox}>
-            {/* <img> + repro manuelle d'object-fit: cover — voir
-                Badge1.tsx pour le détail. */}
-            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+            {/* Voir coverImageStyle.ts pour le détail complet. */}
+            {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT)} />}
           </div>
         </div>
       </div>

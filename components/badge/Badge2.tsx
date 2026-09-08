@@ -1,14 +1,23 @@
 import { cigibm } from "@/lib/content";
 import type { BadgeTemplateProps } from "./Badge1";
+import { coverImageStyle } from "./coverImageStyle";
 import styles from "./Badge2.module.css";
 
-export default function Badge2({ photoUrl, name, qrDataUrl }: BadgeTemplateProps) {
+// .badge fait 320px x (320 * 5/4) = 400px (aspect-ratio: 4/5) ; .photoFull
+// occupe toute la largeur sur les 60% du haut (bottom: 40%) -> 320x240,
+// soit un ratio 4/3. Biais vers le haut (8%, pas 50%) : voir le
+// commentaire historique sur .photoFull dans Badge2.module.css.
+const FRAME_ASPECT = 4 / 3;
+const BIAS_Y = 8;
+
+export default function Badge2({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
     <div className={styles.badge}>
       <div className={styles.photoFull}>
-        {/* <img> + repro manuelle d'object-fit: cover — voir Badge1.tsx et
-            .photoImg dans Badge2.module.css pour le détail complet. */}
-        {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
+        {/* Voir coverImageStyle.ts pour le détail complet. */}
+        {photoUrl && (
+          <img src={photoUrl} alt="" crossOrigin="anonymous" style={coverImageStyle(photoAspect, FRAME_ASPECT, BIAS_Y)} />
+        )}
       </div>
       <div className={styles.topRow}>
         <span className={styles.brand}>CIGIBM</span>

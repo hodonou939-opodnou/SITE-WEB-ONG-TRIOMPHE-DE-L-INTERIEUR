@@ -179,28 +179,14 @@
   border: 3px solid rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 -28px 36px -8px rgba(0, 0, 0, 0.4);
 }
-/* Repro manuelle d'object-fit: cover, pas object-fit lui-même ni
-   background-image — voir Badge1.tsx pour le détail complet. En bref :
-   object-fit est ignoré par html2canvas (étirement brut, photo déformée) ;
-   background-image passe par son moteur de motifs (createPattern), qui
-   rastérise l'image à la taille CSS de la boîte AVANT le scale:3 de
-   l'export, perdant tout le détail que la mise à l'échelle finale ne peut
-   plus restituer (photo visiblement floue, constaté en conditions
-   réelles). Cette technique classique pré-object-fit (min-width/height:
-   100% + centrage par transform) garantit que l'image est dessinée en une
-   seule fois par renderReplacedElement, à pleine résolution, sans jamais
-   passer par l'un ou l'autre de ces deux chemins défaillants. */
-.photoImg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  max-width: none;
-  transform: translate(-50%, -50%);
-}
+/* .photoImg (position/dimensions de la photo) : posé entièrement en inline
+   style par coverImageStyle.ts (voir Badge1.tsx), pas ici — dépend du ratio
+   de la photo, connu seulement à l'exécution. Une tentative précédente
+   (min-width/min-height: 100% + width/height: auto simultanés en CSS pure)
+   semblait fonctionner en local mais ne contraignait en réalité pas du tout
+   la taille rendue pour un <img> en position absolue (vérifié par mesure
+   directe) — la photo entière s'affichait à sa taille intrinsèque, recadrée
+   en un minuscule fragment central par overflow:hidden. */
 
 .panelBottom {
   margin-top: 2px;
