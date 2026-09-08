@@ -101,6 +101,13 @@ function fixBaselineDrift(clonedDoc: Document) {
   if (!view) return;
   clonedDoc.querySelectorAll<HTMLElement>("[data-baseline-nudge]").forEach((el) => {
     const style = view.getComputedStyle(el);
+    // Garde-fou : `position: relative` écraserait un positionnement
+    // absolute/fixed/sticky déjà posé pour autre chose (ex. .ribbon dans
+    // Badge3, placé en coin par position:absolute + transform:rotate) —
+    // un tel élément doit porter le nudge sur un <span> interne dédié,
+    // pas directement lui-même. On l'ignore ici plutôt que de risquer de
+    // casser sa mise en page.
+    if (style.position !== "static") return;
     const excess = measureBaselineExcess(clonedDoc, style.fontFamily, style.fontSize);
     if (excess > 0) {
       el.style.position = "relative";
@@ -177,7 +184,17 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
     // que l'utilisateur partagerait/enregistrerait ensuite sans le savoir.
     setPreparedShare(null);
     setManualSaveDataUrl(null);
-    const compressed = await compressPhoto(file);
+    // Options bien plus généreuses que le défaut de compressPhoto (pensé
+    // pour un upload serveur, limite de taille de requête oblige) : cette
+    // photo ne quitte jamais le navigateur, tout se joue jusqu'au canvas
+    // d'export. Signalé en conditions réelles : la photo perdait en
+    // netteté après téléchargement quand cette fonction recompressait
+    // agressivement une photo de téléphone typique (souvent > 1.5 Mo).
+    const compressed = await compressPhoto(file, {
+      maxUncompressedBytes: 8 * 1024 * 1024,
+      maxDimension: 2800,
+      jpegQuality: 0.92,
+    });
 
     // data: plutôt que URL.createObjectURL() : un canvas qui dessine une
     // image issue d'une blob: URL peut se retrouver "tainted" sur iOS
@@ -251,15 +268,31 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
       const canvas = await html2canvas(badgeNode, {
         width,
         height,
-        scale: 3,
+        // 3 -> 4 : un cran plus net (ex. 1280x1600 pour Certificat/Poster,
+        // contre 960x1200), sans viser un multiplicateur bien plus élevé
+        // (un vrai "4K", ~9.6x ici) qui alourdirait le canvas au point de
+        // risquer un crash sur un appareil bas de gamme — un échec de
+        // rendu serait pire qu'une image un peu moins définie, et c'est
+        // précisément la fiabilité du téléchargement qui a posé problème
+        // jusqu'ici.
+        scale: 4,
         backgroundColor: EXPORT_BACKGROUND,
         useCORS: true,
         onclone: fixBaselineDrift,
       });
-      const dataUrl = canvas.toDataURL("image/png");
-      const filename = `jy-serai-cigibm-2026-${filenameSlug}.png`;
+      // WebP : sensiblement plus léger que PNG à qualité égale pour une
+      // photo, utile vu la résolution relevée ci-dessus. Repli automatique
+      // garanti par la spec (HTMLCanvasElement.toDataURL) : un navigateur
+      // qui ne sait pas encoder en WebP renvoie silencieusement un PNG à la
+      // place plutôt que d'échouer — on lit le type réellement obtenu
+      // plutôt que de le supposer, pour nommer le fichier en conséquence.
+      const dataUrl = canvas.toDataURL("image/webp", 0.92);
+      const isWebp = dataUrl.startsWith("data:image/webp");
+      const extension = isWebp ? "webp" : "png";
+      const mimeType = isWebp ? "image/webp" : "image/png";
+      const filename = `jy-serai-cigibm-2026-${filenameSlug}.${extension}`;
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], filename, { type: "image/png" });
+      const file = new File([blob], filename, { type: mimeType });
 
       if (navigator.canShare?.({ files: [file] })) {
         // Ne PAS appeler share() ici : on vient de traverser plusieurs

@@ -22,8 +22,12 @@ export default function Badge2({ photoUrl, name, qrDataUrl, photoAspect }: Badge
       <div className={styles.topRow}>
         <span className={styles.brand}>CIGIBM</span>
         <div className={styles.seal}>
-          <span className={styles.sealNum}>4e</span>
-          <span className={styles.sealLbl}>Édition</span>
+          <span className={styles.sealNum} data-baseline-nudge="">
+            4e
+          </span>
+          <span className={styles.sealLbl} data-baseline-nudge="">
+            Édition
+          </span>
         </div>
       </div>
       <div className={styles.lower}>

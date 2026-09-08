@@ -9,7 +9,13 @@ const FRAME_ASPECT = 1;
 export default function Badge3({ photoUrl, name, qrDataUrl, photoAspect }: BadgeTemplateProps) {
   return (
     <div className={styles.badge}>
-      <div className={styles.ribbon}>ÉDITION 4</div>
+      {/* Le nudge va sur un <span> interne, jamais sur .ribbon lui-même :
+          .ribbon porte déjà position:absolute + transform:rotate(40deg)
+          pour son placement en coin — fixBaselineDrift écraserait cette
+          position en position:relative (voir son commentaire). */}
+      <div className={styles.ribbon}>
+        <span data-baseline-nudge="">ÉDITION 4</span>
+      </div>
       <p className={styles.masthead}>ONG Triomphe de l&apos;Intérieur</p>
       <p className={styles.neon}>CIGIBM</p>
       <p className={styles.motto} data-baseline-nudge="">

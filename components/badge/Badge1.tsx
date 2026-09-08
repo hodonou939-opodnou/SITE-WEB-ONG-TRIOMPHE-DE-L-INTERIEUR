@@ -29,10 +29,12 @@ export default function Badge1({ photoUrl, name, qrDataUrl, photoAspect }: Badge
             ONG Triomphe de l&apos;Intérieur <span className={styles.cigibm}>· CIGIBM</span>
           </p>
           <div className={styles.seal}>
-            <span className={styles.sealNum}>
+            <span className={styles.sealNum} data-baseline-nudge="">
               4<span className={styles.sealOrd}>e</span>
             </span>
-            <span className={styles.sealLbl}>Édition</span>
+            <span className={styles.sealLbl} data-baseline-nudge="">
+              Édition
+            </span>
           </div>
         </div>
         <p className={styles.motto} data-baseline-nudge="">
