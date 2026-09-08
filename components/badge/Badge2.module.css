@@ -57,15 +57,23 @@
    détection de visage réelle, une photo déjà très large en son sein ne
    peut pas se transformer en gros plan serré rien qu'en déplaçant le
    point d'ancrage. */
-/* background-size: cover plutôt que object-fit: cover — voir Badge2.tsx :
-   html2canvas ne gère pas object-fit/object-position sur un <img>, mais
-   implémente correctement background-size/position. */
+/* Repro manuelle d'object-fit: cover + object-position: center 8% — voir
+   Badge1.module.css pour le détail complet (ni object-fit ni
+   background-image ne survivent correctement à l'export réel : l'un
+   étire la photo, l'autre la rastérise en basse résolution avant le
+   scale:3 de html2canvas). Généralisation du centrage top/left 50%/50% :
+   pour object-position: X Y, ancrer le point (X,Y) de l'image sur le
+   point (X,Y) de la boîte -> top:Y; left:X; transform:translate(-X,-Y). */
 .photoImg {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center 8%;
-  background-repeat: no-repeat;
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  max-width: none;
+  transform: translate(-50%, -8%);
 }
 /* Même structure (mêmes arrêts/opacités) qu'avant, recolorée pour
    raccorder la photo au panneau inférieur désormais vert dominant. */

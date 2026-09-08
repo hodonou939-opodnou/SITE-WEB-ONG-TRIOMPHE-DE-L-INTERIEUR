@@ -6,16 +6,9 @@ export default function Badge2({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
   return (
     <div className={styles.badge}>
       <div className={styles.photoFull}>
-        {/* background-image plutôt que <img object-fit:cover> : html2canvas
-            n'implémente object-fit/object-position pour aucun <img> (aucune
-            trace dans son bundle, confirmé) — il dessine toujours l'image
-            source entière étirée dans la boîte de destination, quel que
-            soit son ratio, ce qui déformait toute photo dont le ratio ne
-            correspondait pas exactement au cadre (constaté en conditions
-            réelles : « la photo semble étirée »). background-size: cover
-            recadre correctement, y compris à l'export — même mécanisme
-            que le filigrane de Badge1.module.css, déjà vérifié. */}
-        {photoUrl && <div className={styles.photoImg} style={{ backgroundImage: `url(${photoUrl})` }} />}
+        {/* <img> + repro manuelle d'object-fit: cover — voir Badge1.tsx et
+            .photoImg dans Badge2.module.css pour le détail complet. */}
+        {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
       </div>
       <div className={styles.topRow}>
         <span className={styles.brand}>CIGIBM</span>
@@ -25,7 +18,7 @@ export default function Badge2({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
         </div>
       </div>
       <div className={styles.lower}>
-        <p className={styles.jyserai}>
+        <p className={styles.jyserai} data-baseline-nudge="">
           J&apos;Y
           <br />
           SERAI

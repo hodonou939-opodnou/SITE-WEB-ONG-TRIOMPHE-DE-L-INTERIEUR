@@ -25,23 +25,26 @@ export default function Badge1({ photoUrl, name, qrDataUrl }: BadgeTemplateProps
             <span className={styles.sealLbl}>Édition</span>
           </div>
         </div>
-        <p className={styles.motto}>{cigibm.nextEdition.theme}</p>
+        <p className={styles.motto} data-baseline-nudge="">
+          {cigibm.nextEdition.theme}
+        </p>
         <div className={styles.photoGlow}>
           <div className={styles.photoFrame}>
             <div className={styles.photoBox}>
-              {/* background-image plutôt que <img object-fit:cover> : voir
-                  Badge2.tsx — html2canvas étire toujours l'image source
-                  entière dans la boîte de destination, ignorant
-                  object-fit/object-position (aucune trace de leur gestion
-                  dans son bundle), déformant toute photo dont le ratio ne
-                  correspond pas exactement au cadre. background-size: cover
-                  recadre correctement, y compris à l'export. */}
-              {photoUrl && <div className={styles.photoImg} style={{ backgroundImage: `url(${photoUrl})` }} />}
+              {/* <img> + repro manuelle d'object-fit: cover en CSS (voir
+                  .photoImg dans Badge1.module.css), ni object-fit (ignoré
+                  par html2canvas, photo étirée) ni background-image (passe
+                  par createPattern, rastérisé à la taille CSS avant le
+                  scale:3 de l'export, photo visiblement floue) — les deux
+                  constatés en conditions réelles. */}
+              {photoUrl && <img src={photoUrl} alt="" crossOrigin="anonymous" className={styles.photoImg} />}
             </div>
           </div>
         </div>
         <div className={styles.panelBottom}>
-          <p className={styles.script}>J&apos;y serai</p>
+          <p className={styles.script} data-baseline-nudge="">
+            J&apos;y serai
+          </p>
           <div className={styles.footerRow}>
             <div className={styles.details}>
               <span className={styles.name}>{name}</span>

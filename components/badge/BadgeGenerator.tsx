@@ -36,6 +36,79 @@ type TemplateId = (typeof TEMPLATES)[number]["id"];
 // tout export réel.
 const EXPORT_BACKGROUND = "#176813";
 
+// html2canvas approxime la ligne de base de chaque police via une astuce DOM
+// (un <span> de texte + une image 1x1 alignée en vertical-align:baseline,
+// mesurés par offsetTop — voir FontMetrics.prototype.parseMetrics dans son
+// bundle) plutôt que les vraies métriques de la police. Pour nos polices
+// auto-hébergées (Bebas Neue, Dancing Script), cette approximation
+// surestime nettement la distance haut-de-ligne -> ligne de base (jusqu'à
+// ~28px pour Bebas Neue à 58px, vérifié en conditions réelles sur un
+// moteur WebKit en comparant à measureText().fontBoundingBoxAscent) : le
+// texte s'exporte visiblement plus bas qu'à l'écran — signalé en
+// conditions réelles ("tout le contenu semble glisser vers le bas après
+// téléchargement"). Impossible de corriger html2canvas lui-même (le code
+// livré vient de node_modules, jamais déployé tel quel) : on reproduit ici
+// son calcul pour en déduire l'excès, et on ne le compense QUE sur le
+// clone qu'il construit pour l'export (voir onclone plus bas) — jamais sur
+// la page réelle, qui reste inchangée.
+function measureBaselineExcess(doc: Document, fontFamily: string, fontSize: string): number {
+  const SAMPLE_TEXT = "Hidden Text";
+  const container = doc.createElement("div");
+  const img = doc.createElement("img");
+  const span = doc.createElement("span");
+  const body = doc.body;
+  container.style.visibility = "hidden";
+  container.style.fontFamily = fontFamily;
+  container.style.fontSize = fontSize;
+  container.style.margin = "0";
+  container.style.padding = "0";
+  container.style.whiteSpace = "nowrap";
+  body.appendChild(container);
+  img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  img.width = 1;
+  img.height = 1;
+  img.style.margin = "0";
+  img.style.padding = "0";
+  img.style.verticalAlign = "baseline";
+  span.style.fontFamily = fontFamily;
+  span.style.fontSize = fontSize;
+  span.style.margin = "0";
+  span.style.padding = "0";
+  span.appendChild(doc.createTextNode(SAMPLE_TEXT));
+  container.appendChild(span);
+  container.appendChild(img);
+  const html2canvasBaseline = img.offsetTop - span.offsetTop + 2;
+  body.removeChild(container);
+
+  let realAscent = 0;
+  const canvas = doc.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.font = `normal normal 400 ${fontSize} ${fontFamily}`;
+    realAscent = ctx.measureText(SAMPLE_TEXT).fontBoundingBoxAscent;
+  }
+  return Math.max(0, html2canvasBaseline - realAscent);
+}
+
+// Appliqué via l'option onclone de html2canvas : ne touche que le document
+// cloné servant au rendu, jamais la page affichée à l'utilisateur. `top`
+// (avec position:relative) plutôt que margin-top ou transform : ne change
+// pas l'espace réservé dans le flux (pas de chevauchement avec la photo ou
+// le bloc du dessus) et ne casse pas le transform:skewX() déjà posé sur
+// .script/.jyserai via leur classe CSS.
+function fixBaselineDrift(clonedDoc: Document) {
+  const view = clonedDoc.defaultView;
+  if (!view) return;
+  clonedDoc.querySelectorAll<HTMLElement>("[data-baseline-nudge]").forEach((el) => {
+    const style = view.getComputedStyle(el);
+    const excess = measureBaselineExcess(clonedDoc, style.fontFamily, style.fontSize);
+    if (excess > 0) {
+      el.style.position = "relative";
+      el.style.top = `-${excess}px`;
+    }
+  });
+}
+
 export default function BadgeGenerator({ fullName, attendanceToken }: { fullName: string; attendanceToken: string }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoReady, setPhotoReady] = useState(false);
@@ -176,6 +249,7 @@ export default function BadgeGenerator({ fullName, attendanceToken }: { fullName
         scale: 3,
         backgroundColor: EXPORT_BACKGROUND,
         useCORS: true,
+        onclone: fixBaselineDrift,
       });
       const dataUrl = canvas.toDataURL("image/png");
       const filename = `jy-serai-cigibm-2026-${filenameSlug}.png`;
