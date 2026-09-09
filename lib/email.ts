@@ -288,6 +288,51 @@ export function buildAmbassadorSignupEmail(fullName: string, referralUrl: string
   };
 }
 
+// Annonce ponctuelle (pas de déclencheur automatique — envoi manuel, ex.
+// campagne Brevo ou script one-off) informant les ambassadeurs déjà actifs
+// que le générateur de badge « J'y serai » existe désormais : chaque
+// personne qui s'inscrit au CIGIBM — via un lien de parrainage ou non —
+// reçoit automatiquement un email l'invitant à créer le sien
+// (buildBadgeReminderEmail, envoyé par app/api/cigibm-register/route.ts).
+// Volontairement silencieux sur le lien de parrainage lui-même : cet email
+// annonce une fonctionnalité, il ne relance pas le partage (déjà couvert
+// par buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail).
+export function buildAmbassadorBadgeAnnouncementEmail(fullName: string) {
+  const first = fullName.split(/\s+/)[0];
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Nouveauté
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, vos invités ont maintenant leur badge « J&apos;y serai ».
+    </h1>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Chaque personne qui réserve sa place au CIGIBM ${cigibm.nextEdition.edition}, par votre lien ou non, reçoit maintenant un email juste après son inscription pour créer son badge personnel « J&apos;y serai ».
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 10px; font-size:14px; color:#16211d;"><strong>Sa photo</strong>, dans un visuel aux couleurs du congrès</p>
+          <p style="margin:0 0 10px; font-size:14px; color:#16211d;"><strong>Son nom</strong>, la date et le lieu du CIGIBM ${cigibm.nextEdition.edition}</p>
+          <p style="margin:0; font-size:14px; color:#16211d;"><strong>Un code d&apos;entrée</strong>, le même QR qui ouvrira les portes le jour J</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Le badge se télécharge en un instant et se partage directement sur WhatsApp, TikTok ou Facebook. Plus vos invités le partagent, plus votre invitation se voit.
+    </p>
+    <p style="margin:0; font-size:14px; line-height:1.6; color:#16211d99; font-family:Arial, sans-serif;">
+      Vous n&apos;avez rien à faire, cet email part automatiquement pour tout le monde dès l&apos;inscription confirmée.
+    </p>
+    ${ctaButton("Voir le programme du CIGIBM", `${SITE_URL}/cigibm-2026`, "gold")}
+  `);
+
+  return {
+    subject: `${first}, vos invités peuvent désormais créer leur badge « J'y serai »`,
+    html,
+  };
+}
+
 // Déclenché par le cron quotidien /api/cron/ambassador-nudges (cf.
 // lib/ambassadors/nudges.ts) pour un ambassadeur encore à zéro parrainage,
 // au plus une fois tous les quelques jours. Ton volontairement léger —

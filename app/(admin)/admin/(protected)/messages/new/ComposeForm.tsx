@@ -7,6 +7,11 @@ export default function ComposeForm() {
   const router = useRouter();
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  // "badge-link" force le canal email (ce gabarit n'existe pas en SMS) et
+  // se passe du champ Message libre : buildBadgeReminderEmail compose son
+  // propre sujet + lien de badge personnel à chaque destinataire, voir
+  // /api/admin/messages/send.
+  const [template, setTemplate] = useState<"custom" | "badge-link">("custom");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -20,7 +25,8 @@ export default function ComposeForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          channel: form.get("channel"),
+          template,
+          channel: template === "badge-link" ? "email" : form.get("channel"),
           editionNumber: Number(form.get("editionNumber")),
           onlyNonAttendees: form.get("onlyNonAttendees") === "on",
           message: form.get("message"),
@@ -47,13 +53,32 @@ export default function ComposeForm() {
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
       <div>
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Canal</label>
-        <select name="channel" defaultValue="email" className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm">
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="whatsapp" disabled>WhatsApp (non configuré)</option>
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Modèle</label>
+        <select
+          value={template}
+          onChange={(e) => setTemplate(e.target.value as "custom" | "badge-link")}
+          className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm"
+        >
+          <option value="custom">Message libre</option>
+          <option value="badge-link">Lien du badge « J&apos;y serai » (email, branded)</option>
         </select>
+        {template === "badge-link" && (
+          <p className="mt-1.5 text-xs text-ink/60">
+            Email uniquement. Chaque destinataire reçoit son propre lien de badge, dans le gabarit de marque déjà
+            utilisé pour les renvois individuels.
+          </p>
+        )}
       </div>
+      {template === "custom" && (
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Canal</label>
+          <select name="channel" defaultValue="email" className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm">
+            <option value="email">Email</option>
+            <option value="sms">SMS</option>
+            <option value="whatsapp" disabled>WhatsApp (non configuré)</option>
+          </select>
+        </div>
+      )}
       <div>
         <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Édition</label>
         <select name="editionNumber" defaultValue="4" className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm">
@@ -66,12 +91,19 @@ export default function ComposeForm() {
       </label>
       <div>
         <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Nom de l&apos;envoi</label>
-        <input name="batchLabel" required className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm" placeholder="Rappel CIGIBM 2026" />
+        <input
+          name="batchLabel"
+          required
+          className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm"
+          placeholder={template === "badge-link" ? "Envoi du lien de badge" : "Rappel CIGIBM 2026"}
+        />
       </div>
-      <div>
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Message</label>
-        <textarea name="message" required rows={5} className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm" />
-      </div>
+      {template === "custom" && (
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Message</label>
+          <textarea name="message" required rows={5} className="w-full rounded-xl border border-ink/15 bg-mist-50 px-4 py-3 text-sm" />
+        </div>
+      )}
       <button type="submit" disabled={sending} className="rounded-full bg-leaf-600 px-6 py-3 text-sm font-semibold text-mist-50 disabled:opacity-60">
         {sending ? "Envoi..." : "Envoyer"}
       </button>

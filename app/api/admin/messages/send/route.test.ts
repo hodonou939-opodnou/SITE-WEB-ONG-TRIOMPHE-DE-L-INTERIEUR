@@ -68,4 +68,77 @@ describe("POST /api/admin/messages/send", () => {
     expect(logs).toHaveLength(2);
     expect(logs.every((l) => l.status === "sent")).toBe(true);
   });
+
+  it("sends each recipient their own badge link when template is badge-link", async () => {
+    // Édition 1 pour la même raison que le test précédent (resolveAudience
+    // compte toute l'édition, sans filtre de domaine) — les deux tests
+    // partagent le domaine de nettoyage TEST_EMAIL_DOMAIN et Vitest exécute
+    // les tests d'un même fichier en série, donc chacun repart d'une édition
+    // 1 vide au moment où il s'exécute.
+    const edition1 = await db.edition.findUniqueOrThrow({ where: { number: 1 } });
+    const [p1, p2] = await Promise.all([
+      db.participant.create({
+        data: {
+          editionId: edition1.id,
+          fullName: "Badge Recipient One",
+          phone: "+2290100000033",
+          email: `badge1${TEST_EMAIL_DOMAIN}`,
+          registrationSource: "form",
+        },
+      }),
+      db.participant.create({
+        data: {
+          editionId: edition1.id,
+          fullName: "Badge Recipient Two",
+          phone: "+2290100000034",
+          email: `badge2${TEST_EMAIL_DOMAIN}`,
+          registrationSource: "form",
+        },
+      }),
+    ]);
+
+    const sentBodies: string[] = [];
+    global.fetch = vi.fn(async (_url, init) => {
+      sentBodies.push(String((init as RequestInit).body));
+      return new Response(JSON.stringify({ messageId: "msg-1" }), { status: 201 });
+    }) as typeof fetch;
+
+    const { POST } = await import("./route");
+    const request = new NextRequest("http://localhost:3000/api/admin/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        template: "badge-link",
+        channel: "email",
+        editionNumber: 1,
+        batchLabel: "test-batch",
+        message: "",
+      }),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.sentCount).toBe(2);
+
+    // Chaque envoi porte le lien de badge PROPRE à son destinataire, pas un
+    // seul texte identique pour les deux — la preuve qu'il ne s'agit pas du
+    // gabarit "message libre" générique.
+    expect(sentBodies.some((b) => b.includes(p1.attendanceToken))).toBe(true);
+    expect(sentBodies.some((b) => b.includes(p2.attendanceToken))).toBe(true);
+    expect(sentBodies.every((b) => b.includes("J'y serai"))).toBe(true);
+  });
+
+  it("rejects badge-link template on a non-email channel", async () => {
+    const { POST } = await import("./route");
+    const request = new NextRequest("http://localhost:3000/api/admin/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ template: "badge-link", channel: "sms", editionNumber: 1, batchLabel: "test-batch" }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(400);
+  });
 });

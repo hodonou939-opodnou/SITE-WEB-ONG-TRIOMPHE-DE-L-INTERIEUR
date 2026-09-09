@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildBadgeReminderEmail, buildConfirmationEmail } from "./email";
+import { buildAmbassadorBadgeAnnouncementEmail, buildBadgeReminderEmail, buildConfirmationEmail } from "./email";
 
 describe("buildConfirmationEmail", () => {
   it("includes a link to the badge page built from SITE_URL when a token is given", () => {
@@ -51,5 +51,18 @@ describe("buildBadgeReminderEmail", () => {
     const second = buildBadgeReminderEmail("Aïcha", "xyz789").subject;
 
     expect(first).not.toBe(second);
+  });
+});
+
+describe("buildAmbassadorBadgeAnnouncementEmail", () => {
+  it("explains the badge feature without re-promoting the referral link", () => {
+    const message = buildAmbassadorBadgeAnnouncementEmail("Fatou Diallo");
+
+    expect(message.subject).toContain("Fatou");
+    expect(message.html).toContain("badge");
+    expect(message.html).toContain("J&apos;y serai");
+    // Cette annonce ne relance pas le partage — déjà couvert par
+    // buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail.
+    expect(message.html).not.toContain("Votre lien personnel");
   });
 });

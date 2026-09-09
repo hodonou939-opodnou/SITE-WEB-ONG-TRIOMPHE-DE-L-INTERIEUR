@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { resolveAudience } from "@/lib/messaging/audience";
 import { sendSms } from "@/lib/messaging/sms";
 import { sendWhatsApp } from "@/lib/messaging/whatsapp";
-import { sendTransactionalEmail } from "@/lib/email";
+import { buildBadgeReminderEmail, sendTransactionalEmail } from "@/lib/email";
 import { logMessage } from "@/lib/messaging/log";
 import type { MessageChannel } from "@prisma/client";
 
@@ -28,13 +28,21 @@ export async function POST(request: NextRequest) {
   const admin = await requireAdmin();
   const body = await request.json();
 
-  const { channel, editionNumber, message, batchLabel, onlyNonAttendees } = body as {
+  const { channel, editionNumber, message, batchLabel, onlyNonAttendees, template } = body as {
     channel: "email" | "sms" | "whatsapp";
     editionNumber: number;
     message: string;
     batchLabel: string;
     onlyNonAttendees?: boolean;
+    // "custom" (par défaut) : le message libre ci-dessous, wrappé dans un
+    // <p> minimal. "badge-link" : ignore `message`, envoie à la place le
+    // gabarit de marque buildBadgeReminderEmail — sujet et lien de badge
+    // personnels à CHAQUE destinataire (son propre attendanceToken), pas un
+    // seul texte identique pour tout le monde. Email uniquement : ce
+    // gabarit n'a pas d'équivalent SMS/WhatsApp.
+    template?: "custom" | "badge-link";
   };
+  const isBadgeLinkTemplate = template === "badge-link";
 
   if (channel !== "email" && channel !== "sms" && channel !== "whatsapp") {
     return NextResponse.json(
@@ -43,7 +51,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (typeof message !== "string" || message.trim() === "") {
+  if (isBadgeLinkTemplate && channel !== "email") {
+    return NextResponse.json(
+      { error: "Le lien de badge ne peut être envoyé que par email." },
+      { status: 400 }
+    );
+  }
+
+  if (!isBadgeLinkTemplate && (typeof message !== "string" || message.trim() === "")) {
     return NextResponse.json({ error: "Le message ne peut pas être vide." }, { status: 400 });
   }
 
@@ -118,11 +133,13 @@ export async function POST(request: NextRequest) {
       } else if (recipient.email) {
         const apiKey = process.env.BREVO_API_KEY;
         if (!apiKey) continue;
-        const htmlMessage = message.replace(/\r\n|\n/g, "<br>");
+        const emailMessage = isBadgeLinkTemplate
+          ? buildBadgeReminderEmail(recipient.fullName, recipient.attendanceToken)
+          : { subject: batchLabel, html: `<p>${message.replace(/\r\n|\n/g, "<br>")}</p>` };
         const res = await sendTransactionalEmail(
           apiKey,
           { email: recipient.email, name: recipient.fullName },
-          { subject: batchLabel, html: `<p>${htmlMessage}</p>` },
+          emailMessage,
           { participantId: recipient.id, batchId, batchLabel, sentByAdminId: admin.id }
         );
         if (res.ok) sentCount++;
