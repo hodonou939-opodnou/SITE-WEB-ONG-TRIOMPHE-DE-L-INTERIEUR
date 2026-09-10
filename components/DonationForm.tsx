@@ -3,17 +3,18 @@
 import { useState, type FormEvent } from "react";
 
 const PRESET_AMOUNTS = [1000, 5000, 10000, 20000, 50000, 100000];
+const MIN_AMOUNT = 100;
+const MAX_AMOUNT = 2_000_000;
 
-// Bénin uniquement pour l'instant : les opérateurs affichés (MTN, Moov,
-// Celtiis) sont ceux réellement disponibles au Bénin. Togo et Côte d'Ivoire
-// restent sélectionnables pour ne pas fermer la porte à un don depuis ces
-// pays, mais leurs propres opérateurs Mobile Money n'ont pas été confirmés
-// avec l'ONG — à corriger avant un vrai lancement dans ces pays plutôt que
-// de deviner des noms d'opérateurs qui pourraient être faux.
+// Pays et opérateurs réellement pris en charge par Feexpay pour un
+// paiement Mobile Money (vérifié dans docs.feexpay.me > API > Payin, pas
+// deviné) — voir la correspondance exacte vers les réseaux Feexpay dans
+// lib/feexpay.ts (OPERATOR_TO_NETWORK), ces libellés doivent rester
+// identiques des deux côtés.
 const COUNTRIES = [
-  { code: "BJ", label: "Bénin", dialCode: "+229", operators: ["MTN", "Moov", "Celtiis"] },
-  { code: "TG", label: "Togo", dialCode: "+228", operators: [] as string[] },
-  { code: "CI", label: "Côte d'Ivoire", dialCode: "+225", operators: [] as string[] },
+  { code: "BJ", label: "Bénin", dialCode: "+229", operators: ["MTN", "Moov", "Celtiis", "Coris"] },
+  { code: "TG", label: "Togo", dialCode: "+228", operators: ["Togocom", "Moov"] },
+  { code: "CI", label: "Côte d'Ivoire", dialCode: "+225", operators: ["MTN", "Moov", "Wave", "Orange"] },
 ];
 
 function formatXof(amount: number) {
@@ -30,16 +31,55 @@ export default function DonationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  // Coris (Bénin) seulement : un code reçu par SMS à renvoyer pour valider
+  // la transaction — voir lib/feexpay.ts (isOtpNetwork).
+  const [awaitingOtp, setAwaitingOtp] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
   const amount = isCustom ? Number(customAmount) : selectedAmount;
+
+  async function submitPayment(otpValue?: string) {
+    const res = await fetch("/api/donate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        countryCode: country.code,
+        dialCode: country.dialCode,
+        operator,
+        phone,
+        otp: otpValue,
+      }),
+    });
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setError(json?.error ?? "Le paiement n'a pas pu être initié. Merci de réessayer.");
+      return;
+    }
+
+    if (json.paymentUrl) {
+      // Moov/Wave/Orange Côte d'Ivoire : pas de push vers le téléphone,
+      // le donateur paie sur une page dédiée.
+      window.location.href = json.paymentUrl;
+      return;
+    }
+
+    if (json.requiresOtp) {
+      setAwaitingOtp(true);
+      return;
+    }
+
+    setSuccess(true);
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    if (!amount || amount <= 0) {
-      setError("Choisissez un montant, ou entrez-en un vous-même.");
+    if (!amount || amount < MIN_AMOUNT || amount > MAX_AMOUNT) {
+      setError(`Choisissez un montant entre ${formatXof(MIN_AMOUNT)} et ${formatXof(MAX_AMOUNT)}.`);
       return;
     }
     if (!phone.trim()) {
@@ -49,25 +89,24 @@ export default function DonationForm() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/donate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          countryCode: country.code,
-          dialCode: country.dialCode,
-          operator,
-          phone,
-        }),
-      });
-      const json = await res.json().catch(() => null);
+      await submitPayment();
+    } catch {
+      setError("Connexion interrompue. Vérifiez votre connexion et réessayez.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
-      if (!res.ok) {
-        setError(json?.error ?? "Le paiement n'a pas pu être initié. Merci de réessayer.");
-        return;
-      }
-
-      setSuccess(true);
+  async function handleOtpSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    if (!otp.trim()) {
+      setError("Entrez le code reçu par SMS.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await submitPayment(otp);
     } catch {
       setError("Connexion interrompue. Vérifiez votre connexion et réessayez.");
     } finally {
@@ -84,6 +123,31 @@ export default function DonationForm() {
           {formatXof(amount ?? 0)}.
         </p>
       </div>
+    );
+  }
+
+  if (awaitingOtp) {
+    return (
+      <form onSubmit={handleOtpSubmit} className="rounded-2xl border border-ink/8 bg-mist-50 p-6 sm:p-8">
+        <p className="font-display text-xl text-leaf-900">Un code vous a été envoyé par SMS.</p>
+        <p className="mt-2 text-sm text-ink/70">Entrez-le ci-dessous pour valider votre don de {formatXof(amount ?? 0)}.</p>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          placeholder="Code reçu par SMS"
+          className="mt-4 w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-sm"
+        />
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="mt-4 w-full rounded-full bg-leaf-600 py-4 text-base font-semibold text-mist-50 transition-colors hover:bg-leaf-700 disabled:opacity-60"
+        >
+          {submitting ? "Validation..." : "Valider le code"}
+        </button>
+      </form>
     );
   }
 
@@ -127,7 +191,8 @@ export default function DonationForm() {
         <div className="mt-3">
           <input
             type="number"
-            min={100}
+            min={MIN_AMOUNT}
+            max={MAX_AMOUNT}
             inputMode="numeric"
             value={customAmount}
             onChange={(e) => setCustomAmount(e.target.value)}
@@ -160,27 +225,25 @@ export default function DonationForm() {
         </div>
       </div>
 
-      {country.operators.length > 0 && (
-        <div className="mt-4">
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Opérateur</label>
-          <div className="flex flex-wrap gap-2">
-            {country.operators.map((op) => (
-              <button
-                key={op}
-                type="button"
-                onClick={() => setOperator(op)}
-                className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
-                  operator === op
-                    ? "border-leaf-600 bg-leaf-600 text-mist-50"
-                    : "border-ink/12 bg-white text-ink hover:border-leaf-600/40"
-                }`}
-              >
-                {op}
-              </button>
-            ))}
-          </div>
+      <div className="mt-4">
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">Opérateur</label>
+        <div className="flex flex-wrap gap-2">
+          {country.operators.map((op) => (
+            <button
+              key={op}
+              type="button"
+              onClick={() => setOperator(op)}
+              className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                operator === op
+                  ? "border-leaf-600 bg-leaf-600 text-mist-50"
+                  : "border-ink/12 bg-white text-ink hover:border-leaf-600/40"
+              }`}
+            >
+              {op}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       <div className="mt-4">
         <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink/60">
