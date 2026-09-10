@@ -4,6 +4,7 @@ import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import Button from "@/components/Button";
 import Reveal from "@/components/Reveal";
+import DonationForm from "@/components/DonationForm";
 import { siteConfig, supportWays } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 
@@ -25,11 +26,17 @@ export default function NousSoutenirPage() {
       />
 
       <Container className="py-24 sm:py-28">
-        <SectionHeading
-          eyebrow="Comment agir"
-          title="Trois façons de nous accompagner"
-          description="Il n'y a pas de contribution trop petite. Un don ponctuel, un week-end de bénévolat ou un partenariat durable : chacune de ces portes mène au même endroit."
-        />
+        <div className="mx-auto max-w-xl">
+          <DonationForm />
+        </div>
+
+        <div className="mt-24">
+          <SectionHeading
+            eyebrow="Comment agir"
+            title="Trois façons de nous accompagner"
+            description="Il n'y a pas de contribution trop petite. Un don ponctuel, un week-end de bénévolat ou un partenariat durable : chacune de ces portes mène au même endroit."
+          />
+        </div>
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {supportWays.map((way, i) => (
             <Reveal key={way.title} delay={i * 0.1}>
