@@ -4,7 +4,9 @@
 // de lecture automatique ne rendent pas, la navigation dans un vrai
 // navigateur a été nécessaire pour obtenir le contrat réel plutôt que d'en
 // deviner un).
-const FEEXPAY_BASE = "https://api-v2.feexpay.me/api/transactions/public";
+// Redéfinissable via FEEXPAY_BASE_URL (ex. pointer vers un faux serveur
+// local en test manuel) sans jamais changer la valeur réelle par défaut.
+const FEEXPAY_BASE = process.env.FEEXPAY_BASE_URL || "https://api-v2.feexpay.me/api/transactions/public";
 
 export type FeexpayNetwork =
   | "mtn_bj"

@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 const PRESET_AMOUNTS = [1000, 5000, 10000, 20000, 50000, 100000];
 const MIN_AMOUNT = 100;
 const MAX_AMOUNT = 2_000_000;
+// Feexpay accepte la demande (status: PENDING) avant même que le donateur
+// ait confirmé sur son téléphone — voir le commentaire plus bas sur
+// pollStatus(). Au-delà de cette fenêtre sans résolution, on arrête de
+// solliciter l'API et on laisse la main au donateur plutôt que de
+// continuer indéfiniment.
+const POLL_INTERVAL_MS = 3000;
+const POLL_TIMEOUT_MS = 90_000;
 
 // Pays et opérateurs réellement pris en charge par Feexpay pour un
 // paiement Mobile Money (vérifié dans docs.feexpay.me > API > Payin, pas
@@ -21,7 +28,10 @@ function formatXof(amount: number) {
   return `${amount.toLocaleString("fr-FR")} XOF`;
 }
 
+type Phase = "form" | "otp" | "waiting" | "success" | "failed";
+
 export default function DonationForm() {
+  const [phase, setPhase] = useState<Phase>("form");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(5000);
   const [customAmount, setCustomAmount] = useState("");
   const [isCustom, setIsCustom] = useState(false);
@@ -30,14 +40,62 @@ export default function DonationForm() {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [failReason, setFailReason] = useState<string | null>(null);
+  const [waitingTimedOut, setWaitingTimedOut] = useState(false);
   // Coris (Bénin) seulement : un code reçu par SMS à renvoyer pour valider
   // la transaction — voir lib/feexpay.ts (isOtpNetwork).
-  const [awaitingOtp, setAwaitingOtp] = useState(false);
   const [otp, setOtp] = useState("");
 
   const country = COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0];
   const amount = isCustom ? Number(customAmount) : selectedAmount;
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartRef = useRef<number>(0);
+
+  function stopPolling() {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }
+
+  useEffect(() => stopPolling, []);
+
+  // Feexpay accepte le requesttopay (status: PENDING) avant que le donateur
+  // ait confirmé quoi que ce soit sur son téléphone (USSD ou notification).
+  // Afficher "Merci" à ce stade, comme le faisait une version précédente de
+  // ce composant, annonçait un succès qui n'avait pas encore eu lieu — le
+  // paiement peut encore être refusé après coup (mauvais code, solde
+  // insuffisant, annulation). On interroge donc le vrai statut jusqu'à une
+  // résolution réelle (ou l'expiration du délai) avant d'afficher quoi que
+  // ce soit de définitif.
+  function pollStatus(reference: string) {
+    pollStartRef.current = Date.now();
+    setWaitingTimedOut(false);
+    stopPolling();
+    pollRef.current = setInterval(async () => {
+      if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) {
+        stopPolling();
+        setWaitingTimedOut(true);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/donate/status?reference=${encodeURIComponent(reference)}`);
+        const json = await res.json().catch(() => null);
+        if (!res.ok) return; // Panne transitoire : on retentera au prochain tick.
+        if (json.status === "SUCCESSFUL") {
+          stopPolling();
+          setPhase("success");
+        } else if (json.status === "FAILED") {
+          stopPolling();
+          setFailReason(json.reason ?? null);
+          setPhase("failed");
+        }
+      } catch {
+        // Panne réseau transitoire : ignorée, on retente au prochain tick.
+      }
+    }, POLL_INTERVAL_MS);
+  }
 
   async function submitPayment(otpValue?: string) {
     const res = await fetch("/api/donate", {
@@ -67,11 +125,12 @@ export default function DonationForm() {
     }
 
     if (json.requiresOtp) {
-      setAwaitingOtp(true);
+      setPhase("otp");
       return;
     }
 
-    setSuccess(true);
+    setPhase("waiting");
+    pollStatus(json.reference);
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -114,19 +173,73 @@ export default function DonationForm() {
     }
   }
 
-  if (success) {
+  function resetToForm() {
+    setPhase("form");
+    setError(null);
+    setFailReason(null);
+    setWaitingTimedOut(false);
+    setOtp("");
+  }
+
+  if (phase === "success") {
     return (
       <div className="rounded-2xl border border-leaf-600/20 bg-leaf-50 p-8 text-center">
-        <p className="font-display text-xl text-leaf-900">Merci. Votre don compte déjà.</p>
-        <p className="mt-2 text-sm text-ink/70">
-          Confirmez le paiement depuis la notification envoyée sur votre téléphone pour finaliser votre don de{" "}
-          {formatXof(amount ?? 0)}.
-        </p>
+        <p className="font-display text-xl text-leaf-900">Merci. Votre don est confirmé.</p>
+        <p className="mt-2 text-sm text-ink/70">Votre don de {formatXof(amount ?? 0)} a bien été reçu.</p>
       </div>
     );
   }
 
-  if (awaitingOtp) {
+  if (phase === "failed") {
+    return (
+      <div className="rounded-2xl border border-ink/8 bg-mist-50 p-8 text-center">
+        <p className="font-display text-xl text-leaf-900">Le paiement n&apos;a pas abouti.</p>
+        <p className="mt-2 text-sm text-ink/70">
+          {failReason || "Le paiement a été refusé ou annulé. Vérifiez votre solde ou réessayez."}
+        </p>
+        <button
+          type="button"
+          onClick={resetToForm}
+          className="mt-5 rounded-full bg-leaf-600 px-6 py-3 text-sm font-semibold text-mist-50 transition-colors hover:bg-leaf-700"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "waiting") {
+    return (
+      <div className="rounded-2xl border border-ink/8 bg-mist-50 p-8 text-center">
+        <p className="font-display text-xl text-leaf-900">Confirmez sur votre téléphone.</p>
+        <p className="mt-2 text-sm text-ink/70">
+          Une notification ou un code USSD vient de vous être envoyé pour valider votre don de {formatXof(amount ?? 0)}.
+          Cette page se met à jour automatiquement dès que c&apos;est confirmé.
+        </p>
+        {!waitingTimedOut ? (
+          <div className="mt-5 flex items-center justify-center gap-2 text-sm text-ink/50">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-leaf-600" />
+            En attente de confirmation...
+          </div>
+        ) : (
+          <>
+            <p className="mt-4 text-sm text-ink/70">
+              Nous n&apos;avons pas encore reçu de confirmation. Vérifiez votre téléphone, ou réessayez.
+            </p>
+            <button
+              type="button"
+              onClick={resetToForm}
+              className="mt-4 rounded-full border border-ink/15 px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+            >
+              Réessayer
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === "otp") {
     return (
       <form onSubmit={handleOtpSubmit} className="rounded-2xl border border-ink/8 bg-mist-50 p-6 sm:p-8">
         <p className="font-display text-xl text-leaf-900">Un code vous a été envoyé par SMS.</p>
