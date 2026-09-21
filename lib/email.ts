@@ -18,20 +18,35 @@ const LOGO_MARK_URL = `${SITE_URL}/images/logo-mark.png`;
 // contenu et le footer ne changent pas, seul le bandeau d'en-tête devient
 // coloré. Ce même gabarit alimente tous les emails transactionnels, pour
 // que la marque reste cohérente d'un email à l'autre.
+// L'enveloppe (bandeau + padding généreux) est pensée pour un écran large ;
+// sans media query, le même padding fixe sur mobile empile deux marges
+// (celle de l'enveloppe autour de la carte + celle de la carte autour du
+// texte) et écrase la colonne de lecture. La classe + le <style> ci-dessous
+// réduisent ce padding sous 600px ; le style inline reste le repli pour les
+// clients qui ignorent <style> (ils gardent alors le padding "desktop",
+// jamais pire qu'avant).
 function emailShell(content: string) {
   return `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      @media only screen and (max-width: 600px) {
+        .email-outer-pad { padding: 20px 10px !important; }
+        .email-header-pad { padding: 28px 22px 22px !important; }
+        .email-content-pad { padding: 26px 20px 32px !important; }
+        .email-footer-pad { padding: 18px 20px !important; }
+      }
+    </style>
   </head>
   <body style="margin:0; padding:0; background:#f4f6f2; font-family:Georgia, 'Times New Roman', serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f2; padding:40px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f2; padding:40px 16px;" class="email-outer-pad">
       <tr>
         <td align="center">
           <table role="presentation" width="100%" style="max-width:580px; border-radius:20px; overflow:hidden; background:#ffffff; box-shadow:0 16px 40px rgba(14,33,24,0.08);">
             <tr>
-              <td style="background:#0e2118; padding:40px 40px 32px; text-align:center;">
+              <td style="background:#0e2118; padding:40px 40px 32px; text-align:center;" class="email-header-pad">
                 <img src="${LOGO_MARK_URL}" alt="${siteConfig.name}" width="56" height="56" style="display:block; margin:0 auto 14px;" />
                 <p style="margin:0 0 6px; color:#fcfdfd; font-family:Georgia, 'Times New Roman', serif; font-size:18px; font-weight:bold;">
                   ${siteConfig.name}
@@ -45,12 +60,12 @@ function emailShell(content: string) {
               <td style="height:2px; line-height:2px; font-size:0; background:#c9a227;">&nbsp;</td>
             </tr>
             <tr>
-              <td style="background:#ffffff; padding:36px 40px 44px;">
+              <td style="background:#ffffff; padding:36px 40px 44px;" class="email-content-pad">
                 ${content}
               </td>
             </tr>
             <tr>
-              <td style="background:#f2f7f3; padding:22px 40px; text-align:center; font-family:Arial, sans-serif; border-top:1px solid #e3ece4;">
+              <td style="background:#f2f7f3; padding:22px 40px; text-align:center; font-family:Arial, sans-serif; border-top:1px solid #e3ece4;" class="email-footer-pad">
                 <p style="margin:0 0 6px; font-size:12px; color:#16211d99;">
                   ${siteConfig.name} &middot; ${siteConfig.location}
                 </p>
@@ -340,15 +355,20 @@ export function buildAmbassadorBadgeAnnouncementEmail(fullName: string) {
 // serai ») : les trois autres cartes utilisent des photos libres de droits
 // (Pexels, stockées localement dans /images/ambassador-tips) pour varier
 // les visuels sans épuiser les rares photos de Christelle disponibles.
+// Un seul niveau d'encadrement (l'image, coins arrondis, rien d'autre) :
+// une bordure/fond supplémentaire autour du texte empilait une deuxième
+// marge sur celle de l'enveloppe (emailShell) et écrasait la colonne de
+// lecture sur mobile. Le badge numéroté + le titre juste sous l'image
+// suffisent à séparer visuellement chaque astuce.
 function tipCard(number: number, title: string, body: string, imagePath: string, imageAlt: string) {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; border:1px solid #e3ece4; border-radius:16px; overflow:hidden;">
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px;">
     <tr>
       <td>
-        <img src="${encodeURI(`${SITE_URL}${imagePath}`)}" alt="${imageAlt}" width="520" height="220" style="display:block; width:100%; max-width:520px; height:220px; object-fit:cover; background:#e3ece4;" />
+        <img src="${encodeURI(`${SITE_URL}${imagePath}`)}" alt="${imageAlt}" width="520" height="220" style="display:block; width:100%; max-width:520px; height:220px; object-fit:cover; background:#e3ece4; border-radius:14px;" />
       </td>
     </tr>
     <tr>
-      <td style="background:#f9fbf9; padding:18px 22px 20px;">
+      <td style="padding:14px 0 0;">
         <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
           <tr>
             <td width="24" height="24" style="width:24px; height:24px; background:#307335; border-radius:999px; text-align:center;">
