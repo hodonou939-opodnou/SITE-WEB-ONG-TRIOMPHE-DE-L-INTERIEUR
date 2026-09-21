@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildAmbassadorBadgeAnnouncementEmail, buildBadgeReminderEmail, buildConfirmationEmail } from "./email";
+import {
+  addAmbassadorToBrevoList,
+  buildAmbassadorBadgeAnnouncementEmail,
+  buildBadgeReminderEmail,
+  buildConfirmationEmail,
+} from "./email";
 
 describe("buildConfirmationEmail", () => {
   it("includes a link to the badge page built from SITE_URL when a token is given", () => {
@@ -64,5 +69,67 @@ describe("buildAmbassadorBadgeAnnouncementEmail", () => {
     // Cette annonce ne relance pas le partage — déjà couvert par
     // buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail.
     expect(message.html).not.toContain("Votre lien personnel");
+  });
+});
+
+describe("addAmbassadorToBrevoList", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("retries without the phone number when Brevo rejects it as invalid", async () => {
+    let callCount = 0;
+    let secondCallBody: string | undefined;
+    global.fetch = (async (_url: string, init?: RequestInit) => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({ code: "invalid_parameter", message: "Invalid phone number" }), {
+          status: 400,
+        });
+      }
+      secondCallBody = init?.body as string;
+      return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+    }) as typeof fetch;
+
+    const res = await addAmbassadorToBrevoList("test-key", "amb@example.com", "Fatou Diallo", "not-a-real-phone");
+
+    expect(callCount).toBe(2);
+    expect(res.status).toBe(201);
+    expect(secondCallBody).toBeDefined();
+    expect(JSON.parse(secondCallBody!).attributes).not.toHaveProperty("SMS");
+  });
+
+  it("retries without the phone number when it's already used by another Brevo contact", async () => {
+    let callCount = 0;
+    global.fetch = (async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(
+          JSON.stringify({ code: "duplicate_parameter", metadata: { duplicate_identifiers: ["SMS"] } }),
+          { status: 400 }
+        );
+      }
+      return new Response(JSON.stringify({ id: 1 }), { status: 201 });
+    }) as typeof fetch;
+
+    const res = await addAmbassadorToBrevoList("test-key", "amb@example.com", "Fatou Diallo", "96966501");
+
+    expect(callCount).toBe(2);
+    expect(res.status).toBe(201);
+  });
+
+  it("doesn't retry for an unrelated 400 (e.g. a real duplicate email)", async () => {
+    let callCount = 0;
+    global.fetch = (async () => {
+      callCount++;
+      return new Response(JSON.stringify({ code: "duplicate_parameter", metadata: { duplicate_identifiers: ["email"] } }), {
+        status: 400,
+      });
+    }) as typeof fetch;
+
+    const res = await addAmbassadorToBrevoList("test-key", "amb@example.com", "Fatou Diallo", "96966501");
+
+    expect(callCount).toBe(1);
+    expect(res.status).toBe(400);
   });
 });

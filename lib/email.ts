@@ -682,10 +682,18 @@ export async function addAmbassadorToBrevoList(apiKey: string, email: string, fu
   if (res.status === 400) {
     const body = await res.clone().json().catch(() => null);
     const duplicateFields: string[] = body?.metadata?.duplicate_identifiers ?? [];
-    if (body?.code === "duplicate_parameter" && duplicateFields.includes("SMS") && !duplicateFields.includes("email")) {
-      // Même numéro déjà associé à un autre contact Brevo (ex. la personne
-      // est aussi inscrite comme participant·e) — on retente sans le SMS
-      // plutôt que d'abandonner l'ajout à la liste.
+    const isDuplicateSmsOnly =
+      body?.code === "duplicate_parameter" && duplicateFields.includes("SMS") && !duplicateFields.includes("email");
+    // Même repli que app/api/cigibm-register/route.ts pour ce même code
+    // Brevo — jusqu'ici absent ici, ce qui laissait silencieusement de côté
+    // tout ambassadeur dont le numéro est dans un format que Brevo rejette
+    // (constaté : 6 ambassadeurs sur 18 lors d'une resynchronisation
+    // manuelle de la liste). Le téléphone reste enregistré normalement dans
+    // notre propre base ; seul l'attribut SMS envoyé à Brevo est abandonné.
+    const isInvalidPhoneNumber =
+      body?.code === "invalid_parameter" && typeof body?.message === "string" && body.message.toLowerCase().includes("phone");
+
+    if (isDuplicateSmsOnly || isInvalidPhoneNumber) {
       res = await attempt({ FIRSTNAME: fullName });
     }
   }
