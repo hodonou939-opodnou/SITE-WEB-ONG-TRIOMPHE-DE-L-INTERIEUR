@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   addAmbassadorToBrevoList,
   buildAmbassadorBadgeAnnouncementEmail,
+  buildAmbassadorTipsEmail,
   buildBadgeReminderEmail,
   buildConfirmationEmail,
 } from "./email";
@@ -69,6 +70,28 @@ describe("buildAmbassadorBadgeAnnouncementEmail", () => {
     // Cette annonce ne relance pas le partage — déjà couvert par
     // buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail.
     expect(message.html).not.toContain("Votre lien personnel");
+  });
+});
+
+describe("buildAmbassadorTipsEmail", () => {
+  it("includes the referral link and five concrete tips, not just encouragement", () => {
+    const message = buildAmbassadorTipsEmail("Fatou Diallo", "https://ongtriomphedelinterieur.com/r/fatou");
+
+    expect(message.subject).toContain("Fatou");
+    expect(message.html).toContain("https://ongtriomphedelinterieur.com/r/fatou");
+    expect(message.html).toContain("Ajoutez un mot avant le lien");
+    expect(message.html).toContain("Relancez une fois");
+  });
+
+  // Les photos de Christelle sont rares : ne pas en épuiser le stock sur un
+  // seul email au profit de visuels libres de droits pour les autres cartes.
+  it("uses at most two distinct Christelle photos", () => {
+    const message = buildAmbassadorTipsEmail("Fatou Diallo", "https://ongtriomphedelinterieur.com/r/fatou");
+
+    const christellePaths = [...message.html.matchAll(/src="[^"]*\/images\/([^"]*christelle[^"]*)"/gi)].map((m) => m[1]);
+    const distinctPaths = new Set(christellePaths);
+
+    expect(distinctPaths.size).toBeLessThanOrEqual(2);
   });
 });
 

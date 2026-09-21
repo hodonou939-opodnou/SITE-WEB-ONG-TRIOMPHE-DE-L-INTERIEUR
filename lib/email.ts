@@ -333,6 +333,128 @@ export function buildAmbassadorBadgeAnnouncementEmail(fullName: string) {
   };
 }
 
+// Une carte image + texte par astuce (gabarit "produit" à la Klaviyo :
+// photo pleine largeur en tête de carte, badge numéroté, titre, corps),
+// plutôt qu'un bloc de texte compact. Christelle n'apparaît que deux fois
+// dans tout l'email (l'avatar d'introduction et la carte du badge « J'y
+// serai ») : les trois autres cartes utilisent des photos libres de droits
+// (Pexels, stockées localement dans /images/ambassador-tips) pour varier
+// les visuels sans épuiser les rares photos de Christelle disponibles.
+function tipCard(number: number, title: string, body: string, imagePath: string, imageAlt: string) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; border:1px solid #e3ece4; border-radius:16px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="${encodeURI(`${SITE_URL}${imagePath}`)}" alt="${imageAlt}" width="520" height="220" style="display:block; width:100%; max-width:520px; height:220px; object-fit:cover; background:#e3ece4;" />
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#f9fbf9; padding:18px 22px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
+          <tr>
+            <td width="24" height="24" style="width:24px; height:24px; background:#307335; border-radius:999px; text-align:center;">
+              <span style="display:block; font-family:Arial, sans-serif; font-size:12px; font-weight:bold; color:#ffffff; line-height:24px;">${number}</span>
+            </td>
+            <td style="padding-left:10px; font-family:Arial, sans-serif; font-size:15px; font-weight:bold; color:#183a1a;">
+              ${title}
+            </td>
+          </tr>
+        </table>
+        <p style="margin:0; font-size:14px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+          ${body}
+        </p>
+      </td>
+    </tr>
+  </table>`;
+}
+
+// Annonce ponctuelle (pas de déclencheur automatique — envoi manuel, même
+// mécanisme que buildAmbassadorBadgeAnnouncementEmail) : des astuces
+// concrètes pour convertir un partage en vraie inscription. Distinct de
+// buildAmbassadorZeroNudgeEmail (qui relance le partage lui-même) — celui-ci
+// suppose que le lien est déjà partagé, et s'attaque au frein suivant :
+// un lien seul, sans un mot, se perd dans la conversation.
+export function buildAmbassadorTipsEmail(fullName: string, referralUrl: string) {
+  const first = fullName.split(/\s+/)[0];
+  const shareMessage = `Je vous invite au CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates} au ${cigibm.nextEdition.venue}. Réservez votre place gratuite ici : ${referralUrl}`;
+
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Programme Ambassadeurs
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, voici ce qui fait vraiment la différence.
+    </h1>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px; background:#f2f7f3; border-radius:16px;">
+      <tr>
+        <td style="padding:20px 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="52" style="vertical-align:top;">
+                <img src="${SITE_URL}/images/speaker-christelle-gnimassou.jpg" alt="Christelle Gnimassou" width="52" height="52" style="display:block; width:52px; height:52px; border-radius:999px; object-fit:cover;" />
+              </td>
+              <td style="padding-left:12px; vertical-align:middle;">
+                <p style="margin:0; font-family:Arial, sans-serif; font-size:13px; font-weight:bold; color:#183a1a;">Christelle Gnimassou</p>
+                <p style="margin:0; font-family:Arial, sans-serif; font-size:11px; color:#16211d99;">Promotrice CIGIBM</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:14px 0 0; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Georgia, 'Times New Roman', serif; font-style:italic;">
+            « Un lien envoyé seul, sans un mot, se perd dans la conversation. Je le vois à chaque édition : ce sont ces cinq réflexes simples qui transforment un partage en vraie inscription. »
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    ${tipCard(
+      1,
+      "Ajoutez un mot avant le lien.",
+      "Dites pourquoi vous y allez, pas juste où cliquer. Un lien seul ressemble à une publicité, alors qu&apos;une phrase sincère montre que c&apos;est vous qui parlez. Quelque chose d&apos;aussi simple que « je pense que ça peut vraiment t&apos;aider, regarde » change tout : la personne lit le message avant de lire le lien, et c&apos;est ce message qui la décide à cliquer.",
+      "/images/ambassador-tips/tip-1-texting.jpg",
+      "Un message personnel envoyé depuis un téléphone"
+    )}
+    ${tipCard(
+      2,
+      "Visez les groupes où tout le monde se connaît déjà.",
+      "Famille, église, collègues, plutôt que des inconnus. La confiance qui existe déjà entre vous fait une grande partie du travail : ces personnes n&apos;ont pas besoin d&apos;être convaincues que vous êtes sérieux(se), elles le savent déjà. Un message envoyé dans un groupe où chacun se connaît obtient toujours plus de réponses qu&apos;un même message envoyé à des contacts au hasard.",
+      "/images/ambassador-tips/tip-2-friends-group.jpg",
+      "Un groupe d&apos;amis qui se connaissent bien"
+    )}
+    ${tipCard(
+      3,
+      "Racontez votre histoire, pas un argumentaire.",
+      "« Voilà pourquoi ça compte pour moi » marche mieux que des statistiques. Les gens suivent une personne, pas une liste de chiffres : parlez de ce qui vous a marqué(e), d&apos;une personne que vous connaissez concernée par la santé mentale, ou simplement de la raison pour laquelle vous avez décidé d&apos;y aller. Votre vécu convainc plus vite que n&apos;importe quel argument tout fait.",
+      "/images/ambassador-tips/tip-3-storytelling.jpg",
+      "Deux amies qui discutent autour d&apos;un café"
+    )}
+    ${tipCard(
+      4,
+      "Montrez votre badge « J&apos;y serai ».",
+      "Voir que vous êtes déjà inscrit(e) rassure plus qu&apos;un lien seul. Ce badge, avec votre photo et votre nom, prouve que vous y allez vraiment, que ce n&apos;est pas juste un message qu&apos;on relaie. Enregistrez-le et joignez-le à votre message ou publiez-le en story, beaucoup de gens hésitent moins quand ils voient quelqu&apos;un qu&apos;ils connaissent déjà engagé(e).",
+      "/images/christelle-avec-le-vaccin.jpg",
+      "Christelle Gnimassou, campagne « Le vaccin de la dépression »"
+    )}
+    ${tipCard(
+      5,
+      "Relancez une fois.",
+      "Un rappel discret quelques jours après suffit souvent. Les gens ont l&apos;intention d&apos;y aller, il leur manque juste un dernier coup de pouce : un message d&apos;origine se perd vite dans une conversation qui continue. Une simple relance, « tu t&apos;es inscrit(e) finalement ? », rattrape la plupart des personnes qui avaient l&apos;intention de le faire sans être allées jusqu&apos;au bout.",
+      "/images/ambassador-tips/tip-5-reminder.jpg",
+      "Un réveil rappelant l&apos;heure"
+    )}
+
+    <p style="margin:6px 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Chaque inscription grâce à vous, c&apos;est une personne de plus qui prend ce premier pas. Voici votre lien, prêt à repartir.
+    </p>
+    ${referralLinkBox(referralUrl)}
+    ${shareButtons(shareMessage)}
+  `);
+
+  return {
+    subject: `${first}, 5 astuces simples pour réussir votre parrainage`,
+    html,
+  };
+}
+
 // Déclenché par le cron quotidien /api/cron/ambassador-nudges (cf.
 // lib/ambassadors/nudges.ts) pour un ambassadeur encore à zéro parrainage,
 // au plus une fois tous les quelques jours. Ton volontairement léger —
