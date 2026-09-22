@@ -254,6 +254,101 @@ export function buildReminderEmail(firstName: string) {
   };
 }
 
+// Date/heure réelles de l'édition à venir, pour calculer le compte à
+// rebours et construire le lien "Ajouter à mon calendrier" — distinct de
+// cigibm.nextEdition.dates (texte affiché aux humains, ex. "17 octobre
+// 2026, dès 9h00"), qui n'est pas une valeur exploitable en JS. Fin fixée
+// à 17h : la campagne (voir lib/ambassadors/nudges.ts) traite cette édition
+// comme une journée unique de 9h à 17h, soit 8 heures.
+const NEXT_EDITION_START = new Date("2026-10-17T09:00:00+01:00");
+const NEXT_EDITION_END = new Date("2026-10-17T17:00:00+01:00");
+
+function googleCalendarUrl() {
+  const toGCalDate = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `CIGIBM ${cigibm.nextEdition.edition} — ${cigibm.nextEdition.theme}`,
+    dates: `${toGCalDate(NEXT_EDITION_START)}/${toGCalDate(NEXT_EDITION_END)}`,
+    details: `Rendez-vous au ${cigibm.nextEdition.venue}. ${cigibm.nextEdition.note}`,
+    location: cigibm.nextEdition.venue,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+// Email de teasing (pas un rappel logistique comme buildReminderEmail
+// ci-dessus) : la personne est déjà inscrite, l'objectif n'est pas de la
+// convaincre mais de faire en sorte que la date reste gravée jusqu'au jour
+// J, dans un mois potentiellement chargé. Nomme la douleur du "hero"
+// (porter quelque chose seul(e), sans le montrer) avant de révéler ce que
+// le thème « Le vaccin de la dépression » propose, plutôt que de vendre le
+// programme directement — d'où le lien calendrier en action principale,
+// plus concret qu'un simple rappel de date dans le corps du texte.
+export function buildParticipantTeaserEmail(fullName: string, badgeToken?: string | null) {
+  const first = fullName.split(/\s+/)[0];
+  const daysLeft = Math.max(1, Math.ceil((NEXT_EDITION_START.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  const badgeUrl = badgeToken ? `${SITE_URL}/cigibm-2026/badge/${badgeToken}` : null;
+
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Ça approche
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, il y a une date que vous ne devez pas laisser filer.
+    </h1>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Il y a des jours où sourire demande plus d&apos;énergie que tout le reste. Vous le savez. Beaucoup de gens autour de vous le savent aussi, mais personne n&apos;en parle vraiment.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+      <tr>
+        <td>
+          <img src="${SITE_URL}/images/participant-teaser/silhouette-window.jpg" alt="Une silhouette face à une fenêtre, dans la lumière" width="520" height="300" style="display:block; width:100%; max-width:520px; height:300px; object-fit:cover; border-radius:14px; background:#e3ece4;" />
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Le ${cigibm.nextEdition.dates.split(",")[0]}, au ${cigibm.nextEdition.venue}, on va en parler. Vraiment. « ${cigibm.nextEdition.theme} » n&apos;est pas qu&apos;un titre, c&apos;est ce qui se passe quand on arrête de porter ça seul(e).
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px; text-align:center;">
+          <p style="margin:0 0 4px; font-size:36px; line-height:1; color:#183a1a; font-weight:bold;">${daysLeft}</p>
+          <p style="margin:0; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#307335; font-weight:bold;">${daysLeft > 1 ? "jours avant le CIGIBM" : "jour avant le CIGIBM"}</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Votre place est déjà réservée, ${first}. Il ne reste qu&apos;une chose à faire : ne pas laisser cette date se perdre dans un mois chargé. Ajoutez-la à votre calendrier maintenant, pendant que vous y pensez.
+    </p>
+    ${ctaButton("Ajouter à mon calendrier", googleCalendarUrl(), "gold")}
+    ${badgeUrl ? ctaButton("Voir mon badge « J'y serai »", badgeUrl) : ctaButton("Voir le programme", `${SITE_URL}/cigibm-2026`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 0; border-top:1px solid #e3ece4; padding-top:22px;">
+      <tr>
+        <td>
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="52" style="vertical-align:top;">
+                <img src="${SITE_URL}/images/cigibm-edition-4/coach-christelle-avec-le-vaccin.jpg" alt="Christelle Gnimassou" width="52" height="52" style="display:block; width:52px; height:52px; border-radius:999px; object-fit:cover;" />
+              </td>
+              <td style="padding-left:12px; vertical-align:middle;">
+                <p style="margin:0; font-family:Arial, sans-serif; font-size:13px; font-weight:bold; color:#183a1a;">Christelle Gnimassou</p>
+                <p style="margin:0; font-family:Arial, sans-serif; font-size:11px; color:#16211d99;">Promotrice CIGIBM</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:14px 0 0; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Georgia, 'Times New Roman', serif; font-style:italic;">
+            « On vous attend le ${cigibm.nextEdition.dates.split(",")[0]}. Pas pour un discours de plus, pour un moment où vous pourrez enfin poser ce que vous portez seul(e). »
+          </p>
+        </td>
+      </tr>
+    </table>
+  `);
+
+  return {
+    subject: `${first}, le ${cigibm.nextEdition.dates.split(",")[0]} approche. Ne la ratez pas.`,
+    html,
+  };
+}
+
 // Deux visuels possibles pour le partage : l'affiche officielle et la
 // photo de Coach Christelle (seringue en forme de cœur, tirée de la
 // campagne "Le vaccin de la dépression"). Un seul par email, tiré au

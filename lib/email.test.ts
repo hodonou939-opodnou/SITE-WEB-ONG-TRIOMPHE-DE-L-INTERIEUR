@@ -5,6 +5,7 @@ import {
   buildAmbassadorTipsEmail,
   buildBadgeReminderEmail,
   buildConfirmationEmail,
+  buildParticipantTeaserEmail,
 } from "./email";
 
 describe("buildConfirmationEmail", () => {
@@ -70,6 +71,28 @@ describe("buildAmbassadorBadgeAnnouncementEmail", () => {
     // Cette annonce ne relance pas le partage — déjà couvert par
     // buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail.
     expect(message.html).not.toContain("Votre lien personnel");
+  });
+});
+
+describe("buildParticipantTeaserEmail", () => {
+  it("shows a whole-day countdown and links a working Google Calendar entry", () => {
+    const message = buildParticipantTeaserEmail("Aïcha Traoré");
+
+    expect(message.subject).toContain("Aïcha");
+    expect(message.html).toContain("jours avant le CIGIBM");
+    expect(message.html).toContain("https://calendar.google.com/calendar/render?");
+    // 9h00 à Cotonou (UTC+1) = 8h00 UTC, l'heure que Google Calendar reçoit réellement.
+    expect(message.html).toContain("20261017T080000Z");
+  });
+
+  // Une personne déjà inscrite avec un badge doit y être renvoyée plutôt
+  // qu'à la page programme générique, comme buildConfirmationEmail le fait
+  // déjà pour son propre bouton de badge conditionnel.
+  it("links to the badge page instead of the program page when a token is given", () => {
+    const message = buildParticipantTeaserEmail("Aïcha", "xyz789");
+
+    expect(message.html).toContain("https://ongtriomphedelinterieur.com/cigibm-2026/badge/xyz789");
+    expect(message.html).not.toContain("Voir le programme");
   });
 });
 
