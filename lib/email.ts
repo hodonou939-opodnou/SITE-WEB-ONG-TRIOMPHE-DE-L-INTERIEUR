@@ -349,6 +349,60 @@ export function buildParticipantTeaserEmail(fullName: string, badgeToken?: strin
   };
 }
 
+// Email ponctuel "coup de fouet" du matin (pas un rappel automatique comme
+// buildAmbassadorZeroNudgeEmail/buildAmbassadorMilestoneEmail) : envoyé une
+// fois, généralement tôt, pour relancer l'énergie plutôt que d'expliquer la
+// mécanique du parrainage (déjà couverte par buildAmbassadorTipsEmail).
+// Volontairement court avec une seule action pour aujourd'hui, pas cinq
+// conseils à la fois — le but est qu'il se lise en 30 secondes avant que la
+// journée ne commence.
+export function buildAmbassadorBoosterEmail(fullName: string, referralUrl: string) {
+  const first = fullName.split(/\s+/)[0];
+  const shareMessage = `Je pense à toi pour le CIGIBM ${cigibm.nextEdition.edition}, « ${cigibm.nextEdition.theme} », les ${cigibm.nextEdition.dates}. Réserve ta place gratuite ici : ${referralUrl}`;
+  const daysLeft = Math.max(1, Math.ceil((NEXT_EDITION_START.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+
+  const html = emailShell(`
+    <p style="margin:0 0 4px; font-family:Arial, sans-serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#307335; font-weight:bold;">
+      Message du matin
+    </p>
+    <h1 style="margin:0 0 20px; font-size:26px; line-height:1.25; color:#183a1a;">
+      ${first}, un objectif simple pour aujourd&apos;hui.
+    </h1>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Vous avez déjà commencé quelque chose d&apos;important. Chaque personne qui s&apos;inscrit grâce à vous, c&apos;est une personne de plus qui choisit de ne plus porter ça seule.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f2f7f3; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:20px 24px; text-align:center;">
+          <p style="margin:0 0 4px; font-size:36px; line-height:1; color:#183a1a; font-weight:bold;">${daysLeft}</p>
+          <p style="margin:0; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#307335; font-weight:bold;">${daysLeft > 1 ? "jours avant le CIGIBM" : "jour avant le CIGIBM"}</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Pas besoin d&apos;un grand plan aujourd&apos;hui. Juste ça :
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px; background:#f9fbf9; border:1.5px dashed #307335; border-radius:14px; font-family:Arial, sans-serif;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px; font-size:14px; color:#16211d;"><strong>1. Envoyez votre lien à une seule personne</strong>, tout de suite, avant de faire autre chose. Pas de long message, juste « je pense à toi pour ça » suffit.</p>
+          <p style="margin:0; font-size:14px; color:#16211d;"><strong>2. Rouvrez votre dernière conversation</strong> où vous aviez partagé votre lien sans réponse. Un petit rappel aujourd&apos;hui suffit souvent à la faire basculer.</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#16211dcc; font-family:Arial, sans-serif;">
+      Voici votre lien, prêt à repartir.
+    </p>
+    ${referralLinkBox(referralUrl)}
+    ${shareButtons(shareMessage)}
+  `);
+
+  return {
+    subject: `${first}, un objectif simple pour aujourd'hui (${daysLeft > 1 ? `${daysLeft} jours avant le CIGIBM` : "dernier jour avant le CIGIBM"})`,
+    html,
+  };
+}
+
 // Deux visuels possibles pour le partage : l'affiche officielle et la
 // photo de Coach Christelle (seringue en forme de cœur, tirée de la
 // campagne "Le vaccin de la dépression"). Un seul par email, tiré au

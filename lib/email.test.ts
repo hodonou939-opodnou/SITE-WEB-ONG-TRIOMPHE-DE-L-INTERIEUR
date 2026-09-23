@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   addAmbassadorToBrevoList,
   buildAmbassadorBadgeAnnouncementEmail,
+  buildAmbassadorBoosterEmail,
   buildAmbassadorTipsEmail,
   buildBadgeReminderEmail,
   buildConfirmationEmail,
@@ -93,6 +94,17 @@ describe("buildParticipantTeaserEmail", () => {
 
     expect(message.html).toContain("https://ongtriomphedelinterieur.com/cigibm-2026/badge/xyz789");
     expect(message.html).not.toContain("Voir le programme");
+  });
+});
+
+describe("buildAmbassadorBoosterEmail", () => {
+  it("gives one concrete action for today plus the referral link, not a generic pep talk", () => {
+    const message = buildAmbassadorBoosterEmail("Fatou Diallo", "https://ongtriomphedelinterieur.com/r/fatou");
+
+    expect(message.subject).toContain("Fatou");
+    expect(message.html).toContain("https://ongtriomphedelinterieur.com/r/fatou");
+    expect(message.html).toContain("Envoyez votre lien à une seule personne");
+    expect(message.html).toContain("jours avant le CIGIBM");
   });
 });
 
