@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { countLeadsToContact } from "@/lib/admin/leads";
+import { countFunders, listUpcomingDeadlines } from "@/lib/admin/funders";
+import { deadlineDays } from "@/lib/funders-meta";
 import { getEditionHub, getScannerSummary, listEditions, pickDefaultEdition } from "@/lib/admin/cigibm";
 import { cigibmHref, editionPhase, hasPreparation, type Insight } from "@/lib/cigibm-hub";
 import PhasePill from "./evenements/PhasePill";
@@ -35,7 +37,7 @@ export default async function AdminDashboardPage() {
   const now = new Date();
   const editions = await listEditions();
   const currentNumber = pickDefaultEdition(editions, now);
-  const [hub, scanner, leads, activitiesTotal, activitiesPublished, resources, team] = await Promise.all([
+  const [hub, scanner, leads, activitiesTotal, activitiesPublished, resources, team, funders, deadlines] = await Promise.all([
     currentNumber ? getEditionHub(currentNumber, now) : null,
     currentNumber ? getScannerSummary(currentNumber, now) : null,
     countLeadsToContact(),
@@ -43,6 +45,8 @@ export default async function AdminDashboardPage() {
     db.activity.count({ where: { published: true } }),
     db.resource.count(),
     db.adminProfile.count({ where: { suspendedAt: null } }),
+    countFunders(),
+    listUpcomingDeadlines(now),
   ]);
 
   // Édition terminée depuis moins de 30 jours (autre que celle mise en avant) : ses
@@ -59,6 +63,18 @@ export default async function AdminDashboardPage() {
   for (const i of recentHub?.insights ?? []) {
     if (i.level === "good" || todo.some((t) => t.title === i.title)) continue;
     todo.push({ ...i, title: `Édition ${recentHub!.edition.number} : ${i.title.charAt(0).toLowerCase()}${i.title.slice(1)}` });
+  }
+  if (deadlines.length > 0) {
+    const next = deadlines[0];
+    const days = deadlineDays(next.deadline, now)!;
+    const date = next.deadline!.toLocaleDateString("fr-FR", { timeZone: TZ, day: "numeric", month: "long" });
+    const n = deadlines.length;
+    todo.unshift({
+      level: "alert",
+      title: n > 1 ? `${n} appels à projets à boucler` : "Un appel à projets à boucler",
+      detail: `${next.name} : date limite le ${date} (${days === 0 ? "aujourd'hui" : `J-${days}`}).`,
+      href: "/admin/partenaires",
+    });
   }
   if (activitiesTotal > 0 && activitiesPublished === 0) {
     todo.push({ level: "info", title: `${activitiesTotal} activités en brouillon`, detail: "Aucune n'est encore publiée sur le site : relisez-les et publiez celles qui sont validées.", href: "/admin/activities" });
@@ -134,6 +150,7 @@ export default async function AdminDashboardPage() {
             { href: "/admin/evenements", label: "Événements", note: eventsNote },
             { href: "/admin/activities", label: "Activités", note: `${activitiesPublished} publiées sur ${activitiesTotal}` },
             { href: "/admin/leads", label: "Contacts à rappeler", note: leads.total === 0 ? "Personne en attente" : `${leads.total} en attente` },
+            { href: "/admin/partenaires", label: "Bailleurs et partenaires", note: `${funders.total} fiche${funders.total > 1 ? "s" : ""}${funders.followed ? `, ${funders.followed} en suivi` : ""}` },
             { href: "/admin/resources", label: "Dossier ressources", note: `${resources} document${resources > 1 ? "s" : ""}` },
             { href: "/admin/team", label: "Équipe", note: `${team} compte${team > 1 ? "s" : ""} actif${team > 1 ? "s" : ""}` },
           ].map((r) => (

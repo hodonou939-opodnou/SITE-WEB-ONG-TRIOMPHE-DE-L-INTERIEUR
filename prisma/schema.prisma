@@ -247,3 +247,54 @@ model CigibmTask {
 
   @@index([editionNumber, category])
 }
+
+enum FunderKind {
+  fondation
+  agence_publique
+  organisation_internationale
+  ambassade
+  entreprise
+  ong_internationale
+  reseau
+  philanthrope
+}
+
+enum FunderStatus {
+  a_contacter
+  contacte
+  en_discussion
+  refuse
+  finance
+}
+
+// Bailleurs et partenaires potentiels (admin, rubrique L'ONG). Uniquement des
+// coordonnées publiées officiellement par l'organisation (sourceUrl + verifiedAt) :
+// jamais d'email ou de numéro personnel de particulier.
+model Funder {
+  id             String       @id @default(uuid())
+  name           String
+  kind           FunderKind
+  country        String
+  scope          String?
+  focus          String
+  relevance      Int          @default(2)
+  why            String?
+  howToApply     String?
+  website        String?
+  applyUrl       String?
+  contactEmail   String?
+  contactPhone   String?
+  contactFormUrl String?
+  linkedinUrl    String?
+  sourceUrl      String?
+  verifiedAt     DateTime?
+  // Prochaine date limite connue (appel à projets en cours) : remonte la fiche en tête de liste.
+  deadline       DateTime?
+  status         FunderStatus @default(a_contacter)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status])
+  @@index([kind])
+}

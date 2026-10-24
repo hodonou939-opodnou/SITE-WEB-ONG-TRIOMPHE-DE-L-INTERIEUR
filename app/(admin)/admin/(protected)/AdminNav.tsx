@@ -67,6 +67,15 @@ function CongressIcon({ className }: IconProps) {
   );
 }
 
+function HandshakeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <path d="m3 11 4-4 3 1 2-1.5L15 8l3-1 3 4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m7 13 3.5 3.5a1.5 1.5 0 0 0 2.1 0l4.4-4.4M10 10l-2.5 2.5M12.5 12.5l2-2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function MoreIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -114,6 +123,7 @@ const groups: NavGroup[] = [
     items: [
       { href: "/admin/activities", label: "Activités", shortLabel: "Activités", Icon: ListIcon, inBar: true, description: "Ce que l'ONG fait, par axe, publié sur le site" },
       { href: "/admin/leads", label: "Contacts à rappeler", shortLabel: "Contacts", Icon: PhoneIcon, inBar: true, description: "Personnes qui ont laissé leurs coordonnées" },
+      { href: "/admin/partenaires", label: "Bailleurs et partenaires", shortLabel: "Bailleurs", Icon: HandshakeIcon, description: "Financeurs et partenaires à approcher, avec leur suivi" },
       { href: "/admin/resources", label: "Dossier ressources", shortLabel: "Ressources", Icon: FolderIcon, description: "Notes et documents internes" },
     ],
   },
