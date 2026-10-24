@@ -5,5 +5,7 @@ export function frenchSpacing(text: string): string {
   return text
     .replace(/« /g, "« ")
     .replace(/ »/g, " »")
-    .replace(/ ([:;!?])/g, " $1");
+    .replace(/ ([:;!?])/g, " $1")
+    // Séparateur des milliers : « 58 000 » ne se coupe jamais entre « 58 » et « 000 ».
+    .replace(/(\d) (?=\d{3}\b)/g, "$1 ");
 }

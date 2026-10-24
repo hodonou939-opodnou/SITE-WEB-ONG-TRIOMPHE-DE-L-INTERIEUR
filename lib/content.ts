@@ -7,12 +7,18 @@ export const siteConfig = {
   name: "ONG Triomphe de l'Intérieur",
   shortName: "ONG Triomphe de l'Intérieur",
   tagline: "Guérir de l'intérieur pour triompher à l'extérieur",
+  // Discours unique (note de repositionnement, validé le 23/10/2026) : le même
+  // énoncé partout, du site aux dossiers de partenariat. Reprend l'objet déclaré.
   description:
-    "ONG béninoise dédiée au bien-être mental, à la guérison intérieure et au développement personnel.",
-  // Accroche émotionnelle du hero d'accueil, distincte de la description
-  // factuelle ci-dessus, utilisée pour les meta-tags.
+    "ONG béninoise qui accompagne les femmes et les jeunes vers le bien-être mental et l'autonomie, et soutient les personnes vulnérables.",
   homeHeroLede:
-    "On ne va pas se mentir : au Bénin comme ailleurs, on apprend à tenir, à sourire, à ne pas déranger. Nous, on fait l'inverse. Depuis six ans, l'ONG Triomphe de l'Intérieur écoute, accompagne et outille celles et ceux qui portent seuls ce qui pèse trop lourd.",
+    "L'ONG Triomphe de l'Intérieur accompagne les femmes et les jeunes vers le bien-être mental et l'autonomie, et soutient les personnes vulnérables au Bénin. Nous agissons en amont, avant que la détresse ne s'installe.",
+  // Preuves vérifiées : 4 éditions, 58 000+ personnes touchées sur les éditions 1 à 3.
+  homeProof:
+    "Plus de six ans de terrain, quatre éditions du CIGIBM et plus de 58 000 personnes touchées par le congrès.",
+  // Code de vérification Google Search Console (balise meta « google-site-verification »).
+  // Vide tant que la propriété n'est pas créée dans la Search Console.
+  googleSiteVerification: "",
   founder: "Christelle Eugénie Gnimassou",
   founderTitle: "Présidente-fondatrice & coach",
   // Siège déclaré au ministère de l'Intérieur (attestation de dépôt du 3 août 2026).
@@ -451,7 +457,7 @@ export const supportWays = [
   {
     title: "Faire un don",
     description:
-      "Un don ne disparaît pas dans une structure : il devient un atelier animé, une écoute offerte, une place gratuite au congrès pour quelqu'un qui n'aurait pas pu venir.",
+      "Un don ne disparaît pas dans une structure : il devient une écoute offerte, un atelier animé, une place gratuite au congrès pour quelqu'un qui n'aurait pas pu venir, ou un soutien concret à une personne vulnérable.",
     details: [
       "Virement bancaire, RIB communiqué sur demande", // [PLACEHOLDER]
       "Mobile Money, MTN / Moov, numéro communiqué sur demande", // [PLACEHOLDER]
@@ -466,7 +472,7 @@ export const supportWays = [
   {
     title: "Devenir partenaire",
     description:
-      "La santé mentale reste un angle mort du débat public béninois. Y associer votre organisation, c'est aider à le combler, et rendre visible un engagement qui compte réellement.",
+      "Institutions, entreprises, fondations : la santé mentale reste un angle mort du débat public béninois. Construire un programme avec nous, c'est agir en prévention, au plus près des femmes et des jeunes, avec un partenaire qui rend compte.",
     details: ["Contactez-nous pour discuter d'un partenariat sur mesure"],
   },
 ];

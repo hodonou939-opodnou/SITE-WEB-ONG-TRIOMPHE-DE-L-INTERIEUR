@@ -30,6 +30,9 @@ const dancingScript = localFont({
   variable: "--font-script",
   weight: "700",
   display: "swap",
+  // Utilisée seulement par les badges « J'y serai » : pas de préchargement sur
+  // chaque page (25 Ko de moins à télécharger en priorité sur mobile).
+  preload: false,
 });
 
 // Un seul poids existe pour cette famille (déjà épaisse par construction) et
@@ -40,6 +43,7 @@ const bebasNeue = localFont({
   variable: "--font-impact",
   weight: "400",
   display: "swap",
+  preload: false, // badges uniquement, voir ci-dessus
 });
 
 const siteUrl = "https://ongtriomphedelinterieur.com";
@@ -53,14 +57,18 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   keywords: [
     "santé mentale Bénin",
-    "guérison intérieure",
-    "CIGIBM",
     "bien-être mental",
+    "guérison intérieure",
+    "prévention de la dépression",
+    "femmes et jeunes Bénin",
+    "autonomisation des femmes",
+    "CIGIBM",
     "ONG Bénin",
     "Christelle Eugénie Gnimassou",
-    "développement personnel Bénin",
   ],
   authors: [{ name: siteConfig.name }],
+  // Balise de vérification Google Search Console, posée dès que le code est fourni.
+  ...(siteConfig.googleSiteVerification ? { verification: { google: siteConfig.googleSiteVerification } } : {}),
   icons: {
     icon: [
       { url: "/icon-16.png", sizes: "16x16", type: "image/png" },

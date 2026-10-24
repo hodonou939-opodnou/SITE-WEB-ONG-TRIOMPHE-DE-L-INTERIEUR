@@ -11,7 +11,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Nous soutenir",
   description:
-    "Un don, un week-end de bénévolat, un partenariat : soutenez l'ONG Triomphe de l'Intérieur et la santé mentale au Bénin.",
+    "Un don, du bénévolat, un partenariat : aidez l'ONG Triomphe de l'Intérieur à accompagner les femmes et les jeunes vers le bien-être mental et à soutenir les personnes vulnérables au Bénin.",
   path: "/nous-soutenir",
 });
 
@@ -21,8 +21,8 @@ export default function NousSoutenirPage() {
       <Hero
         compact
         eyebrow="Nous soutenir"
-        title="Votre soutien fait vivre la guérison intérieure, partout au Bénin"
-        description="Si le CIGIBM est gratuit pour tous ceux qui en ont besoin, c'est parce que d'autres l'ont financé avant eux. C'est aussi simple que ça."
+        title="Votre soutien aide des femmes et des jeunes à tenir debout"
+        description="Une écoute offerte, un atelier animé, une place gratuite au congrès, un soutien concret à une famille en difficulté : ce que nous faisons, d'autres l'ont rendu possible avant vous. C'est aussi simple que ça."
       />
 
       <Container className="py-24 sm:py-28">

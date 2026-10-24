@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Container from "./Container";
+import { frenchSpacing } from "@/lib/typography";
 
 export default function Hero({
   eyebrow,
@@ -34,11 +35,11 @@ export default function Hero({
             </p>
           )}
           <h1 className="font-display text-4xl leading-tight text-mist-50 sm:text-5xl md:text-6xl">
-            {title}
+            {frenchSpacing(title)}
           </h1>
           {description && (
             <p className="mt-6 max-w-xl text-base leading-relaxed text-mist-100/80 sm:text-lg">
-              {description}
+              {frenchSpacing(description)}
             </p>
           )}
           {actions && (

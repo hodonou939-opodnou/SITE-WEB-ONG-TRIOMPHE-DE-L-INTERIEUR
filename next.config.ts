@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     // 90 : grandes images plein écran (bandeau des articles), où la
     // compression par défaut (75) se voit sur une photo déjà agrandie.
     qualities: [75, 90],
+    // AVIF d'abord (30 à 50 % plus léger que le WebP à qualité égale), WebP pour
+    // les navigateurs qui ne le lisent pas : moins de données sur mobile.
+    formats: ["image/avif", "image/webp"],
     // Photos d'ambassadeurs, images de blog, etc. servies depuis le bucket
     // public Supabase Storage du projet — next/image refuse tout hôte
     // distant non explicitement listé ici.

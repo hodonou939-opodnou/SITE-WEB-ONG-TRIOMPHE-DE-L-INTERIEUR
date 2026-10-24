@@ -129,6 +129,17 @@ body {
   }
 }
 
+/* Accueil : le voile flou de la photo se lève une fois, quand elle est chargée
+   (classe opacity-0 posée par HeroPhoto). Filet de sécurité si le JavaScript ne
+   tourne pas : il se lève de lui-même au bout de 4 s. */
+@keyframes hero-veil-lift {
+  to { opacity: 0; visibility: hidden; }
+}
+.hero-veil { animation: hero-veil-lift 1s ease 4s forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-veil { animation: none; opacity: 0; visibility: hidden; transition: none; }
+}
+
 /* Pop-up d'opt-in : entrée de la carte et fondu entre les étapes. */
 @keyframes optin-rise {
   from { opacity: 0; transform: translateY(28px); }

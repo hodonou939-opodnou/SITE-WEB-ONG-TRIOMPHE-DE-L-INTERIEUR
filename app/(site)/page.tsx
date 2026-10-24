@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Hero from "@/components/Hero";
+import HomeHero from "@/components/HomeHero";
 import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import Button from "@/components/Button";
@@ -51,16 +51,36 @@ const missionIcons = [
   </svg>,
 ];
 
+// Fiche « ONG » pour les moteurs de recherche : nom, mission, siège, fondatrice, réseaux.
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  name: siteConfig.name,
+  url: "https://ongtriomphedelinterieur.com",
+  logo: "https://ongtriomphedelinterieur.com/images/logo-mark.png",
+  description: siteConfig.description,
+  slogan: siteConfig.tagline,
+  email: siteConfig.email,
+  telephone: siteConfig.phoneHref.replace("tel:", ""),
+  address: { "@type": "PostalAddress", addressLocality: "Cotonou", addressCountry: "BJ", streetAddress: "Cadjèhoun-Gare" },
+  founder: { "@type": "Person", name: siteConfig.founder },
+  areaServed: { "@type": "Country", name: "Bénin" },
+  sameAs: Object.values(siteConfig.social),
+};
+
 export default function Home() {
   const cigibmPhoto = getNamedImage("cigibm-featured") ?? "/images/cigibm/Cover CIGIBM1 2026.png";
   const urgencyStats = mentalHealthStats.slice(1, 4);
 
   return (
     <>
-      <Hero
-        eyebrow="ONG Triomphe de l'Intérieur · Bénin"
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+      <HomeHero
         title="Prendre soin de ce qu'on ne voit pas."
-        description={siteConfig.homeHeroLede}
+        lede={siteConfig.homeHeroLede}
+        proof={siteConfig.homeProof}
+        photoAlt="Le public du CIGIBM 2024 applaudit : au premier plan, deux femmes souriantes, dont l'une se tourne vers sa voisine"
+        photoCaption="CIGIBM 2024 à Godomey. Photo : Erick Savi"
         actions={
           <>
             <Button href="#missions" variant="primary">
@@ -80,8 +100,8 @@ export default function Home() {
         <div id="missions" className="scroll-mt-24" />
         <SectionHeading
           eyebrow="Nos missions"
-          title="Trois missions, un seul fil : vous remettre debout"
-          description="Pas de grands discours. Ce qu'on fait, concrètement, et pour qui : celles et ceux qui tiennent debout en apparence, mais qui n'en peuvent plus."
+          title="Aider à tenir debout, et soutenir ceux qui en ont le plus besoin"
+          description="Trois missions qui se tiennent : agir pour les plus vulnérables, accompagner les femmes et les jeunes vers le bien-être mental, leur donner les outils de l'autonomie."
         />
         <div className="mt-14 grid gap-6 lg:grid-cols-3">
           {missionPillars.map((pillar, i) => (
@@ -135,8 +155,9 @@ export default function Home() {
           </div>
           <Reveal delay={0.2} className="mt-10">
             <p className="max-w-2xl text-base leading-relaxed text-mist-100/75">
-              Face à ça, on ne peut pas attendre que les choses s&apos;arrangent toutes seules. C&apos;est pour cela que
-              nous agissons en amont, avant la crise, au plus près des gens.
+              Face à ça, on ne peut pas attendre que les choses s&apos;arrangent toutes seules. Nous agissons en amont,
+              avant la crise, au plus près des gens. Nous ne remplaçons ni l&apos;hôpital ni les professionnels de
+              santé : nous écoutons, nous accompagnons, et nous orientons vers eux quand c&apos;est nécessaire.
             </p>
           </Reveal>
         </Container>
@@ -179,12 +200,13 @@ export default function Home() {
           <Reveal delay={0.1}>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-leaf-600">Notre événement phare</p>
             <h2 className="font-display text-3xl leading-tight text-leaf-900 sm:text-4xl">
-              {cigibm.acronym} : le rendez-vous de ceux qui ne font plus semblant
+              {cigibm.acronym} : le rendez-vous annuel de la guérison intérieure et du bien-être mental
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ink/70 sm:text-lg">
-              Chaque année, le {cigibm.fullName} réunit des milliers de personnes, sur place et en ligne, autour d&apos;une
-              idée simple : on a le droit d&apos;aller mal, et le droit de s&apos;en sortir. La 4ème édition vient de se
-              tenir à Cotonou. La 5ème se prépare, et chut : date et lieu arrivent très bientôt.
+              Organisé chaque année par l&apos;ONG, le {cigibm.fullName} réunit sur place et en ligne celles et ceux qui
+              ne veulent plus faire semblant, autour d&apos;une idée simple : on a le droit d&apos;aller mal, et le droit
+              de s&apos;en sortir. La 4ème édition s&apos;est tenue les 17 et 18 octobre 2026 à Cotonou. La 5ème se
+              prépare : date et lieu arrivent bientôt.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/cigibm" variant="primary">
