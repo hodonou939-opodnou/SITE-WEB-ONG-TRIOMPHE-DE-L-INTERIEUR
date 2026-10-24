@@ -53,3 +53,7 @@ next-env.d.ts
 # alourdir les déploiements) — les versions web optimisées vivent dans
 # public/images/cigibm-edition-*/
 /raw-photos/
+
+# Photos brutes des photographes (12 Go) : jamais publiées telles quelles.
+# La sélection optimisée pour le web est dans public/images/cigibm-edition-4/galerie/.
+/public/images/cigibm/PHOTOS-CIGIBM 2026/

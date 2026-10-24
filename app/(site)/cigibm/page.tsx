@@ -12,6 +12,8 @@ import Photo from "@/components/Photo";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import Reveal from "@/components/Reveal";
 import { renderInline } from "@/components/InlineLinks";
+import EditionGallery from "@/components/EditionGallery";
+import { galleryCredits, galleryDays, galleryPhotos } from "@/lib/cigibm-gallery-4";
 import AmbassadorSlider from "@/components/AmbassadorSlider";
 import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
 import AmbassadorFeedback from "@/components/AmbassadorFeedback";
@@ -210,12 +212,27 @@ export default async function CigibmPage() {
                 <Button href="/blog/fraternite-reportage-cigibm-2026-guerison-interieure" variant="primary">
                   Lire le reportage de Fraternité
                 </Button>
-                <Button href="/blog/cigibm-2026-coup-d-envoi-palais-des-congres" variant="ghost" className="!border-mist-50/30 !text-mist-50 hover:!bg-mist-50/10">
-                  Revoir le coup d&apos;envoi
+                <Button href="#galerie-4e-edition" variant="ghost" className="!border-mist-50/30 !text-mist-50 hover:!bg-mist-50/10">
+                  Voir les photos
                 </Button>
               </div>
             </Reveal>
           </div>
+        </Container>
+      </div>
+
+      {/* Galerie de la 4ème édition : sélection classée par jour et par moment */}
+      <div id="galerie-4e-edition" className="scroll-mt-24">
+        <Container className="py-20 sm:py-24">
+          <SectionHeading
+            eyebrow="Galerie"
+            title="La 4ème édition en images"
+            description={`${galleryPhotos.length} photos des deux journées : la salle rouge du Palais des Congrès le samedi, le bord de mer le dimanche. Touchez une photo pour l'agrandir.`}
+          />
+          <div className="mt-10">
+            <EditionGallery days={galleryDays} photos={galleryPhotos} />
+          </div>
+          <p className="mt-8 text-xs text-ink/55">Photos : {galleryCredits.join(", ")}.</p>
         </Container>
       </div>
 
