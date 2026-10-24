@@ -9,7 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/a-propos", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/methode-racines", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/cigibm", priority: 0.9, changeFrequency: "weekly" as const },
-    { path: "/cigibm-2026", priority: 1, changeFrequency: "daily" as const },
     { path: "/blog", priority: 0.8, changeFrequency: "weekly" as const },
     { path: "/nous-soutenir", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/contact", priority: 0.5, changeFrequency: "yearly" as const },

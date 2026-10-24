@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Blog & Activités",
   description:
-    "Articles, conseils et activités de l'ONG Triomphe de l'Intérieur : santé mentale, guérison intérieure et développement personnel.",
+    "Articles et nouvelles de l'ONG Triomphe de l'Intérieur : bien-être mental des femmes et des jeunes, prévention, autonomie, et l'actualité du CIGIBM.",
   path: "/blog",
 });
 

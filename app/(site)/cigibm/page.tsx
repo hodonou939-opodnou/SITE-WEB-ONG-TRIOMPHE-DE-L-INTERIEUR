@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Image from "next/image";
 import Avatar from "@/components/Avatar";
 import { Cigibm5Hero, OptInButton } from "@/components/Cigibm5Teaser";
 import Container from "@/components/Container";
@@ -13,6 +12,7 @@ import PhotoCarousel from "@/components/PhotoCarousel";
 import Reveal from "@/components/Reveal";
 import { renderInline } from "@/components/InlineLinks";
 import EditionGallery from "@/components/EditionGallery";
+import MediaCoverageSlider from "@/components/MediaCoverageSlider";
 import { galleryCredits, galleryDays, galleryPhotos } from "@/lib/cigibm-gallery-4";
 import AmbassadorSlider from "@/components/AmbassadorSlider";
 import AmbassadorSignupForm from "@/components/AmbassadorSignupForm";
@@ -444,48 +444,9 @@ export default async function CigibmPage() {
       {pressMentions.length > 0 && (
         <div className="bg-mist-50">
           <Container className="py-24 sm:py-28">
-            <SectionHeading eyebrow="Presse" title="Ils parlent de nous" />
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {pressMentions.map((mention, i) => (
-                <Reveal key={mention.url} delay={i * 0.08}>
-                  <a
-                    href={mention.url}
-                    // Un reportage paru seulement sur papier renvoie vers notre article (lien interne, même onglet).
-                    {...(mention.url.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/8 bg-mist-warm transition-all duration-300 hover:-translate-y-1 hover:border-leaf-200 hover:shadow-lg hover:shadow-ink/8"
-                  >
-                    <div className="relative aspect-[16/10] w-full overflow-hidden">
-                      <Image
-                        src={mention.image}
-                        alt={mention.title}
-                        fill
-                        sizes="(min-width: 1024px) 33vw, 100vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <span className="absolute left-4 top-4 rounded-full bg-mist-50/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-leaf-900">
-                        {mention.outlet}
-                      </span>
-                    </div>
-                    <div className="flex flex-1 flex-col p-6">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-display text-lg leading-snug text-leaf-900">
-                          {mention.title}
-                        </h3>
-                        <span
-                          aria-hidden
-                          className="mt-1 shrink-0 text-leaf-600 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                        >
-                          ↗
-                        </span>
-                      </div>
-                      <p className="mt-2 flex-1 text-sm leading-relaxed text-ink/70">
-                        {mention.excerpt}
-                      </p>
-                      <p className="mt-4 text-xs text-ink/45">{mention.date}</p>
-                    </div>
-                  </a>
-                </Reveal>
-              ))}
+            <SectionHeading eyebrow="Presse" title="Ils parlent de nous" description="Faites défiler pour lire ce que la presse a écrit sur le CIGIBM." />
+            <div className="mt-12">
+              <MediaCoverageSlider />
             </div>
           </Container>
         </div>
